@@ -1,0 +1,42 @@
+specVersion: 0.0.2
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: Contract
+    network: bsc
+    source:
+      address: "0x39bea96e13453ed52a734b6aceed4c41f57b2271"
+      abi: Contract
+      startBlock: 7904001
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - FightOutcome
+        - InGameOnlyFundsGiven
+        - MintWeaponsFailure
+        - MintWeaponsSuccess
+        - RoleAdminChanged
+        - RoleGranted
+        - RoleRevoked
+      abis:
+        - name: Contract
+          file: ./abis/Contract.json
+      eventHandlers:
+        - event: FightOutcome(indexed address,indexed uint256,uint256,uint32,uint24,uint24,uint16,uint256)
+          handler: handleFightOutcome
+        - event: InGameOnlyFundsGiven(indexed address,uint256)
+          handler: handleInGameOnlyFundsGiven
+        - event: MintWeaponsFailure(indexed address,uint32)
+          handler: handleMintWeaponsFailure
+        - event: MintWeaponsSuccess(indexed address,uint32)
+          handler: handleMintWeaponsSuccess
+        - event: RoleAdminChanged(indexed bytes32,indexed bytes32,indexed bytes32)
+          handler: handleRoleAdminChanged
+        - event: RoleGranted(indexed bytes32,indexed address,indexed address)
+          handler: handleRoleGranted
+        - event: RoleRevoked(indexed bytes32,indexed address,indexed address)
+          handler: handleRoleRevoked
+      file: ./src/mapping.ts
