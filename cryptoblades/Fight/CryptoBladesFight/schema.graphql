@@ -1,0 +1,24 @@
+type FightInfo @entity {
+  id: ID!
+  owner: Bytes! # address
+  character: BigInt! # uint256
+  weapon: BigInt! # uint256
+  target: BigInt! # uint32
+  playerRoll: BigInt! # uint24
+  enemyRoll: BigInt! # uint24
+  xpGain: BigInt! # uint24
+  skillGain: BigInt! # uint256
+}
+
+type MintWeaponsInfo @entity {
+  id: ID!
+  minter: Bytes! # address
+  count: BigInt! # uint32
+  result: Boolean! # bool
+}
+
+type InGameFundsGivenInfo @entity {
+  id: ID!
+  to: Bytes! # address
+  skillAmount: BigInt! # uint256
+}
