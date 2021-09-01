@@ -1,0 +1,14 @@
+type CharacterInfo @entity {
+  id: ID!
+  owner: Bytes! # address
+  xp: Int! # uint16
+  level: Int! # uint8
+  trait: Int! # uint8
+  staminaTimestamp: BigInt! # uint64
+  head: Int! # uint16
+  arms: Int! # uint16
+  torso: Int! # uint16
+  legs: Int! # uint16
+  boots: Int! # uint16
+  race: Int! # uint16
+}

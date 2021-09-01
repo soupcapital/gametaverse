@@ -1,0 +1,45 @@
+specVersion: 0.0.3
+schema:
+  file: schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: Characters
+    network: bsc
+    source:
+      address: "0xc6f252c2cdd4087e30608a35c022ce490b58179b"
+      abi: Characters
+      startBlock: 7904001
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Approval
+        - ApprovalForAll
+        - LevelUp
+        - NewCharacter
+        - RoleAdminChanged
+        - RoleGranted
+        - RoleRevoked
+        - Transfer
+      abis:
+        - name: Characters
+          file: Characters/abis/Characters.json
+      eventHandlers:
+        - event: Approval(indexed address,indexed address,indexed uint256)
+          handler: handleApproval
+        - event: ApprovalForAll(indexed address,indexed address,bool)
+          handler: handleApprovalForAll
+        - event: LevelUp(indexed address,indexed uint256,uint16)
+          handler: handleLevelUp
+        - event: NewCharacter(indexed uint256,indexed address)
+          handler: handleNewCharacter
+        - event: RoleAdminChanged(indexed bytes32,indexed bytes32,indexed bytes32)
+          handler: handleRoleAdminChanged
+        - event: RoleGranted(indexed bytes32,indexed address,indexed address)
+          handler: handleRoleGranted
+        - event: RoleRevoked(indexed bytes32,indexed address,indexed address)
+          handler: handleRoleRevoked
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+      file: Characters/Characters.wasm
