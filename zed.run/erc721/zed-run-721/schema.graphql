@@ -1,0 +1,17 @@
+type TokenInfo @entity {
+  id: ID!
+  index: BigInt! # uint256
+  owner: Bytes! # address
+}
+
+type UserInfo @entity {
+  id: ID!
+  tokens: [BigInt!]! 
+}
+
+type Dashboard @entity {
+  id: ID!
+  transferCount: BigInt! # uint256
+  mintCount: BigInt! # uint256
+  burnCount: BigInt! # uint256
+}

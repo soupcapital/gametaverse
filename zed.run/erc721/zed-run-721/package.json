@@ -1,0 +1,16 @@
+{
+  "name": "zed-run-721",
+  "license": "UNLICENSED",
+  "scripts": {
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ cz-theng/zed-run-721",
+    "create-local": "graph create --node http://localhost:8020/ cz-theng/zed-run-721",
+    "remove-local": "graph remove --node http://localhost:8020/ cz-theng/zed-run-721",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 cz-theng/zed-run-721"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "0.21.1",
+    "@graphprotocol/graph-ts": "0.20.0"
+  }
+}
