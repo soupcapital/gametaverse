@@ -1,0 +1,16 @@
+LogFile = "gamefidata.log"
+LogPath = "./"
+LogLevel = "Info"
+PrivKey = ""
+
+[ETHConfig]
+    [[ETHConfig.Games]]
+        Name = "zed.run"
+        URL = "https://zed.run"
+        Chain = "polygon"
+        ChainID = 57
+        RPCAddr = "https://rpc-mainnet.maticvigil.com"
+        [[ETHConfig.Games.Contracts]]
+            Address = "0xA5F1Ea7DF861952863dF2e8d1312f7305dabf215"
+            StartBlock = "11515961"
+            Type = "erc721"
