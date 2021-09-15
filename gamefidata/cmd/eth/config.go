@@ -12,6 +12,7 @@ type configInfo struct {
 	LogPath   string     `toml:"LogPath"`
 	LogLevel  string     `toml:"LogLevel"`
 	PrivKey   string     `toml:"PrivKey"`
+	DBURI     string     `toml:"DBURI"`
 	ETHConfig eth.Config `toml:"ETHConfig"`
 }
 

@@ -66,7 +66,7 @@ func (gm *Game) Run() (err error) {
 					continue
 				}
 				if c.Address == trx.To().Hex() {
-					log.Info("[%s] %s send transaction to contract:%v", trx.Hash().Hex(), msg.From().Hex(), trx.To().Hex())
+					log.Info("[%s] %s send transaction to contract:%v %v:%v", trx.Hash().Hex(), msg.From().Hex(), trx.To().Hex(), blk.Header().Time, trx)
 				}
 			}
 		}

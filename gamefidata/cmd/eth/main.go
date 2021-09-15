@@ -4,12 +4,14 @@ import (
 	"fmt"
 
 	"github.com/cz-theng/czkit-go/log"
+	"github.com/gametaverse/gamefidata/db"
 	"github.com/gametaverse/gamefidata/eth"
 	"github.com/spf13/cobra"
 )
 
 var (
 	_configFile string
+	_initDB     bool
 )
 
 var CMD = &cobra.Command{
@@ -21,6 +23,9 @@ var CMD = &cobra.Command{
 
 func init() {
 	CMD.PersistentFlags().StringVarP(&_configFile, "config", "c", "", "config file path for matcha")
+
+	CMD.PersistentFlags().BoolVarP(&_initDB, "initdb", "d", false, "init database")
+
 }
 
 func _main(cmd *cobra.Command, args []string) {
@@ -49,6 +54,14 @@ func _main(cmd *cobra.Command, args []string) {
 
 	gamsOpt := eth.WithGames(config.ETHConfig.Games)
 	privKeyOpt := eth.WithPrivKey(config.PrivKey)
+
+	if _initDB {
+		err := db.CreateAndInitDB(config.DBURI)
+		if err != nil {
+			log.Error("DB error:%s", err.Error())
+		}
+		return
+	}
 
 	ethApp := eth.New()
 	err := ethApp.Init(privKeyOpt,
