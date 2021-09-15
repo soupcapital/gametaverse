@@ -33,7 +33,6 @@ func _main(cmd *cobra.Command, args []string) {
 		cmd.Usage()
 		return
 	}
-	fmt.Printf("config %v \n", config.ETHConfig)
 
 	logFile := "eth.log"
 	logPath := "./"
