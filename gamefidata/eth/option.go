@@ -1,8 +1,9 @@
 package eth
 
 type options struct {
-	PrivKey string
-	Games   []GameInfo
+	PrivKey  string
+	Games    []GameInfo
+	MongoURI string
 }
 
 func defaultOptions() options {
@@ -36,5 +37,11 @@ func WithPrivKey(key string) Option {
 func WithGames(games []GameInfo) Option {
 	return newFuncOption(func(o *options) {
 		o.Games = games
+	})
+}
+
+func WithMongoURI(URI string) Option {
+	return newFuncOption(func(o *options) {
+		o.MongoURI = URI
 	})
 }

@@ -12,6 +12,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
+const (
+	DBName               = "d_gametaverse"
+	TransactionTableName = "t_transactions"
+)
+
 // CreateAndInitDB connect mongo and create db and collection
 
 func CreateAndInitDB(URI string) (err error) {

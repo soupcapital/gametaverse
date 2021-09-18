@@ -24,7 +24,7 @@ func (w *Watcher) Init(opts ...Option) (err error) {
 
 	for _, info := range w.opts.Games {
 		g := NewGame(&info)
-		err = g.Init()
+		err = g.Init(w.opts.MongoURI)
 		if err != nil {
 			log.Error("init game error:%s", err.Error())
 			return

@@ -8,12 +8,12 @@ import (
 )
 
 type configInfo struct {
-	LogFile   string     `toml:"LogFile"`
-	LogPath   string     `toml:"LogPath"`
-	LogLevel  string     `toml:"LogLevel"`
-	PrivKey   string     `toml:"PrivKey"`
-	DBURI     string     `toml:"DBURI"`
-	ETHConfig eth.Config `toml:"ETHConfig"`
+	LogFile  string         `toml:"LogFile"`
+	LogPath  string         `toml:"LogPath"`
+	LogLevel string         `toml:"LogLevel"`
+	PrivKey  string         `toml:"PrivKey"`
+	DBURI    string         `toml:"DBURI"`
+	Games    []eth.GameInfo `toml:"Games"`
 }
 
 var config configInfo

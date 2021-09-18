@@ -4,14 +4,30 @@ LogLevel = "Info"
 PrivKey = ""
 DBURI = "mongodb+srv://gametaverse:gametaverse2021@cluster0.fnwxw.mongodb.net/d_gametaverse?retryWrites=true&w=majority"
 
-[ETHConfig]
-    [[ETHConfig.Games]]
-        Name = "zed.run"
-        URL = "https://zed.run"
-        Chain = "polygon"
-        ChainID = 137
-        RPCAddr = "https://rpc-mainnet.maticvigil.com"
-        [[ETHConfig.Games.Contracts]]
-            Address = "0xA5F1Ea7DF861952863dF2e8d1312f7305dabf215"
-            StartBlock = "19102371"
-            Type = "erc721"
+[[Games]]
+    Name = "Zed Run"
+    ID  = "zed_run"
+    URL = "https://zed.run"
+    Chain = "polygon"
+    ChainID = 137
+    RPCAddr = "https://rpc-mainnet.maticvigil.com"
+    [[Games.Contracts]]
+        Address = "0xA5F1Ea7DF861952863dF2e8d1312f7305dabf215"
+        StartBlock = 11515961
+        Type = "erc721"
+    [[Games.Contracts]]
+        Address = "0x6f9F251551f92cec48C43ba59598fd7b07387F95"
+        StartBlock = 12953151
+        Type = "game"
+    [[Games.Contracts]]
+        Address = "0x8221735b9d7c2a1E9B2D76B214ab39466750872e"
+        StartBlock = 7166140
+        Type = "game"
+    [[Games.Contracts]]
+        Address = "0xb6602D1f76A2d6a73FE839Cb3Fc4b7e0D9eC5544"
+        StartBlock = 12953057
+        Type = "game"
+    [[Games.Contracts]]
+        Address = "0xb6602D1f76A2d6a73FE839Cb3Fc4b7e0D9eC5544"
+        StartBlock = 14146331 
+        Type = "game"

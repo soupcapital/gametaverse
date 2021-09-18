@@ -52,8 +52,9 @@ func _main(cmd *cobra.Command, args []string) {
 	logPathOpt := log.WithLogPath(logPath)
 	log.Init(logNameOpt, logPathOpt)
 
-	gamsOpt := eth.WithGames(config.ETHConfig.Games)
+	gamsOpt := eth.WithGames(config.Games)
 	privKeyOpt := eth.WithPrivKey(config.PrivKey)
+	mongoURIOpt := eth.WithMongoURI(config.DBURI)
 
 	if _initDB {
 		err := db.CreateAndInitDB(config.DBURI)
@@ -66,6 +67,7 @@ func _main(cmd *cobra.Command, args []string) {
 	ethApp := eth.New()
 	err := ethApp.Init(privKeyOpt,
 		gamsOpt,
+		mongoURIOpt,
 	)
 	if err != nil {
 		fmt.Printf("Init error:%s \n", err.Error())

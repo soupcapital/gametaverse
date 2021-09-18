@@ -11,7 +11,7 @@ const (
 
 type ContractInfo struct {
 	Address    string       `toml:"Address"`
-	StartBlock string       `toml:"StartBlock"`
+	StartBlock uint64       `toml:"StartBlock"`
 	Type       ContractType `toml:"Type"`
 }
 
@@ -20,10 +20,7 @@ type GameInfo struct {
 	RPCAddr   string         `toml:"RPCAddr"`
 	ChainID   int32          `toml:"ChainID"`
 	Name      string         `toml:"Name"`
+	ID        string         `toml:"ID"`
 	URL       string         `toml:"URL"`
 	Contracts []ContractInfo `toml:"Contracts"`
-}
-
-type Config struct {
-	Games []GameInfo `toml:"Games"`
 }
