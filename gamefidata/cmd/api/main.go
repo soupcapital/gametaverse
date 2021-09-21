@@ -48,9 +48,11 @@ func _main(cmd *cobra.Command, args []string) {
 	logPathOpt := log.WithLogPath(logPath)
 	log.Init(logNameOpt, logPathOpt)
 	mongoURIOpt := api.WithMongoURI(config.DBURI)
+	listenAddrOpt := api.WithListenAddr(config.ListenAddr)
 
 	apiApp := api.NewServer()
-	err := apiApp.Init(mongoURIOpt)
+	err := apiApp.Init(mongoURIOpt,
+		listenAddrOpt)
 	if err != nil {
 		fmt.Printf("Init error:%s \n", err.Error())
 		return

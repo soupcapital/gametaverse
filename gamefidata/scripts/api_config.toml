@@ -1,0 +1,6 @@
+LogFile = "gamefidata.log"
+LogPath = "./"
+LogLevel = "Info"
+PrivKey = ""
+DBURI = "mongodb+srv://gametaverse:gametaverse2021@cluster0.fnwxw.mongodb.net/d_gametaverse?retryWrites=true&w=majority"
+ListenAddr = "127.0.0.1:8080"

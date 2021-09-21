@@ -1,8 +1,9 @@
 package api
 
 type options struct {
-	PrivKey  string
-	MongoURI string
+	PrivKey    string
+	MongoURI   string
+	ListenAddr string
 }
 
 func defaultOptions() options {
@@ -30,5 +31,11 @@ func newFuncOption(f func(*options)) *funcOption {
 func WithMongoURI(URI string) Option {
 	return newFuncOption(func(o *options) {
 		o.MongoURI = URI
+	})
+}
+
+func WithListenAddr(addr string) Option {
+	return newFuncOption(func(o *options) {
+		o.ListenAddr = addr
 	})
 }

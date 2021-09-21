@@ -7,10 +7,11 @@ import (
 )
 
 type configInfo struct {
-	LogFile  string `toml:"LogFile"`
-	LogPath  string `toml:"LogPath"`
-	LogLevel string `toml:"LogLevel"`
-	DBURI    string `toml:"DBURI"`
+	LogFile    string `toml:"LogFile"`
+	LogPath    string `toml:"LogPath"`
+	LogLevel   string `toml:"LogLevel"`
+	DBURI      string `toml:"DBURI"`
+	ListenAddr string `toml:"ListenAddr"`
 }
 
 var config configInfo
