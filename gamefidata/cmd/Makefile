@@ -1,6 +1,6 @@
 TARGET:=gamefidata
 TAG=v0.1.0
-DIST_DIR=../$(TARGET)_$(TAG)
+DIST_DIR=../dist_$(TARGET)_$(TAG)
 
 SRC_FILES := $(shell find ../ -type  f | grep "\.go"   )
 #SRC_FILES += main.go flag.go config_xml.go
@@ -26,15 +26,9 @@ mac:$(SRC_FILES)
 	GOOS=darwin GOARCH=amd64 go build -o $(TARGET).bin
 	@echo "Done building mac."
 
-dist:win mac $(TARGET)
+dist:$(TARGET)
 	rm -rf ../dist_*
 	mkdir $(DIST_DIR)
-	mkdir $(DIST_DIR)/win
-	cp $(TARGET).exe $(DIST_DIR)/win
-	cp ../scripts/config.toml $(DIST_DIR)/win
-	mkdir $(DIST_DIR)/mac
-	cp $(TARGET).bin $(DIST_DIR)/mac
-	cp ../scripts/config.toml $(DIST_DIR)/mac
 	mkdir $(DIST_DIR)/linux
 	cp $(TARGET) $(DIST_DIR)/linux
 	cp ../scripts/config.toml $(DIST_DIR)/linux

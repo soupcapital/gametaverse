@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/gametaverse/gamefidata/cmd/api"
 	"github.com/gametaverse/gamefidata/cmd/eth"
 	"github.com/spf13/cobra"
 )
@@ -22,6 +23,7 @@ func init() {
 	rootCMD.PersistentFlags().BoolVarP(&_version, "version", "v", false, "print version of gamefidata")
 
 	rootCMD.AddCommand(eth.CMD)
+	rootCMD.AddCommand(api.CMD)
 }
 
 func main() {
