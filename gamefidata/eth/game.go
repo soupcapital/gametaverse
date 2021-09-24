@@ -2,6 +2,7 @@ package eth
 
 import (
 	"context"
+	"fmt"
 	"math/big"
 	"strings"
 	"sync/atomic"
@@ -11,6 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/gametaverse/gamefidata/db"
+	"github.com/gametaverse/gamefidata/fourbyte"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	mngopts "go.mongodb.org/mongo-driver/mongo/options"
@@ -148,7 +150,14 @@ func (gm *Game) dealBlock(number uint64) (err error) {
 			}
 			if c.Address == trx.To().Hex() {
 				log.Info("[%s] %s send transaction to contract:%v %v:%v", trx.Hash().Hex(), msg.From().Hex(), trx.To().Hex(), blk.Header().Time, blk.NumberU64())
+				inputData := fmt.Sprintf("0x%x", trx.Data())
+				methodTxt := inputData[:10]
 
+				method, err := fourbyte.DB.Get(methodTxt)
+				if err != nil {
+					// TODO: retry
+					log.Error("Get fourbyte error:%s", err.Error())
+				}
 				trxModel := &db.Transaction{
 					GameID:    gm.info.ID,
 					Timestamp: blk.Header().Time,
@@ -156,7 +165,9 @@ func (gm *Game) dealBlock(number uint64) (err error) {
 					From:      msg.From().Hex(),
 					To:        trx.To().Hex(),
 					BlockNum:  blk.NumberU64(),
+					Method:    method,
 				}
+				log.Info("trxModel:%v", trxModel)
 
 				ctx, cancel := context.WithTimeout(gm.ctx, 3*time.Second)
 				defer cancel()

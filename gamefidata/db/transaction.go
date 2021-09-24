@@ -7,4 +7,5 @@ type Transaction struct {
 	From      string `json:"from" bson:"from"`
 	To        string `json:"to" bson:"to"`
 	BlockNum  uint64 `json:"blocknum" bson:"blocknum"`
+	Method    string `json:"methond" bson:"method"`
 }
