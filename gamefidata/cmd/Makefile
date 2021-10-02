@@ -1,5 +1,5 @@
 TARGET:=gamefidata
-TAG=v0.1.0
+TAG=v0.1.1
 DIST_DIR=../dist_$(TARGET)_$(TAG)
 
 SRC_FILES := $(shell find ../ -type  f | grep "\.go"   )
@@ -31,7 +31,7 @@ dist:$(TARGET)
 	mkdir $(DIST_DIR)
 	mkdir $(DIST_DIR)/linux
 	cp $(TARGET) $(DIST_DIR)/linux
-	cp ../scripts/config.toml $(DIST_DIR)/linux
+	cp -rf ../scripts $(DIST_DIR)/linux
 
 .PHONY: clean 
 clean:

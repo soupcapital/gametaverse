@@ -1,4 +1,4 @@
-package eth
+package spider
 
 type ContractType string
 
@@ -10,17 +10,12 @@ const (
 )
 
 type ContractInfo struct {
-	Address    string       `toml:"Address"`
-	StartBlock uint64       `toml:"StartBlock"`
-	Type       ContractType `toml:"Type"`
+	Address string       `toml:"Address"`
+	Type    ContractType `toml:"Type"`
 }
 
 type GameInfo struct {
-	Chain     string         `toml:"Chain"`
-	RPCAddr   string         `toml:"RPCAddr"`
-	ChainID   int32          `toml:"ChainID"`
 	Name      string         `toml:"Name"`
 	ID        string         `toml:"ID"`
-	URL       string         `toml:"URL"`
 	Contracts []ContractInfo `toml:"Contracts"`
 }

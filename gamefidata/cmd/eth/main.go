@@ -5,7 +5,7 @@ import (
 
 	"github.com/cz-theng/czkit-go/log"
 	"github.com/gametaverse/gamefidata/db"
-	"github.com/gametaverse/gamefidata/eth"
+	"github.com/gametaverse/gamefidata/spider"
 	"github.com/spf13/cobra"
 )
 
@@ -39,7 +39,7 @@ func _main(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	logFile := "eth.log"
+	logFile := "spider.log"
 	logPath := "./"
 	if len(config.LogPath) > 0 {
 		logPath = config.LogPath
@@ -52,9 +52,14 @@ func _main(cmd *cobra.Command, args []string) {
 	logPathOpt := log.WithLogPath(logPath)
 	log.Init(logNameOpt, logPathOpt)
 
-	gamsOpt := eth.WithGames(config.Games)
-	privKeyOpt := eth.WithPrivKey(config.PrivKey)
-	mongoURIOpt := eth.WithMongoURI(config.DBURI)
+	gamsOpt := spider.WithGames(config.Games)
+	privKeyOpt := spider.WithPrivKey(config.PrivKey)
+	mongoURIOpt := spider.WithMongoURI(config.DBURI)
+	chainOpt := spider.WithChain(config.Chain)
+	chainIDOpt := spider.WithChainID(config.ChainID)
+	rpcAddrOpt := spider.WithRPCAddr(config.RPCAddr)
+	bottomBlockOpt := spider.WithBottomBlock(config.BottomBlock)
+	intervalOpt := spider.WithInterval(config.Interval)
 
 	if _initDB {
 		err := db.CreateAndInitDB(config.DBURI)
@@ -64,15 +69,20 @@ func _main(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	ethApp := eth.New()
-	err := ethApp.Init(privKeyOpt,
+	spiderApp := spider.New()
+	err := spiderApp.Init(privKeyOpt,
 		gamsOpt,
+		chainOpt,
+		chainIDOpt,
+		rpcAddrOpt,
+		bottomBlockOpt,
 		mongoURIOpt,
+		intervalOpt,
 	)
 	if err != nil {
 		fmt.Printf("Init error:%s \n", err.Error())
 		return
 	}
 
-	ethApp.Run()
+	spiderApp.Run()
 }

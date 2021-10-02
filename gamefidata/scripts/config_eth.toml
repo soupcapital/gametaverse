@@ -1,0 +1,107 @@
+LogFile = "eth_gamefidata.log"
+LogPath = "./"
+LogLevel = "Info"
+PrivKey = ""
+DBURI = "mongodb+srv://cz:Solong2020@cluster1.g9w77.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+Chain = "eth"
+ChainID = 1
+RPCAddr = "https://mainnet.infura.io/v3/1f48b32a51144c9fbf5b9aa4cf3a4066"
+BottomBlock = 9193266
+Interval = 12
+
+[[Games]]
+    Name = "Axie Infinity"
+    ID  = "axie_infinity"
+    [[Games.Contracts]]
+        Address = "0xB28A3dD24036151c819c6D401f7A222D9Aa3671b"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x3d5be9a472D6b5C8D45B4b3a3bFFb80e0C52ef15"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0xf78dBC37A67018dB6F823Ec5090D7EEdD5bab6fD"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0xF5b0A3eFB8e8E4c201e2A935F110eAaF3FFEcb8d" 
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x020F9e661E512132890D259dc363ED084CF4E5a6"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0xAe8E74A21C25C22112749F7A9Cd600d4B5CB2191"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x8138df138b415A6f85F09a0995FeC0CE3B454b5D"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x60DbF8e1caC4E8d318a2C655D3136f9343ee386a"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x73d7B530d181ef957525c6FBE2Ab8F28Bf4f81Cf"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x10e304a53351B272dC415Ad049Ad06565eBDFE34"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x717EA56208B459eBeedb95C2CcEEe00b539c1205"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x9b1D9C45D9dA03997d7850b4c90285c538d77233"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0xd6115822be14782310b00557C52d28257a952Be3"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x60cE035Dc589C3fd185B224A7Ca03C598948973b"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x436fB447a25D90965B6311e931682f7279D03226"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x0c7cF86188632e16AF00415214155950684466A8"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0xEBa02cfC36C01ACbE10F6bcb909B76749E54956a"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x99ff9f4257D5b6aF1400C994174EbB56336BB79F"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0xf429b7270F7078d5561789C15D301692e32B1e48"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0xd7af30e9066Fd3B267Fe8b1c3e88192006d43486"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x71FfC95Ca3BcEbF26024f689F40006182916167f"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x425372c0ac9D559a186A08A3854E0ddEA1a00d5C"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x92bF969865c80EDa082FD5D8b4E28da4d58e1C3a"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x7a11462A2adAed5571b91e34a127E4cbF51b152c"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x2299A91Cc0BFFd8c7F71349dA8Ab03527B79724F"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x66536A95cc83ee672dA58b6D3E57F7582184d5DF"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x01AAc5236Ad205ebBe4F6819bC64eF5BeF40b71c"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x37236CD05b34Cc79d3715AF2383E96dd7443dCF1"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0xBB0E17EF65F82Ab018d8EDd776e8DD940327B28b"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0xCC8Fa225D80b9c7D42F96e9570156c65D6cAAa25"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x1A2a1c938CE3eC39b6D47113c7955bAa9DD454F2"
+        Type = ""

@@ -1,0 +1,7 @@
+LogFile = "api.log"
+LogPath = "./"
+LogLevel = "Info"
+PrivKey = ""
+DBURI = "mongodb+srv://cz:Solong2020@cluster1.g9w77.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+ListenAddr = "0.0.0.0:8081"
+
