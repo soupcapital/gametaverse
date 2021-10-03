@@ -2,6 +2,7 @@ package db
 
 const (
 	MonitorFieldName = "f_monitor"
+	MonitorTableName = "t_monitor"
 )
 
 type Monitor struct {

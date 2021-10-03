@@ -15,7 +15,6 @@ import (
 const (
 	DBName               = "d_gametaverse"
 	TransactionTableName = "t_transactions"
-	MonitorTableName     = "t_monitor"
 )
 
 // CreateAndInitDB connect mongo and create db and collection

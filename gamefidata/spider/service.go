@@ -37,6 +37,7 @@ func (s *Service) Init(opts ...Option) (err error) {
 		mongoURI:    s.opts.MongoURI,
 		backward:    false,
 		interval:    s.opts.Interval,
+		chainID:     s.opts.ChainID,
 	}
 	err = s.forward.Init()
 	if err != nil {
