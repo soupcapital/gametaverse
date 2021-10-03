@@ -35,6 +35,7 @@ type Spider struct {
 	mongoURI       string
 	rpcAddr        string
 	backward       bool
+	monitorField   string
 	monitorTbl     *mongo.Collection
 	backwardFactor int
 }
@@ -49,6 +50,7 @@ func (sp *Spider) Init() (err error) {
 		return err
 	}
 
+	sp.monitorField = db.MonitorFieldName + "_" + sp.chain
 	err = sp.initDB(sp.mongoURI)
 	if err != nil {
 		log.Error("Init mongon error:%s", err.Error())
@@ -111,7 +113,7 @@ func (sp *Spider) loadTopBlock() (err error) {
 	ctx, cancel := context.WithTimeout(sp.ctx, 5*time.Second)
 	defer cancel()
 	filter := bson.M{
-		"_id": db.MonitorFieldName + "_" + sp.chain,
+		"_id": sp.monitorField,
 	}
 	curs, err := sp.monitorTbl.Find(ctx, filter)
 	if err != nil {
@@ -129,7 +131,6 @@ func (sp *Spider) loadTopBlock() (err error) {
 
 	if sp.topBlock == 0 {
 		// No such record
-		log.Info("curs:%v current %v", curs, curs.Current)
 		sp.topBlock, err = sp.getBlockHeight()
 		if err != nil {
 			log.Error("get block height error:", err.Error())
@@ -178,7 +179,7 @@ func (sp *Spider) storeTopBlock(number uint64) (err error) {
 			"topblock": number,
 		},
 	}
-	_, err = sp.monitorTbl.UpdateByID(ctx, db.MonitorFieldName+"_"+sp.chain, update, opt)
+	_, err = sp.monitorTbl.UpdateByID(ctx, sp.monitorField, update, opt)
 	if err != nil {
 		log.Error("Update top block error: ", err.Error())
 		return
@@ -198,11 +199,13 @@ func (sp *Spider) dealGame(game *Game, blk *types.Block, trx *types.Transaction)
 	for _, c := range game.info.Contracts {
 		msg, err := trx.AsMessage(types.NewEIP155Signer(big.NewInt(int64(sp.chainID))), big.NewInt(0))
 		if err != nil {
+			log.Error("[%s]AsMessage error:%s", trx.Hash().Hex(), err.Error())
 			return nil // success when can not AsMessage
 		}
 		if trx.To() == nil {
 			return nil // done with 0x0000...000
 		}
+		//log.Info("[%s]:c[%s]  to[%s]", trx.Hash().Hex(), c.Address, trx.To().Hex())
 		if strings.EqualFold(c.Address, trx.To().Hex()) {
 			log.Info("[%s] %s send transaction to contract:%v %v:%v", trx.Hash().Hex(), msg.From().Hex(), trx.To().Hex(), blk.Header().Time, blk.NumberU64())
 			inputData := fmt.Sprintf("0x%x", trx.Data())

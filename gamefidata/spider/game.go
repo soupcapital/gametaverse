@@ -10,7 +10,7 @@ import (
 type Game struct {
 	ctx           context.Context
 	cancelFun     context.CancelFunc
-	info          *GameInfo
+	info          GameInfo
 	ethcli        *ethclient.Client
 	dbClient      *mongo.Client
 	db            *mongo.Database
@@ -21,7 +21,7 @@ type Game struct {
 	curHeighBlock uint64
 }
 
-func NewGame(info *GameInfo) *Game {
+func NewGame(info GameInfo) *Game {
 	gm := &Game{
 		info: info,
 	}

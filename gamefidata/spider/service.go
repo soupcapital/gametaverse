@@ -26,7 +26,8 @@ func (s *Service) Init(opts ...Option) (err error) {
 
 	var games []*Game
 	for _, info := range s.opts.Games {
-		g := NewGame(&info)
+
+		g := NewGame(info)
 		games = append(games, g)
 	}
 
@@ -39,6 +40,7 @@ func (s *Service) Init(opts ...Option) (err error) {
 		interval:       s.opts.Interval,
 		chainID:        s.opts.ChainID,
 		backwardFactor: s.opts.BackwardFactor,
+		chain:          s.opts.Chain,
 	}
 	err = s.forward.Init()
 	if err != nil {

@@ -42,7 +42,9 @@ func WithPrivKey(key string) Option {
 
 func WithGames(games []GameInfo) Option {
 	return newFuncOption(func(o *options) {
-		o.Games = games
+		gs := make([]GameInfo, len(games))
+		copy(gs, games)
+		o.Games = gs
 	})
 }
 
