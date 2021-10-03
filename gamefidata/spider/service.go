@@ -31,13 +31,14 @@ func (s *Service) Init(opts ...Option) (err error) {
 	}
 
 	s.forward = &Spider{
-		games:       games,
-		bottomBlock: s.opts.BottomBlock,
-		rpcAddr:     s.opts.RPCAddr,
-		mongoURI:    s.opts.MongoURI,
-		backward:    false,
-		interval:    s.opts.Interval,
-		chainID:     s.opts.ChainID,
+		games:          games,
+		bottomBlock:    s.opts.BottomBlock,
+		rpcAddr:        s.opts.RPCAddr,
+		mongoURI:       s.opts.MongoURI,
+		backward:       false,
+		interval:       s.opts.Interval,
+		chainID:        s.opts.ChainID,
+		backwardFactor: s.opts.BackwardFactor,
 	}
 	err = s.forward.Init()
 	if err != nil {
@@ -46,11 +47,15 @@ func (s *Service) Init(opts ...Option) (err error) {
 	}
 
 	s.backward = &Spider{
-		games:       games,
-		bottomBlock: s.opts.BottomBlock,
-		rpcAddr:     s.opts.RPCAddr,
-		mongoURI:    s.opts.MongoURI,
-		backward:    true,
+		games:          games,
+		bottomBlock:    s.opts.BottomBlock,
+		rpcAddr:        s.opts.RPCAddr,
+		mongoURI:       s.opts.MongoURI,
+		backward:       true,
+		interval:       s.opts.Interval,
+		chainID:        s.opts.ChainID,
+		backwardFactor: s.opts.BackwardFactor,
+		chain:          s.opts.Chain,
 	}
 	err = s.backward.Init()
 	if err != nil {

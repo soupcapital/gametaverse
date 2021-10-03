@@ -19,21 +19,24 @@ import (
 )
 
 type Spider struct {
-	ctx         context.Context
-	cancelFun   context.CancelFunc
-	interval    int
-	chainID     int
-	ethcli      *ethclient.Client
-	dbClient    *mongo.Client
-	db          *mongo.Database
-	games       []*Game
-	topBlock    uint64
-	curBlock    uint64
-	bottomBlock uint64
-	mongoURI    string
-	rpcAddr     string
-	backward    bool
-	monitorTbl  *mongo.Collection
+	ctx            context.Context
+	cancelFun      context.CancelFunc
+	interval       int
+	chainID        int
+	chain          string
+	ethcli         *ethclient.Client
+	dbClient       *mongo.Client
+	db             *mongo.Database
+	games          []*Game
+	topBlock       uint64
+	headBlock      uint64
+	tailBlock      uint64
+	bottomBlock    uint64
+	mongoURI       string
+	rpcAddr        string
+	backward       bool
+	monitorTbl     *mongo.Collection
+	backwardFactor int
 }
 
 func (sp *Spider) Init() (err error) {
@@ -91,7 +94,12 @@ func (sp *Spider) initDB(URI string) (err error) {
 }
 
 func (sp *Spider) Run() {
-	log.Info("Spider Run")
+	err := sp.loadTopBlock()
+	if err != nil {
+		log.Error("load top block:", err.Error())
+		return
+	}
+
 	if sp.backward {
 		sp.goBackward()
 	} else {
@@ -103,7 +111,7 @@ func (sp *Spider) loadTopBlock() (err error) {
 	ctx, cancel := context.WithTimeout(sp.ctx, 5*time.Second)
 	defer cancel()
 	filter := bson.M{
-		"_id": db.MonitorFieldName,
+		"_id": db.MonitorFieldName + "_" + sp.chain,
 	}
 	curs, err := sp.monitorTbl.Find(ctx, filter)
 	if err != nil {
@@ -142,24 +150,19 @@ func (sp *Spider) getBlockHeight() (height uint64, err error) {
 }
 
 func (sp *Spider) goForward() {
-
-	err := sp.loadTopBlock()
-	if err != nil {
-		log.Error("load top block:", err.Error())
-		return
-	}
-	sp.curBlock = sp.topBlock
+	log.Info("go forward")
+	sp.headBlock = sp.topBlock
 	for {
-		err := sp.dealBlock(sp.curBlock)
+		err := sp.dealBlock(sp.headBlock)
 		if err != nil {
-			log.Error("deal block[%d]:%s", sp.curBlock, err.Error())
+			log.Error("deal block[%d]:%s", sp.headBlock, err.Error())
 			time.Sleep(time.Second * time.Duration(sp.interval))
 			continue
 		}
-		if sp.curBlock%10 == 0 {
-			sp.storeTopBlock(sp.curBlock)
+		if sp.headBlock%10 == 0 {
+			sp.storeTopBlock(sp.headBlock)
 		}
-		sp.curBlock += 1
+		sp.headBlock += 1
 	}
 }
 
@@ -175,7 +178,7 @@ func (sp *Spider) storeTopBlock(number uint64) (err error) {
 			"topblock": number,
 		},
 	}
-	_, err = sp.monitorTbl.UpdateByID(ctx, db.MonitorFieldName, update, opt)
+	_, err = sp.monitorTbl.UpdateByID(ctx, db.MonitorFieldName+"_"+sp.chain, update, opt)
 	if err != nil {
 		log.Error("Update top block error: ", err.Error())
 		return
@@ -269,5 +272,26 @@ func (sp *Spider) dealBlock(number uint64) (err error) {
 }
 
 func (sp *Spider) goBackward() {
-
+	log.Info("go backward")
+	sp.tailBlock = sp.topBlock
+	log.Info("interval:%v, factor:%v", sp.interval, sp.backwardFactor)
+	interval := time.Duration(sp.interval*1.0/sp.backwardFactor) * time.Second
+	log.Info("interval is :%v", interval)
+	timer := time.NewTimer(interval)
+	for range timer.C {
+		err := sp.dealBlock(sp.tailBlock)
+		if err != nil {
+			log.Error("deal block[%d] error: %s", sp.tailBlock, err.Error())
+		} else {
+			sp.tailBlock -= 1
+		}
+		if sp.tailBlock%100 == 0 {
+			log.Info("backfoward to :%v", sp.tailBlock)
+		}
+		if sp.tailBlock <= sp.bottomBlock {
+			break
+		}
+		timer.Reset(interval)
+	}
+	log.Info("done all backfoward")
 }

@@ -2,12 +2,14 @@ LogFile = "polygon_gamefidata.log"
 LogPath = "./"
 LogLevel = "Info"
 PrivKey = ""
-DBURI = "mongodb+srv://cz:Solong2020@cluster1.g9w77.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+#DBURI = "mongodb+srv://cz:Solong2020@cluster1.g9w77.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+DBURI = "mongodb+srv://gametaverse:gametaverse2021@cluster0.fnwxw.mongodb.net/d_gametaverse?retryWrites=true&w=majority"
 Chain = "polygon"
 ChainID = 137
 RPCAddr = "https://rpc-mainnet.maticvigil.com"
-BottomBlock = 12953057
+BottomBlock = 1000000
 Interval = 2
+BackwardFactor = 3
 
 [[Games]]
     Name = "Zed Run"
@@ -27,4 +29,84 @@ Interval = 2
     [[Games.Contracts]]
         Address = "0xb6602D1f76A2d6a73FE839Cb3Fc4b7e0D9eC5544"
         Type = "game"
+
+
+[[Games]]
+    Name = "REVV Racing"
+    ID  = "revv_racing"
+    [[Games.Contracts]]
+        Address = "0x51Ac4A13054D5d7e1FA795439821484177e7E828"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x069895FdA566d0364ABEc6e290BeE3D565c55666"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x70c006878a5A50Ed185ac4C87d837633923De296"
+        Type = ""
+
+[[Games]]
+    Name = "Cometh"
+    ID  = "cometh"
+    [[Games.Contracts]]
+	Address = "0x85BC2E8Aaad5dBc347db49Ea45D95486279eD918"
+	Type = ""
+    [[Games.Contracts]]
+        Address = "0x9C78EE466D6Cb57A4d01Fd887D2b5dFb2D46288f"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0xe07EaFe9fFc1363b6c4C466837a08AceD54f9dF9"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x9000c901bc55cB44C9a2c84cF96e8E0bD317760d"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x78f3b8403A85A4c27E6a635Ec012De3eB8f1a072"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0xA7f7f2122d1758696B7c25191EC095AdC35fE4E1"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0xacDd0fcC250C2eE82830Ad3c5680e00329dA8357"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x714df4Bb3990fe0D7f0776e58360f051D258ED6a"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x8C4572FE95c6AA84567489b577cB36A4CCd5851C"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x07D6cd6379e62e682AE24d2F798fC927CE7C5E74"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0xEC02799CF8EE0e975Ad4f2054Bc9E98eDB250702"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x57D0a0199CeE2Ae7Eb0f5cF4bCB892ad58085560"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0xbCa30d6d18F0c5aC15e0bE5C9B389d2Df207D19E"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x63c9F20A07d7E9111F304b6739e66833F6C4d3e1"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x23556DC03D2D1C0875cd2eaE9082eD5cBDBA6F47"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0xc7aD82C1Ca8f122765B6A2454CF5acb1b6b83C39"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x74869cCf1c0Aa07793492A424f8026CBfb9FF741"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x3C92Fd7202A87a85F6f6FED174B6Af5D7ff9b040"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0xB2a80D927C3eB227dE880DAD0EB957BFc0594566"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0xee8F8F05eea48AE1F2b03a060D44E63Ab73d064a"
+        Type = ""
+
+
 

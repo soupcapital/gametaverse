@@ -1,14 +1,15 @@
 package spider
 
 type options struct {
-	PrivKey     string
-	Games       []GameInfo
-	MongoURI    string
-	Chain       string
-	ChainID     int
-	RPCAddr     string
-	BottomBlock uint64
-	Interval    int
+	PrivKey        string
+	Games          []GameInfo
+	MongoURI       string
+	Chain          string
+	ChainID        int
+	RPCAddr        string
+	BottomBlock    uint64
+	Interval       int
+	BackwardFactor int
 }
 
 func defaultOptions() options {
@@ -66,6 +67,12 @@ func WithChainID(ID int) Option {
 func WithRPCAddr(Addr string) Option {
 	return newFuncOption(func(o *options) {
 		o.RPCAddr = Addr
+	})
+}
+
+func WithBackwardFactor(factor int) Option {
+	return newFuncOption(func(o *options) {
+		o.BackwardFactor = factor
 	})
 }
 

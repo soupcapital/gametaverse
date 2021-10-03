@@ -8,17 +8,18 @@ import (
 )
 
 type configInfo struct {
-	LogFile     string            `toml:"LogFile"`
-	LogPath     string            `toml:"LogPath"`
-	LogLevel    string            `toml:"LogLevel"`
-	PrivKey     string            `toml:"PrivKey"`
-	DBURI       string            `toml:"DBURI"`
-	Games       []spider.GameInfo `toml:"Games"`
-	Chain       string            `toml:"Chain"`
-	ChainID     int               `toml:"ChainID"`
-	RPCAddr     string            `toml:"RPCAddr"`
-	BottomBlock uint64            `toml:"BottomBlock"`
-	Interval    int               `toml:"Interval"`
+	LogFile        string            `toml:"LogFile"`
+	LogPath        string            `toml:"LogPath"`
+	LogLevel       string            `toml:"LogLevel"`
+	PrivKey        string            `toml:"PrivKey"`
+	DBURI          string            `toml:"DBURI"`
+	Games          []spider.GameInfo `toml:"Games"`
+	Chain          string            `toml:"Chain"`
+	ChainID        int               `toml:"ChainID"`
+	RPCAddr        string            `toml:"RPCAddr"`
+	BottomBlock    uint64            `toml:"BottomBlock"`
+	Interval       int               `toml:"Interval"`
+	BackwardFactor int               `toml:"BackwardFactor"`
 }
 
 var config configInfo

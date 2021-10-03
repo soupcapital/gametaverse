@@ -1,0 +1,133 @@
+LogFile = "bsc_gamefidata.log"
+LogPath = "./"
+LogLevel = "Info"
+PrivKey = ""
+#DBURI = "mongodb+srv://cz:Solong2020@cluster1.g9w77.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+DBURI = "mongodb+srv://gametaverse:gametaverse2021@cluster0.fnwxw.mongodb.net/d_gametaverse?retryWrites=true&w=majority"
+Chain = "bsc"
+ChainID = 56
+RPCAddr = "https://bsc-dataseed.binance.org"
+BottomBlock = 1000000
+Interval = 3
+BackwardFactor = 3
+
+[[Games]]
+    Name = "Crypto Blades"
+    ID  = "crypto_blades"
+    [[Games.Contracts]]
+        Address = "0x154A9F9cbd3449AD22FDaE23044319D6eF2a1Fab"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x39Bea96e13453Ed52A734B6ACEeD4c41F57B2271"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0xc6f252c2CdD4087e30608A35c022ce490B58179b"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x7E091b0a220356B157131c831258A9C98aC8031A"
+        Type = ""
+
+[[Games]]
+    Name = "Crypto Zoon"
+    ID  = "crypto_zoon"
+    [[Games.Contracts]]
+        Address = "0x9D173E6c594f479B4d47001F8E6A95A7aDDa42bC"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x9c3b4852636e006f3435a9a291c30f8c339421b7"
+        Type = ""
+
+[[Games]]
+    Name = "MOBOX"
+    ID  = "mobox"
+    [[Games.Contracts]]
+        Address = "0xdaD49e63F97c967955975490a432de3796C699E6"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0xB4986E78eBBC09BAdf2D1c200c6300aACE6C2d4f"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x63E760960333931fC75eABb0860a00991F21D91F"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x4Cad08CA7a8bab80CEDa046De39c042A9Cc59C3F"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0xc9c71DB791FAe54f19002341E988dd56d4B5cf42"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0xd03Fd9197C55ECd06cB6fbd8B5E554c36674126e"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0xF03EAfEF2dD2061Ec2d1f541b4700c66793431c5"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x9377d04f61AF8AB51BBC4a03495e3dCaacC59249"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0xD5576f705566Bd6a4adA6440Df980D8f7fcCB55a"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x1bB3D32eD55F19483DeC3fDe05Add11454C09b76"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0xBc480cBC625A61B66f99af65767B7C2adaBc287C"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x425f837Bdce5BEB0B09E4e45F06Eb8EFB4Fd9BE0"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x592E9ef115096F0121202B2a5e30CD5AA228d117"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x3bD6a582698ECCf6822dB08141818A1a8512c68D"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x1da9b6e37f006dD349089dEA21cb8261391593D5"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x5Cc9AF3DEaAc89764eb98B0513E8d938D90B073D"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x5Fb3035d07E5d0E1D8Efbc5aE5b7546C15173035"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x9442dAD1dF11C858A900f55291Dc1CF645FF66dF"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x918530a73C03E7E7024e9f8325618869A32cD8a1"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0xE90DacE4335a3C28cDE458A468B89dEf0C8904EB"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0xe8eD0BF5EFEF4D0F4FE3C7AF8F48DAED5E756c84"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x7cd4719482fEdF15a58757734A88d95aC61F4cBa"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x5ce192da02391eB9755E7EBa10878A37F206Fd58"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x10cDB026C52A9713B62a0Cd9DbDC9316ed0B0Ca4"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0xDA5d712c4e6AA0067A5227F34D97AAFCF789113b"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0xed8711fEff83b446158259981FD97645856e82A5"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0xAe5F14A9aed2b56121fb964A84a9DFf114296563"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x819e97C7Da2C784403B790121304DB9E6a038dE9"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x689B1fcCF5B8E6f64B9F0e10bE1BfbA3039430Ba"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x7B4e53126316DB92e0fAefD1886B4bF988c627C9"
+        Type = ""
+

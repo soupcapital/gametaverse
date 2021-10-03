@@ -60,6 +60,7 @@ func _main(cmd *cobra.Command, args []string) {
 	rpcAddrOpt := spider.WithRPCAddr(config.RPCAddr)
 	bottomBlockOpt := spider.WithBottomBlock(config.BottomBlock)
 	intervalOpt := spider.WithInterval(config.Interval)
+	backwardFactorOpt := spider.WithBackwardFactor(config.BackwardFactor)
 
 	if _initDB {
 		err := db.CreateAndInitDB(config.DBURI)
@@ -78,6 +79,7 @@ func _main(cmd *cobra.Command, args []string) {
 		bottomBlockOpt,
 		mongoURIOpt,
 		intervalOpt,
+		backwardFactorOpt,
 	)
 	if err != nil {
 		fmt.Printf("Init error:%s \n", err.Error())

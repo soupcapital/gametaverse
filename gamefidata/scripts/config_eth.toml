@@ -9,6 +9,7 @@ ChainID = 1
 RPCAddr = "https://mainnet.infura.io/v3/1f48b32a51144c9fbf5b9aa4cf3a4066"
 BottomBlock = 9193266
 Interval = 12
+BackwardFactor = 5
 
 [[Games]]
     Name = "Axie Infinity"
@@ -105,4 +106,20 @@ Interval = 12
         Type = ""
     [[Games.Contracts]]
         Address = "0x1A2a1c938CE3eC39b6D47113c7955bAa9DD454F2"
+        Type = ""
+
+[[Games]]
+    Name = "Illuvium"
+    ID  = "illuvium"
+    [[Games.Contracts]]
+        Address = "0x4222b2a98dAa443C6a0a761300d7d6bfD9161E52"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x9898d72c2901D09E72A426d1c24b6ab90eB100e7"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x8B4d8443a0229349A9892D4F7CbE89eF5f843F72"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "0x25121EDDf746c884ddE4619b573A7B10714E2a36"
         Type = ""
