@@ -197,9 +197,9 @@ func (sp *Spider) dealGame(game *Game, blk *types.Block, trx *types.Transaction)
 	}
 
 	for _, c := range game.info.Contracts {
-		msg, err := trx.AsMessage(types.NewEIP155Signer(big.NewInt(int64(sp.chainID))), big.NewInt(0))
+		msg, err := trx.AsMessage(types.NewLondonSigner(big.NewInt(int64(sp.chainID))), big.NewInt(0))
 		if err != nil {
-			log.Error("[%s]AsMessage error:%s", trx.Hash().Hex(), err.Error())
+			log.Error("[%s:%v]AsMessage error:%s", trx.Hash().Hex(), trx.Type(), err.Error())
 			return nil // success when can not AsMessage
 		}
 		if trx.To() == nil {

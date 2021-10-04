@@ -20,74 +20,112 @@ func (hdl *TrxHandler) Post(w http.ResponseWriter, r *http.Request) {
 
 //Get is GET
 func (hdl *TrxHandler) Get(w http.ResponseWriter, r *http.Request) {
-	log.Info("deal with dau")
+	log.Info("deal with trx")
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	encoder := json.NewEncoder(w)
 	encoder.SetEscapeHTML(false)
-
 	game := r.FormValue("gameid")
-	date := r.FormValue("date")
-
-	// var err error
-	// var startTS uint64
-	// var amount float64
+	start := r.FormValue("start")
+	end := r.FormValue("end")
 
 	if len(game) == 0 ||
-		len(date) == 0 {
+		len(end) == 0 ||
+		len(start) == 0 {
 		encoder.Encode(ErrParam)
 		return
 	}
 
-	startTime, _ := time.Parse(cDateFormat, date)
-	log.Info("t is %d", startTime.Unix())
+	startTime, err := time.Parse(cDateFormat, start)
+	if err != nil {
+		encoder.Encode(ErrParam)
+		return
+	}
+	startTS := startTime.Unix()
+
+	endTime, err := time.Parse(cDateFormat, end)
+	if err != nil {
+		encoder.Encode(ErrParam)
+		return
+	}
+	endTS := endTime.Unix()
+
+	log.Info("startDate:%v endDate:%v", startTS, endTS)
+
+	if startTS > endTS {
+		encoder.Encode(ErrParam)
+		return
+	}
+
+	if startTS%cSecondofDay != 0 ||
+		endTS%cSecondofDay != 0 {
+		encoder.Encode(ErrTimestamp)
+		return
+	}
 
 	tableName := "t_" + game
 	log.Info("tableName:%s", tableName)
 	gameTbl := hdl.server.db.Collection(tableName)
 
-	ctx, _ := context.WithTimeout(hdl.server.ctx, 10*time.Second)
+	ctx, cancel := context.WithTimeout(hdl.server.ctx, 10*time.Second)
+	defer cancel()
 	record := gameTbl.FindOne(ctx, bson.M{"timestamp": bson.M{"$gt": 0}})
 	if record == nil {
 		encoder.Encode(ErrGame)
 		return
 	}
-	matchStage1 := bson.M{
-		"$match": bson.M{
-			"timestamp": bson.M{"$gt": startTime.Unix()},
-		},
-	}
-	matchStage2 := bson.M{
-		"$match": bson.M{
-			"timestamp": bson.M{"$lt": startTime.Unix() + cSecondofDay},
-		},
-	}
 
-	pipeline := []bson.M{}
-	pipeline = append(pipeline, matchStage1, matchStage2)
-
-	curs, err := gameTbl.Aggregate(ctx, pipeline)
-	if err != nil {
-		encoder.Encode(ErrDB)
-		log.Error("Aggregate error: %s", err.Error())
-		return
+	type DayInfo struct {
+		Date  int64 `json:"date"`
+		Count int   `json:"count"`
 	}
-	var transactions []bson.M
-	err = curs.All(ctx, &transactions)
-	if err != nil {
-		encoder.Encode(ErrDB)
-		log.Error(" curs.All error: %s", err.Error())
-		return
-	}
-	log.Info("All:%d", len(transactions))
+	var days []DayInfo
+	theDay := startTS
+	for {
+		if theDay > endTS {
+			break
+		}
+		matchStage1 := bson.M{
+			"$match": bson.M{
+				"timestamp": bson.M{"$gt": theDay},
+			},
+		}
+		matchStage2 := bson.M{
+			"$match": bson.M{
+				"timestamp": bson.M{"$lt": theDay + cSecondofDay},
+			},
+		}
 
+		pipeline := []bson.M{}
+		pipeline = append(pipeline, matchStage1, matchStage2)
+
+		curs, err := gameTbl.Aggregate(ctx, pipeline)
+		if err != nil {
+			encoder.Encode(ErrDB)
+			log.Error("Aggregate error: %s", err.Error())
+			return
+		}
+		var transactions []bson.M
+		err = curs.All(ctx, &transactions)
+		if err != nil {
+			encoder.Encode(ErrDB)
+			log.Error(" curs.All error: %s", err.Error())
+			return
+		}
+		log.Info("All:%d for date:%d", len(transactions), theDay)
+		days = append(days, DayInfo{
+			Count: len(transactions),
+			Date:  theDay,
+		})
+		theDay += cSecondofDay
+	}
 	type Response struct {
-		Game     string `json:"game"`
-		TrxCount int    `json:"trx_count"`
+		Game string    `json:"game"`
+		Data []DayInfo `json:"data"`
 	}
 	rsp := Response{
-		Game:     game,
-		TrxCount: len(transactions),
+		Game: game,
+		Data: days,
 	}
 	encoder.Encode(rsp)
 }
