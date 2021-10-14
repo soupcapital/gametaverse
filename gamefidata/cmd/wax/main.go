@@ -1,4 +1,4 @@
-package eth
+package wax
 
 import (
 	"fmt"
@@ -15,9 +15,9 @@ var (
 )
 
 var CMD = &cobra.Command{
-	Use:   "eth",
-	Short: "eth project",
-	Long:  `eth project`,
+	Use:   "wax",
+	Short: "wax project",
+	Long:  `wax project`,
 	Run:   _main,
 }
 

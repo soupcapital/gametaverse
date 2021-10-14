@@ -5,6 +5,7 @@ import (
 
 	"github.com/gametaverse/gamefidata/cmd/api"
 	"github.com/gametaverse/gamefidata/cmd/eth"
+	"github.com/gametaverse/gamefidata/cmd/wax"
 	"github.com/spf13/cobra"
 )
 
@@ -24,6 +25,7 @@ func init() {
 
 	rootCMD.AddCommand(eth.CMD)
 	rootCMD.AddCommand(api.CMD)
+	rootCMD.AddCommand(wax.CMD)
 }
 
 func main() {

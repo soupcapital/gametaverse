@@ -1,15 +1,15 @@
 package spider
 
 type options struct {
-	PrivKey        string
-	Games          []GameInfo
-	MongoURI       string
-	Chain          string
-	ChainID        int
-	RPCAddr        string
-	BottomBlock    uint64
-	Interval       int
-	BackwardFactor int
+	PrivKey          string
+	Games            []GameInfo
+	MongoURI         string
+	Chain            string
+	ChainID          int
+	RPCAddr          string
+	BottomBlock      uint64
+	ForwardInterval  float32
+	BackwardInterval float32
 }
 
 func defaultOptions() options {
@@ -72,9 +72,9 @@ func WithRPCAddr(Addr string) Option {
 	})
 }
 
-func WithBackwardFactor(factor int) Option {
+func WithBackwardInterval(interval float32) Option {
 	return newFuncOption(func(o *options) {
-		o.BackwardFactor = factor
+		o.BackwardInterval = interval
 	})
 }
 
@@ -84,8 +84,8 @@ func WithBottomBlock(block uint64) Option {
 	})
 }
 
-func WithInterval(interval int) Option {
+func WithForwardInterval(interval float32) Option {
 	return newFuncOption(func(o *options) {
-		o.Interval = interval
+		o.ForwardInterval = interval
 	})
 }

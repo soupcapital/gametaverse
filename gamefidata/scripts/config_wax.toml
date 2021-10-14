@@ -1,0 +1,25 @@
+LogFile = "wax_gamefidata.log"
+LogPath = "./"
+LogLevel = "Info"
+PrivKey = ""
+DBURI = "mongodb+srv://cz:Solong2020@cluster1.g9w77.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+#DBURI = "mongodb+srv://gametaverse:gametaverse2021@cluster0.fnwxw.mongodb.net/d_gametaverse?retryWrites=true&w=majority"
+Chain = "wax"
+ChainID = 1
+RPCAddr = "https://api.wax.alohaeos.com"
+#RPCAddr = "https://api.waxsweden.org"
+#RPCAddr = "https://wax.pink.gg"
+#RPCAddr = "https://wax.dapplica.io"
+BottomBlock = 90000000
+ForwardInterval = 0.0
+BackwardInterval = 1.0
+
+[[Games]]
+    Name = "Farmers World"
+    ID  = "farmers_world"
+    [[Games.Contracts]]
+        Address = "farmersworld"
+        Type = ""
+    [[Games.Contracts]]
+        Address = "farmerstoken"
+        Type = ""

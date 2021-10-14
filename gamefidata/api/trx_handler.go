@@ -8,6 +8,7 @@ import (
 
 	"github.com/cz-theng/czkit-go/log"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type TrxHandler struct {
@@ -85,47 +86,65 @@ func (hdl *TrxHandler) Get(w http.ResponseWriter, r *http.Request) {
 		if theDay > endTS {
 			break
 		}
-		matchStage1 := bson.M{
-			"$match": bson.M{
-				"timestamp": bson.M{"$gt": theDay},
-			},
-		}
-		matchStage2 := bson.M{
-			"$match": bson.M{
-				"timestamp": bson.M{"$lt": theDay + cSecondofDay},
-			},
-		}
-
-		pipeline := []bson.M{}
-		pipeline = append(pipeline, matchStage1, matchStage2)
-
-		curs, err := gameTbl.Aggregate(ctx, pipeline)
+		count, err := hdl.trxByDate(ctx, gameTbl, theDay, theDay+cSecondofDay)
 		if err != nil {
 			encoder.Encode(ErrDB)
-			log.Error("Aggregate error: %s", err.Error())
+			log.Error("trxByDate: %s", err.Error())
 			return
 		}
-		var transactions []bson.M
-		err = curs.All(ctx, &transactions)
-		if err != nil {
-			encoder.Encode(ErrDB)
-			log.Error(" curs.All error: %s", err.Error())
-			return
-		}
-		log.Info("All:%d for date:%d", len(transactions), theDay)
 		days = append(days, DayInfo{
-			Count: len(transactions),
+			Count: count,
 			Date:  theDay,
 		})
 		theDay += cSecondofDay
 	}
+
+	count, err := hdl.trxByDate(ctx, gameTbl, startTS, endTS+cSecondofDay)
+	if err != nil {
+		encoder.Encode(ErrDB)
+		log.Error("trxByDate: %s", err.Error())
+		return
+	}
+
 	type Response struct {
-		Game string    `json:"game"`
-		Data []DayInfo `json:"data"`
+		Game  string    `json:"game"`
+		Data  []DayInfo `json:"data"`
+		Total int       `json:"total"`
 	}
 	rsp := Response{
-		Game: game,
-		Data: days,
+		Game:  game,
+		Data:  days,
+		Total: count,
 	}
 	encoder.Encode(rsp)
+}
+
+func (hdl *TrxHandler) trxByDate(ctx context.Context, gameTbl *mongo.Collection, start, end int64) (count int, err error) {
+	matchStage1 := bson.M{
+		"$match": bson.M{
+			"timestamp": bson.M{"$gt": start},
+		},
+	}
+	matchStage2 := bson.M{
+		"$match": bson.M{
+			"timestamp": bson.M{"$lt": end},
+		},
+	}
+
+	pipeline := []bson.M{}
+	pipeline = append(pipeline, matchStage1, matchStage2)
+
+	curs, err := gameTbl.Aggregate(ctx, pipeline)
+	if err != nil {
+		log.Error("Aggregate error: %s", err.Error())
+		return
+	}
+	var transactions []bson.M
+	err = curs.All(ctx, &transactions)
+	if err != nil {
+		log.Error(" curs.All error: %s", err.Error())
+		return
+	}
+	log.Info("All:%d for date:%d", len(transactions), start)
+	return len(transactions), nil
 }

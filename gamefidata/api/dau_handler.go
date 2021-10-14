@@ -8,6 +8,7 @@ import (
 
 	"github.com/cz-theng/czkit-go/log"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type DAUHandler struct {
@@ -75,62 +76,82 @@ func (hdl *DAUHandler) Get(w http.ResponseWriter, r *http.Request) {
 		encoder.Encode(ErrGame)
 		return
 	}
-	groupStage := bson.M{
-		"$group": bson.M{"_id": "$from"},
-	}
-	theDay := startTS
 
+	theDay := startTS
 	type DayInfo struct {
 		Date int64 `json:"date"`
 		DAU  int   `json:"dau"`
 	}
+
 	var days []DayInfo
 	for {
 		if theDay > endTS {
 			break
 		}
-		matchStage1 := bson.M{
-			"$match": bson.M{
-				"timestamp": bson.M{"$gt": theDay},
-			},
-		}
-		matchStage2 := bson.M{
-			"$match": bson.M{
-				"timestamp": bson.M{"$lt": theDay + cSecondofDay},
-			},
-		}
-
-		pipeline := []bson.M{}
-		pipeline = append(pipeline, matchStage1, matchStage2, groupStage)
-
-		curs, err := gameTbl.Aggregate(ctx, pipeline)
+		dau, err := hdl.dauByDate(ctx, gameTbl, theDay, theDay+cSecondofDay)
 		if err != nil {
 			encoder.Encode(ErrDB)
-			log.Error("Aggregate error: %s", err.Error())
+			log.Error("dauByDate: %s", err.Error())
 			return
 		}
-		var transactions []bson.M
-		err = curs.All(ctx, &transactions)
-		if err != nil {
-			encoder.Encode(ErrDB)
-			log.Error(" curs.All error: %s", err.Error())
-			return
-		}
-		log.Info("All:%d for %d", len(transactions), theDay)
 		days = append(days, DayInfo{
-			DAU:  len(transactions),
+			DAU:  dau,
 			Date: theDay,
 		})
 		theDay += cSecondofDay
 	}
 
-	type Response struct {
-		Game string    `json:"game"`
-		Data []DayInfo `json:"data"`
+	dau, err := hdl.dauByDate(ctx, gameTbl, startTS, endTS+cSecondofDay)
+	if err != nil {
+		encoder.Encode(ErrDB)
+		log.Error("dauByDate: %s", err.Error())
+		return
 	}
+
+	type Response struct {
+		Game  string    `json:"game"`
+		Total int       `json:"total"`
+		Data  []DayInfo `json:"data"`
+	}
+
 	rsp := Response{
-		Game: game,
-		Data: days,
+		Game:  game,
+		Data:  days,
+		Total: dau,
 	}
 	encoder.Encode(rsp)
+}
+
+func (hdl *DAUHandler) dauByDate(ctx context.Context, gameTbl *mongo.Collection, start, end int64) (dau int, err error) {
+	groupStage := bson.M{
+		"$group": bson.M{"_id": "$from"},
+	}
+
+	matchStage1 := bson.M{
+		"$match": bson.M{
+			"timestamp": bson.M{"$gt": start},
+		},
+	}
+	matchStage2 := bson.M{
+		"$match": bson.M{
+			"timestamp": bson.M{"$lt": end},
+		},
+	}
+
+	pipeline := []bson.M{}
+	pipeline = append(pipeline, matchStage1, matchStage2, groupStage)
+
+	curs, err := gameTbl.Aggregate(ctx, pipeline)
+	if err != nil {
+		log.Error("Aggregate error: %s", err.Error())
+		return
+	}
+	var transactions []bson.M
+	err = curs.All(ctx, &transactions)
+	if err != nil {
+		log.Error(" curs.All error: %s", err.Error())
+		return
+	}
+	log.Info("All:%d for %d", len(transactions), start)
+	return len(transactions), nil
 }
