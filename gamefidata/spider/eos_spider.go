@@ -2,7 +2,9 @@ package spider
 
 import (
 	"context"
+	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/cz-theng/czkit-go/log"
@@ -145,20 +147,60 @@ func (sp *EOSSpider) getBlockHeight() (height uint32, err error) {
 	return
 }
 
+func (sp *EOSSpider) getBlocks(start uint32, count uint32) (blocks []*eos.BlockResp, err error) {
+	var wg sync.WaitGroup
+	rstChan := make(chan *eos.BlockResp, count)
+	for i := uint32(0); i < count; i++ {
+		wg.Add(1)
+		go func(i uint32) {
+			blk, err := sp.eoscli.GetBlockByNum(sp.ctx, i)
+			if err != nil {
+				log.Error("get block error:%s", err.Error())
+			}
+			rstChan <- blk
+			wg.Done()
+		}(start + i)
+	}
+	wg.Wait()
+	for blk := range rstChan {
+		if blk == nil {
+			return blocks, ErrGetBlock
+		}
+		blocks = append(blocks, blk)
+		if len(blocks) == int(count) {
+			break
+		}
+	}
+	return blocks, nil
+}
+
 func (sp *EOSSpider) goForward() {
 	log.Info("go forward")
 	sp.headBlock = sp.topBlock
+	const count = 5
+	i := 0
 	for {
-		err := sp.dealBlock(sp.headBlock)
+		s1 := time.Now()
+		blocks, err := sp.getBlocks(sp.headBlock, count)
 		if err != nil {
-			log.Error("deal block[%d]:%s", sp.headBlock, err.Error())
+			log.Error("get %d block[%d]:%s", count, sp.headBlock, err.Error())
 			time.Sleep(time.Duration(sp.forwardInterval * float32(time.Second)))
 			continue
 		}
-		if sp.headBlock%10 == 0 {
+		err = sp.dealBlocks(blocks)
+		if err != nil {
+			log.Error("deal %d block[%d]:%s", count, sp.headBlock, err.Error())
+			time.Sleep(time.Duration(sp.forwardInterval * float32(time.Second)))
+			continue
+		}
+		if i%(10/count) == 0 {
 			sp.storeTopBlock(sp.headBlock)
 		}
-		sp.headBlock += 1
+		sp.headBlock += count
+		i++
+		s2 := time.Now()
+		d := s2.Sub(s1)
+		log.Info("%d blocks cost d is %v", count, d)
 	}
 }
 
@@ -179,17 +221,11 @@ func (sp *EOSSpider) storeTopBlock(number uint32) (err error) {
 		log.Error("Update top block error: ", err.Error())
 		return
 	}
-	log.Info("Update top block:%d ", number)
+	log.Info("Update top block to:%d ", number)
 	return
 }
 
-func (sp *EOSSpider) dealGame(game *Game, blk *eos.BlockResp, trx *eos.TransactionReceipt) (err error) {
-
-	gameTbl := sp.db.Collection("t_" + game.info.ID)
-	if gameTbl == nil {
-		log.Error("create collection for game[%s] error:%s", game.info.ID, err.Error())
-		return
-	}
+func (sp *EOSSpider) dealGame4Trx(game *Game, blk *eos.BlockResp, trx *eos.TransactionReceipt) (trxModels []interface{}, err error) {
 
 	for _, c := range game.info.Contracts {
 		if trx.TransactionReceiptHeader.Status != eos.TransactionStatusExecuted {
@@ -213,86 +249,97 @@ func (sp *EOSSpider) dealGame(game *Game, blk *eos.BlockResp, trx *eos.Transacti
 			for j, auth := range act.Authorization {
 				if auth.Permission.String() == "active" {
 					from = auth.Actor.String()
-
-					log.Info("trx[%v_%d_%d]:context:%v:method:%v:from:%v", trx.Transaction.ID, i, j, cName, method, from)
+					trxid := fmt.Sprintf("%s_%d_%d", trx.Transaction.ID.String(), i, j)
+					//log.Info("trx[%v_%d_%d]:context:%v:method:%v:from:%v", trx.Transaction.ID, i, j, cName, method, from)
 
 					trxModel := &db.Transaction{
 						GameID:    game.info.ID,
 						Timestamp: uint64(blk.Timestamp.Unix()),
-						ID:        trx.Transaction.ID.String(),
+						ID:        trxid,
 						From:      from,
 						To:        cName.String(),
 						BlockNum:  uint64(blk.BlockNum),
 						Method:    method.String(),
 					}
 					log.Info("trxModel:%v", trxModel)
-
-					ctx, cancel := context.WithTimeout(sp.ctx, 3*time.Second)
-					defer cancel()
-
-					opt := mngopts.FindOneAndReplace()
-					opt.SetUpsert(true)
-
-					filter := bson.M{
-						"_id": trxModel.ID,
-					}
-
-					rst := gameTbl.FindOneAndReplace(ctx, filter, trxModel, opt)
-					if rst.Err() != nil {
-						if !strings.Contains(rst.Err().Error(), "no documents in result") {
-							log.Error("update transaction[%s] error: %s", trxModel.ID, rst.Err().Error())
-							return err // return to show error
-						}
-					}
-
+					trxModels = append(trxModels, trxModel)
 				}
 			}
-
 		}
-
 	}
-	return nil
+	return
 }
 
-func (sp *EOSSpider) dealBlock(number uint32) (err error) {
-	blk, err := sp.eoscli.GetBlockByNum(sp.ctx, number)
-	if err != nil {
-		//log.Error("get block[%d] error:%s", number, err.Error())
-		if strings.Contains(err.Error(), "block header indicates no transactions") {
-			return nil
+func (sp *EOSSpider) dealBlocks(blocks []*eos.BlockResp) (err error) {
+	for _, g := range sp.games {
+		gameTbl := sp.db.Collection("t_" + g.info.ID)
+		if gameTbl == nil {
+			log.Error("create collection for game[%s] error:%s", g.info.ID, err.Error())
+			return
 		}
-		return
-	}
-	for _, trx := range blk.Transactions {
-		for _, g := range sp.games {
-			err = sp.dealGame(g, blk, &trx)
-			if err != nil {
-				log.Error("deal game error: %s", err.Error())
-				return err // for show errors
+
+		var trxModels []interface{}
+		for _, blk := range blocks {
+			for _, trx := range blk.Transactions {
+				models, err := sp.dealGame4Trx(g, blk, &trx)
+				if err != nil {
+					log.Error("deal game error: %s", err.Error())
+					return err // for show errors
+				}
+				if len(models) > 0 {
+					trxModels = append(trxModels, models...)
+				}
 			}
 		}
+
+		if len(trxModels) == 0 {
+			continue
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+		defer cancel()
+		rst, err := gameTbl.InsertMany(ctx, trxModels)
+		if err != nil {
+			if !strings.Contains(err.Error(), "duplicate key error collection") {
+				log.Error("InsertMany  error: %s", err.Error())
+				return err // return to show error
+			}
+		}
+		_ = rst
+		//log.Info("rst:%v ", len(rst.InsertedIDs))
 	}
 	return nil
 }
 
 func (sp *EOSSpider) goBackward() {
 	sp.tailBlock = sp.topBlock
+	log.Info("go backforward from :%v", sp.tailBlock)
+	const count = 3
 	interval := time.Duration(sp.backwardInterval * float32(time.Second))
-	timer := time.NewTimer(interval)
-	for range timer.C {
-		err := sp.dealBlock(sp.tailBlock)
+	log.Info("interval:%v", interval)
+	i := 0
+	for {
+		blocks, err := sp.getBlocks(sp.tailBlock-count, count)
 		if err != nil {
-			log.Error("deal block[%d] error: %s", sp.tailBlock, err.Error())
-		} else {
-			sp.tailBlock -= 1
+			log.Error("get %d block[%d]:%s", count, sp.headBlock, err.Error())
+			time.Sleep(time.Duration(sp.forwardInterval * float32(time.Second)))
+			continue
 		}
-		if sp.tailBlock%100 == 0 {
-			log.Info("backfoward to :%v", sp.tailBlock)
+		err = sp.dealBlocks(blocks)
+		if err != nil {
+			log.Error("deal %d block[%d]:%s", count, sp.tailBlock, err.Error())
+			time.Sleep(time.Duration(sp.forwardInterval * float32(time.Second)))
+			continue
 		}
+		if i%(10/count) == 0 {
+			log.Info("backfoward to:%v", sp.tailBlock)
+		}
+		sp.tailBlock -= count
+		i++
 		if sp.tailBlock <= sp.bottomBlock {
 			break
 		}
-		timer.Reset(interval)
+		time.Sleep(interval)
 	}
+
 	log.Info("done all backfoward")
 }
