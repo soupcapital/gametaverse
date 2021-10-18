@@ -52,6 +52,8 @@ func (s *Service) initEOSSpider(games []*Game) (err error) {
 		backwardInterval: s.opts.BackwardInterval,
 		chainID:          s.opts.ChainID,
 		chain:            s.opts.Chain,
+		forwardWorks:     s.opts.ForwardWorks,
+		backwardWorks:    s.opts.BackwardWorks,
 	}
 	err = s.forward.Init()
 	if err != nil {

@@ -20,6 +20,9 @@ type configInfo struct {
 	BottomBlock      uint64            `toml:"BottomBlock"`
 	ForwardInterval  float32           `toml:"Interval"`
 	BackwardInterval float32           `toml:"BackwardFactor"`
+
+	ForwardWorks  int `toml:"ForwardWorks"`
+	BackwardWorks int `toml:"BackwardWorks"`
 }
 
 var config configInfo

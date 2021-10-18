@@ -13,6 +13,9 @@ RPCAddr = "https://api.wax.alohaeos.com"
 BottomBlock = 90000000
 ForwardInterval = 0.0
 BackwardInterval = 0.0
+ForwardWorks = 6
+BackwardWorks = 3
+
 
 [[Games]]
     Name = "Farmers World"

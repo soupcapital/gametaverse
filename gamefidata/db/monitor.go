@@ -3,6 +3,9 @@ package db
 const (
 	MonitorFieldName = "f_monitor"
 	MonitorTableName = "t_monitor"
+
+	DAUTableName   = "t_dau"
+	CountTableName = "t_count"
 )
 
 type Monitor struct {

@@ -68,7 +68,7 @@ func (hdl *TrxHandler) Get(w http.ResponseWriter, r *http.Request) {
 	log.Info("tableName:%s", tableName)
 	gameTbl := hdl.server.db.Collection(tableName)
 
-	ctx, cancel := context.WithTimeout(hdl.server.ctx, 10*time.Second)
+	ctx, cancel := context.WithTimeout(hdl.server.ctx, 100*time.Second)
 	defer cancel()
 	record := gameTbl.FindOne(ctx, bson.M{"timestamp": bson.M{"$gt": 0}})
 	if record == nil {
@@ -130,21 +130,26 @@ func (hdl *TrxHandler) trxByDate(ctx context.Context, gameTbl *mongo.Collection,
 			"timestamp": bson.M{"$lt": end},
 		},
 	}
+	countStage := bson.M{
+		"$count": "count",
+	}
 
 	pipeline := []bson.M{}
-	pipeline = append(pipeline, matchStage1, matchStage2)
+	pipeline = append(pipeline, matchStage1, matchStage2, countStage)
 
-	curs, err := gameTbl.Aggregate(ctx, pipeline)
+	cur, err := gameTbl.Aggregate(ctx, pipeline)
 	if err != nil {
 		log.Error("Aggregate error: %s", err.Error())
 		return
 	}
-	var transactions []bson.M
-	err = curs.All(ctx, &transactions)
-	if err != nil {
-		log.Error(" curs.All error: %s", err.Error())
-		return
+
+	for cur.Next(ctx) {
+		rec := struct {
+			Count int `bson:"count"`
+		}{}
+		cur.Decode(&rec)
+		log.Info("Trx aggregate record:%v", rec)
+		count = rec.Count
 	}
-	log.Info("All:%d for date:%d", len(transactions), start)
-	return len(transactions), nil
+	return count, nil
 }

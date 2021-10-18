@@ -10,6 +10,8 @@ type options struct {
 	BottomBlock      uint64
 	ForwardInterval  float32
 	BackwardInterval float32
+	ForwardWorks     int
+	BackwardWorks    int
 }
 
 func defaultOptions() options {
@@ -87,5 +89,17 @@ func WithBottomBlock(block uint64) Option {
 func WithForwardInterval(interval float32) Option {
 	return newFuncOption(func(o *options) {
 		o.ForwardInterval = interval
+	})
+}
+
+func WithForwardWorks(count int) Option {
+	return newFuncOption(func(o *options) {
+		o.ForwardWorks = count
+	})
+}
+
+func WithBackwardWorks(count int) Option {
+	return newFuncOption(func(o *options) {
+		o.BackwardWorks = count
 	})
 }

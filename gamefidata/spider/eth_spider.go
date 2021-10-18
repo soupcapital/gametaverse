@@ -38,6 +38,9 @@ type ETHSpider struct {
 	backward         bool
 	monitorField     string
 	monitorTbl       *mongo.Collection
+
+	dauTbl   *mongo.Collection
+	countTbl *mongo.Collection
 }
 
 func (sp *ETHSpider) Init() (err error) {
@@ -88,6 +91,18 @@ func (sp *ETHSpider) initDB(URI string) (err error) {
 
 	sp.monitorTbl = sp.db.Collection(db.MonitorTableName)
 	if sp.monitorTbl == nil {
+		log.Error("collection is null, please init db first")
+		return
+	}
+
+	sp.dauTbl = sp.db.Collection(db.DAUTableName)
+	if sp.dauTbl == nil {
+		log.Error("collection is null, please init db first")
+		return
+	}
+
+	sp.countTbl = sp.db.Collection(db.CountTableName)
+	if sp.countTbl == nil {
 		log.Error("collection is null, please init db first")
 		return
 	}
@@ -147,6 +162,7 @@ func (sp *ETHSpider) getBlockHeight() (height uint64, err error) {
 		log.Error("get block height error:%s", err)
 		return
 	}
+	log.Info("block height:%v", height)
 	return
 }
 
@@ -219,35 +235,35 @@ func (sp *ETHSpider) dealGame(game *Game, blk *types.Block, trx *types.Transacti
 					log.Error("Get fourbyte error:%s", err.Error())
 				}
 			}
+			_ = method
+			// trxModel := &db.Transaction{
+			// 	GameID:    game.info.ID,
+			// 	Timestamp: blk.Header().Time,
+			// 	ID:        trx.Hash().Hex(),
+			// 	From:      msg.From().Hex(),
+			// 	To:        trx.To().Hex(),
+			// 	BlockNum:  blk.NumberU64(),
+			// 	Method:    method,
+			// }
+			// log.Info("trxModel:%v", trxModel)
 
-			trxModel := &db.Transaction{
-				GameID:    game.info.ID,
-				Timestamp: blk.Header().Time,
-				ID:        trx.Hash().Hex(),
-				From:      msg.From().Hex(),
-				To:        trx.To().Hex(),
-				BlockNum:  blk.NumberU64(),
-				Method:    method,
-			}
-			log.Info("trxModel:%v", trxModel)
+			// ctx, cancel := context.WithTimeout(sp.ctx, 3*time.Second)
+			// defer cancel()
 
-			ctx, cancel := context.WithTimeout(sp.ctx, 3*time.Second)
-			defer cancel()
+			// opt := mngopts.FindOneAndReplace()
+			// opt.SetUpsert(true)
 
-			opt := mngopts.FindOneAndReplace()
-			opt.SetUpsert(true)
+			// filter := bson.M{
+			// 	"_id": trxModel.ID,
+			// }
 
-			filter := bson.M{
-				"_id": trxModel.ID,
-			}
-
-			rst := gameTbl.FindOneAndReplace(ctx, filter, trxModel, opt)
-			if rst.Err() != nil {
-				if !strings.Contains(rst.Err().Error(), "no documents in result") {
-					log.Error("update transaction[%s] error: %s", trxModel.ID, rst.Err().Error())
-					return err // return to show error
-				}
-			}
+			// rst := gameTbl.FindOneAndReplace(ctx, filter, trxModel, opt)
+			// if rst.Err() != nil {
+			// 	if !strings.Contains(rst.Err().Error(), "no documents in result") {
+			// 		log.Error("update transaction[%s] error: %s", trxModel.ID, rst.Err().Error())
+			// 		return err // return to show error
+			// 	}
+			// }
 		}
 	}
 	return nil
@@ -278,21 +294,24 @@ func (sp *ETHSpider) goBackward() {
 	log.Info("go backward")
 	sp.tailBlock = sp.topBlock
 	interval := time.Duration(sp.backwardInterval * float32(time.Second))
-	timer := time.NewTimer(interval)
-	for range timer.C {
+
+	for {
 		err := sp.dealBlock(sp.tailBlock)
 		if err != nil {
-			log.Error("deal block[%d] error: %s", sp.tailBlock, err.Error())
-		} else {
-			sp.tailBlock -= 1
+			log.Error("deal block[%d]:%s", sp.headBlock, err.Error())
+			time.Sleep(interval)
+			continue
 		}
-		if sp.tailBlock%100 == 0 {
-			log.Info("backfoward to :%v", sp.tailBlock)
+		if sp.tailBlock%10 == 0 {
+			log.Info("backfoward to:%v", sp.tailBlock)
 		}
+		sp.tailBlock -= 1
+
 		if sp.tailBlock <= sp.bottomBlock {
 			break
 		}
-		timer.Reset(interval)
+		time.Sleep(interval)
 	}
+
 	log.Info("done all backfoward")
 }

@@ -61,6 +61,8 @@ func _main(cmd *cobra.Command, args []string) {
 	bottomBlockOpt := spider.WithBottomBlock(config.BottomBlock)
 	fintervalOpt := spider.WithForwardInterval(config.ForwardInterval)
 	bintervalOpt := spider.WithBackwardInterval(config.BackwardInterval)
+	fworksOpt := spider.WithForwardWorks(config.ForwardWorks)
+	bworksOpt := spider.WithBackwardWorks(config.BackwardWorks)
 
 	if _initDB {
 		err := db.CreateAndInitDB(config.DBURI)
@@ -80,6 +82,8 @@ func _main(cmd *cobra.Command, args []string) {
 		mongoURIOpt,
 		fintervalOpt,
 		bintervalOpt,
+		fworksOpt,
+		bworksOpt,
 	)
 	if err != nil {
 		fmt.Printf("Init error:%s \n", err.Error())

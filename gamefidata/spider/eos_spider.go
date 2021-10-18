@@ -3,13 +3,13 @@ package spider
 import (
 	"context"
 	"fmt"
-	"strings"
 	"sync"
 	"time"
 
 	"github.com/cz-theng/czkit-go/log"
 	"github.com/eoscanada/eos-go"
 	"github.com/gametaverse/gamefidata/db"
+	"github.com/gametaverse/gamefidata/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	mngopts "go.mongodb.org/mongo-driver/mongo/options"
@@ -21,6 +21,8 @@ type EOSSpider struct {
 	cancelFun        context.CancelFunc
 	forwardInterval  float32
 	backwardInterval float32
+	forwardWorks     int
+	backwardWorks    int
 	chainID          int
 	chain            string
 	eoscli           *eos.API
@@ -36,6 +38,8 @@ type EOSSpider struct {
 	backward         bool
 	monitorField     string
 	monitorTbl       *mongo.Collection
+	dauTbl           *mongo.Collection
+	countTbl         *mongo.Collection
 }
 
 func (sp *EOSSpider) Init() (err error) {
@@ -86,6 +90,17 @@ func (sp *EOSSpider) initDB(URI string) (err error) {
 		return
 	}
 
+	sp.dauTbl = sp.db.Collection(db.DAUTableName)
+	if sp.dauTbl == nil {
+		log.Error("collection is null, please init db first")
+		return
+	}
+
+	sp.countTbl = sp.db.Collection(db.CountTableName)
+	if sp.countTbl == nil {
+		log.Error("collection is null, please init db first")
+		return
+	}
 	return
 }
 
@@ -177,8 +192,8 @@ func (sp *EOSSpider) getBlocks(start uint32, count uint32) (blocks []*eos.BlockR
 func (sp *EOSSpider) goForward() {
 	log.Info("go forward")
 	sp.headBlock = sp.topBlock
-	const count = 5
-	i := 0
+	count := uint32(sp.forwardWorks)
+	i := uint32(0)
 	for {
 		s1 := time.Now()
 		blocks, err := sp.getBlocks(sp.headBlock, count)
@@ -225,8 +240,7 @@ func (sp *EOSSpider) storeTopBlock(number uint32) (err error) {
 	return
 }
 
-func (sp *EOSSpider) dealGame4Trx(game *Game, blk *eos.BlockResp, trx *eos.TransactionReceipt) (trxModels []interface{}, err error) {
-
+func (sp *EOSSpider) dealTrx4Game(game *Game, blk *eos.BlockResp, trx *eos.TransactionReceipt) (actions []*db.Action, err error) {
 	for _, c := range game.info.Contracts {
 		if trx.TransactionReceiptHeader.Status != eos.TransactionStatusExecuted {
 			continue
@@ -239,30 +253,22 @@ func (sp *EOSSpider) dealGame4Trx(game *Game, blk *eos.BlockResp, trx *eos.Trans
 			log.Error("trx.Transaction.Packed.Unpack error:%s", err.Error())
 			continue
 		}
-		for i, act := range strx.Actions {
+		for _, act := range strx.Actions {
 			cName := act.Account
 			if c.Address != cName.String() {
 				continue
 			}
-			method := act.Name
 			from := ""
-			for j, auth := range act.Authorization {
+			for _, auth := range act.Authorization {
 				if auth.Permission.String() == "active" {
 					from = auth.Actor.String()
-					trxid := fmt.Sprintf("%s_%d_%d", trx.Transaction.ID.String(), i, j)
-					//log.Info("trx[%v_%d_%d]:context:%v:method:%v:from:%v", trx.Transaction.ID, i, j, cName, method, from)
-
-					trxModel := &db.Transaction{
+					action := &db.Action{
 						GameID:    game.info.ID,
-						Timestamp: uint64(blk.Timestamp.Unix()),
-						ID:        trxid,
-						From:      from,
-						To:        cName.String(),
-						BlockNum:  uint64(blk.BlockNum),
-						Method:    method.String(),
+						Timestamp: utils.StartSecForDay(uint64(blk.Timestamp.Unix())),
+						User:      from,
+						Count:     1,
 					}
-					log.Info("trxModel:%v", trxModel)
-					trxModels = append(trxModels, trxModel)
+					actions = append(actions, action)
 				}
 			}
 		}
@@ -272,62 +278,131 @@ func (sp *EOSSpider) dealGame4Trx(game *Game, blk *eos.BlockResp, trx *eos.Trans
 
 func (sp *EOSSpider) dealBlocks(blocks []*eos.BlockResp) (err error) {
 	for _, g := range sp.games {
-		gameTbl := sp.db.Collection("t_" + g.info.ID)
-		if gameTbl == nil {
-			log.Error("create collection for game[%s] error:%s", g.info.ID, err.Error())
-			return
-		}
-
-		var trxModels []interface{}
-		for _, blk := range blocks {
-			for _, trx := range blk.Transactions {
-				models, err := sp.dealGame4Trx(g, blk, &trx)
-				if err != nil {
-					log.Error("deal game error: %s", err.Error())
-					return err // for show errors
-				}
-				if len(models) > 0 {
-					trxModels = append(trxModels, models...)
-				}
-			}
-		}
-
-		if len(trxModels) == 0 {
-			continue
-		}
-		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-		defer cancel()
-		rst, err := gameTbl.InsertMany(ctx, trxModels)
+		err = sp.dealBlocks4Game(g, blocks)
 		if err != nil {
-			if !strings.Contains(err.Error(), "duplicate key error collection") {
-				log.Error("InsertMany  error: %s", err.Error())
-				return err // return to show error
+			log.Error("dealBlocks4Game error:%s", err.Error())
+		}
+	}
+	return nil
+}
+
+func (sp *EOSSpider) dealBlocks4Game(game *Game, blocks []*eos.BlockResp) (err error) {
+	var actions = make(map[string]*db.Action)
+	for _, blk := range blocks {
+		for _, trx := range blk.Transactions {
+			as, err := sp.dealTrx4Game(game, blk, &trx)
+			if err != nil {
+				log.Error("deal game error: %s", err.Error())
+				return err // for show errors
 			}
+			for _, a := range as {
+				key := fmt.Sprintf("%v_%v_%v", a.GameID, a.Timestamp, a.User)
+				if _, ok := actions[key]; !ok {
+					actions[key] = a
+				} else {
+					actions[key].Count += a.Count
+				}
+			}
+		}
+	}
+
+	if len(actions) == 0 {
+		return
+	}
+
+	err = sp.insertDAU(actions)
+	if err != nil {
+		log.Error("insert DAU error:%s", err.Error())
+		return err
+	}
+	err = sp.insertCount(actions)
+	if err != nil {
+		log.Error("insert DAU error:%s", err.Error())
+		return err
+	}
+	return
+}
+
+func (sp *EOSSpider) insertDAU(actions map[string]*db.Action) (err error) {
+	var docs []interface{}
+	for _, a := range actions {
+		doc := db.DAU{
+			GameID:    a.GameID,
+			Timestamp: a.Timestamp,
+			User:      a.User,
+		}
+		docs = append(docs, doc)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	opts := mngopts.InsertMany()
+	opts.SetOrdered(false)
+
+	rst, err := sp.dauTbl.InsertMany(ctx, docs, opts)
+	if err != nil {
+		log.Error("InsertMany  error: %s", err.Error())
+		return err // return to show error
+	}
+	_ = rst
+	return
+}
+
+func (sp *EOSSpider) insertCount(actions map[string]*db.Action) (err error) {
+	ctx, cancel := context.WithTimeout(sp.ctx, 3*time.Second)
+	defer cancel()
+
+	counts := make(map[string]*db.Action)
+
+	for _, a := range actions {
+		key := fmt.Sprintf("%v_%v", a.GameID, a.Timestamp)
+		if _, ok := counts[key]; !ok {
+			counts[key] = a
+		} else {
+			counts[key].Count += a.Count
+		}
+	}
+	for _, a := range counts {
+		opts := mngopts.Update()
+		opts.SetUpsert(true)
+		filter := bson.M{
+			"game": a.GameID,
+			"ts":   a.Timestamp,
+		}
+
+		update := bson.M{
+			"$inc": bson.M{
+				"count": a.Count,
+			},
+		}
+		rst, err := sp.countTbl.UpdateMany(ctx, filter, update, opts)
+		if err != nil {
+			log.Error("UpdateMany  error: %s", err.Error())
+			return err // return to show error
 		}
 		_ = rst
-		//log.Info("rst:%v ", len(rst.InsertedIDs))
 	}
+
 	return nil
 }
 
 func (sp *EOSSpider) goBackward() {
 	sp.tailBlock = sp.topBlock
 	log.Info("go backforward from :%v", sp.tailBlock)
-	const count = 3
+	count := uint32(sp.backwardWorks)
 	interval := time.Duration(sp.backwardInterval * float32(time.Second))
 	log.Info("interval:%v", interval)
-	i := 0
+	i := uint32(0)
 	for {
 		blocks, err := sp.getBlocks(sp.tailBlock-count, count)
 		if err != nil {
 			log.Error("get %d block[%d]:%s", count, sp.headBlock, err.Error())
-			time.Sleep(time.Duration(sp.forwardInterval * float32(time.Second)))
+			time.Sleep(interval)
 			continue
 		}
 		err = sp.dealBlocks(blocks)
 		if err != nil {
 			log.Error("deal %d block[%d]:%s", count, sp.tailBlock, err.Error())
-			time.Sleep(time.Duration(sp.forwardInterval * float32(time.Second)))
+			time.Sleep(interval)
 			continue
 		}
 		if i%(10/count) == 0 {
