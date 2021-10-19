@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/cz-theng/czkit-go/log"
 	"github.com/gametaverse/gamefidata/db"
+	"github.com/gogf/gf/encoding/ghash"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	mngopts "go.mongodb.org/mongo-driver/mongo/options"
@@ -308,7 +310,12 @@ func (sp *Spider) dealTrxes4Game(game *Game, trxes []*Transaction) (err error) {
 func (sp *Spider) insertDAU(actions map[string]*db.Action) (err error) {
 	var docs []interface{}
 	for _, a := range actions {
+
+		tail := ghash.DJBHash([]byte(a.GameID + a.User))
+		hashID := a.Timestamp<<32 | uint64(tail)
+		//log.Info("tail:%v, ts:%v hash:%v", tail, a.Timestamp, hashID)
 		doc := db.DAU{
+			ID:        hashID,
 			GameID:    a.GameID,
 			Timestamp: a.Timestamp,
 			User:      a.User,
@@ -322,11 +329,14 @@ func (sp *Spider) insertDAU(actions map[string]*db.Action) (err error) {
 
 	rst, err := sp.dauTbl.InsertMany(ctx, docs, opts)
 	if err != nil {
-		log.Error("InsertMany  error: %s", err.Error())
-		return err // return to show error
+		//log.Error("InsertMany  error: %s", err.Error())
+		if !strings.Contains(err.Error(), "duplicate key error") {
+			log.Error("InsertMany  error: %s", err.Error())
+			return err // return to show error
+		}
 	}
 	_ = rst
-	return
+	return nil
 }
 
 func (sp *Spider) clearTick(timestamp uint64) (err error) {

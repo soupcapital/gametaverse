@@ -7,6 +7,7 @@ require (
 	github.com/cz-theng/czkit-go v0.0.0-20210709035449-5f3ace107ec6
 	github.com/eoscanada/eos-go v0.9.1-0.20210812211611-bc6364238cf2
 	github.com/ethereum/go-ethereum v1.10.8
+	github.com/gogf/gf v1.16.6
 	github.com/spf13/cobra v1.2.1
 	go.mongodb.org/mongo-driver v1.7.2
 )
