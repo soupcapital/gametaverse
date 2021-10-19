@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/cz-theng/czkit-go/log"
+	"github.com/gametaverse/gamefidata/db"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -64,18 +65,10 @@ func (hdl *DAUHandler) Get(w http.ResponseWriter, r *http.Request) {
 		encoder.Encode(ErrTimestamp)
 		return
 	}
-
-	tableName := "t_" + game
-	log.Info("tableName:%s", tableName)
-	gameTbl := hdl.server.db.Collection(tableName)
+	gameTbl := hdl.server.db.Collection(db.DAUTableName)
 
 	ctx, cancel := context.WithTimeout(hdl.server.ctx, 1000*time.Second)
 	defer cancel()
-	record := gameTbl.FindOne(ctx, bson.M{"timestamp": bson.M{"$gt": 0}})
-	if record == nil {
-		encoder.Encode(ErrGame)
-		return
-	}
 
 	theDay := startTS
 	type DayInfo struct {
@@ -88,20 +81,22 @@ func (hdl *DAUHandler) Get(w http.ResponseWriter, r *http.Request) {
 		if theDay > endTS {
 			break
 		}
-		dau, err := hdl.dauByDate(ctx, gameTbl, theDay, theDay+cSecondofDay)
+		dau, err := hdl.dauByDate(ctx, game, gameTbl, theDay, theDay+cSecondofDay)
 		if err != nil {
 			encoder.Encode(ErrDB)
 			log.Error("dauByDate: %s", err.Error())
 			return
 		}
+		log.Info("dau:%v for date:%v", dau, theDay)
 		days = append(days, DayInfo{
 			DAU:  dau,
 			Date: theDay,
 		})
+
 		theDay += cSecondofDay
 	}
 
-	dau, err := hdl.dauByDate(ctx, gameTbl, startTS, endTS+cSecondofDay)
+	dau, err := hdl.dauByDate(ctx, game, gameTbl, startTS, endTS+cSecondofDay)
 	if err != nil {
 		encoder.Encode(ErrDB)
 		log.Error("dauByDate: %s", err.Error())
@@ -122,19 +117,24 @@ func (hdl *DAUHandler) Get(w http.ResponseWriter, r *http.Request) {
 	encoder.Encode(rsp)
 }
 
-func (hdl *DAUHandler) dauByDate(ctx context.Context, gameTbl *mongo.Collection, start, end int64) (dau int, err error) {
+func (hdl *DAUHandler) dauByDate(ctx context.Context, game string, gameTbl *mongo.Collection, start, end int64) (dau int, err error) {
+	log.Info("game:%v start:%v end:%v", game, start, end)
 	groupStage := bson.M{
-		"$group": bson.M{"_id": "$from"},
+		"$group": bson.M{"_id": "$user"},
 	}
-
 	matchStage1 := bson.M{
 		"$match": bson.M{
-			"timestamp": bson.M{"$gt": start},
+			"ts": bson.M{"$gte": start},
 		},
 	}
 	matchStage2 := bson.M{
 		"$match": bson.M{
-			"timestamp": bson.M{"$lt": end},
+			"ts": bson.M{"$lt": end},
+		},
+	}
+	matchStage3 := bson.M{
+		"$match": bson.M{
+			"game": game,
 		},
 	}
 	countStage := bson.M{
@@ -142,7 +142,7 @@ func (hdl *DAUHandler) dauByDate(ctx context.Context, gameTbl *mongo.Collection,
 	}
 
 	pipeline := []bson.M{}
-	pipeline = append(pipeline, matchStage1, matchStage2, groupStage, countStage)
+	pipeline = append(pipeline, matchStage1, matchStage2, matchStage3, groupStage, countStage)
 
 	cur, err := gameTbl.Aggregate(ctx, pipeline)
 	if err != nil {

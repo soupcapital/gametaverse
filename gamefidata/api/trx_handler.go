@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/cz-theng/czkit-go/log"
+	"github.com/gametaverse/gamefidata/db"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -64,17 +65,10 @@ func (hdl *TrxHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tableName := "t_" + game
-	log.Info("tableName:%s", tableName)
-	gameTbl := hdl.server.db.Collection(tableName)
+	gameTbl := hdl.server.db.Collection(db.CountTableName)
 
-	ctx, cancel := context.WithTimeout(hdl.server.ctx, 100*time.Second)
+	ctx, cancel := context.WithTimeout(hdl.server.ctx, 10*time.Second)
 	defer cancel()
-	record := gameTbl.FindOne(ctx, bson.M{"timestamp": bson.M{"$gt": 0}})
-	if record == nil {
-		encoder.Encode(ErrGame)
-		return
-	}
 
 	type DayInfo struct {
 		Date  int64 `json:"date"`
@@ -82,11 +76,12 @@ func (hdl *TrxHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 	var days []DayInfo
 	theDay := startTS
+	total := 0
 	for {
 		if theDay > endTS {
 			break
 		}
-		count, err := hdl.trxByDate(ctx, gameTbl, theDay, theDay+cSecondofDay)
+		count, err := hdl.trxByDate(ctx, game, gameTbl, theDay)
 		if err != nil {
 			encoder.Encode(ErrDB)
 			log.Error("trxByDate: %s", err.Error())
@@ -96,14 +91,8 @@ func (hdl *TrxHandler) Get(w http.ResponseWriter, r *http.Request) {
 			Count: count,
 			Date:  theDay,
 		})
+		total += count
 		theDay += cSecondofDay
-	}
-
-	count, err := hdl.trxByDate(ctx, gameTbl, startTS, endTS+cSecondofDay)
-	if err != nil {
-		encoder.Encode(ErrDB)
-		log.Error("trxByDate: %s", err.Error())
-		return
 	}
 
 	type Response struct {
@@ -114,42 +103,29 @@ func (hdl *TrxHandler) Get(w http.ResponseWriter, r *http.Request) {
 	rsp := Response{
 		Game:  game,
 		Data:  days,
-		Total: count,
+		Total: total,
 	}
 	encoder.Encode(rsp)
 }
 
-func (hdl *TrxHandler) trxByDate(ctx context.Context, gameTbl *mongo.Collection, start, end int64) (count int, err error) {
-	matchStage1 := bson.M{
-		"$match": bson.M{
-			"timestamp": bson.M{"$gt": start},
-		},
-	}
-	matchStage2 := bson.M{
-		"$match": bson.M{
-			"timestamp": bson.M{"$lt": end},
-		},
-	}
-	countStage := bson.M{
-		"$count": "count",
+func (hdl *TrxHandler) trxByDate(ctx context.Context, game string, gameTbl *mongo.Collection, start int64) (count int, err error) {
+
+	filter := bson.M{
+		"game": game,
+		"ts":   start,
 	}
 
-	pipeline := []bson.M{}
-	pipeline = append(pipeline, matchStage1, matchStage2, countStage)
-
-	cur, err := gameTbl.Aggregate(ctx, pipeline)
+	cur, err := gameTbl.Find(ctx, filter)
 	if err != nil {
 		log.Error("Aggregate error: %s", err.Error())
 		return
 	}
 
 	for cur.Next(ctx) {
-		rec := struct {
-			Count int `bson:"count"`
-		}{}
+		rec := db.Count{}
 		cur.Decode(&rec)
 		log.Info("Trx aggregate record:%v", rec)
-		count = rec.Count
+		count = int(rec.Count)
 	}
 	return count, nil
 }
