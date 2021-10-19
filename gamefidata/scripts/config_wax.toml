@@ -2,8 +2,8 @@ LogFile = "wax_gamefidata.log"
 LogPath = "./"
 LogLevel = "Info"
 PrivKey = ""
-#DBURI = "mongodb+srv://cz:Solong2020@cluster1.g9w77.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
-DBURI = "mongodb+srv://gametaverse:gametaverse2021@cluster0.fnwxw.mongodb.net/d_gametaverse?retryWrites=true&w=majority"
+DBURI = "mongodb+srv://cz:Solong2020@cluster1.g9w77.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+#DBURI = "mongodb+srv://gametaverse:gametaverse2021@cluster0.fnwxw.mongodb.net/d_gametaverse?retryWrites=true&w=majority"
 Chain = "wax"
 ChainID = 1
 RPCAddr = "https://api.wax.alohaeos.com"
@@ -13,7 +13,7 @@ RPCAddr = "https://api.wax.alohaeos.com"
 BottomBlock = 90000000
 ForwardInterval = 0.0
 BackwardInterval = 0.0
-ForwardWorks = 6
+ForwardWorks = 4
 BackwardWorks = 3
 
 

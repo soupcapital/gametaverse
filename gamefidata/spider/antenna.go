@@ -1,0 +1,19 @@
+package spider
+
+import (
+	"context"
+
+	"github.com/gametaverse/gamefidata/db"
+)
+
+type Transaction struct {
+	timestamp uint64
+	raw       interface{}
+}
+
+type Antennaer interface {
+	Init(rpc string, chainID int) error
+	GetBlockHeight(context.Context) (uint64, error)
+	DealTrx4Game(game *Game, trx *Transaction) ([]*db.Action, error)
+	GetTrxByNum(context.Context, uint64) ([]*Transaction, error)
+}

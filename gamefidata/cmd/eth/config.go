@@ -18,8 +18,10 @@ type configInfo struct {
 	ChainID          int               `toml:"ChainID"`
 	RPCAddr          string            `toml:"RPCAddr"`
 	BottomBlock      uint64            `toml:"BottomBlock"`
-	ForwardInterval  float32           `toml:"Interval"`
-	BackwardInterval float32           `toml:"BackwardFactor"`
+	ForwardInterval  float32           `toml:"ForwardInterval"`
+	BackwardInterval float32           `toml:"BackwardInterval"`
+	ForwardWorks     int               `toml:"ForwardWorks"`
+	BackwardWorks    int               `toml:"BackwardWorks"`
 }
 
 var config configInfo

@@ -7,11 +7,11 @@ import (
 )
 
 type Service struct {
-	opts options
-
+	opts     options
+	starting chan struct{}
 	wg       sync.WaitGroup
-	forward  Spider
-	backward Spider
+	forward  *Spider
+	backward *Spider
 }
 
 func New() *Service {
@@ -26,109 +26,37 @@ func (s *Service) Init(opts ...Option) (err error) {
 
 	var games []*Game
 	for _, info := range s.opts.Games {
-
 		g := NewGame(info)
 		games = append(games, g)
 	}
 
-	switch s.opts.Chain {
-	case "polygon", "eth", "bsc":
-		err = s.initETHSpider(games)
-	case "wax":
-		err = s.initEOSSpider(games)
+	s.forward = NewSpider(games, s.opts, false)
+	err = s.forward.Init()
+	if err != nil {
+		log.Error("Init forward spider error:%s", err.Error())
+		return err
+	}
+
+	s.backward = NewSpider(games, s.opts, true)
+	err = s.backward.Init()
+	if err != nil {
+		log.Error("Init backward spider error:%s", err.Error())
+		return err
 	}
 
 	return err
 }
 
-func (s *Service) initEOSSpider(games []*Game) (err error) {
-	s.forward = &EOSSpider{
-		games:            games,
-		bottomBlock:      uint32(s.opts.BottomBlock),
-		rpcAddr:          s.opts.RPCAddr,
-		mongoURI:         s.opts.MongoURI,
-		backward:         false,
-		forwardInterval:  s.opts.ForwardInterval,
-		backwardInterval: s.opts.BackwardInterval,
-		chainID:          s.opts.ChainID,
-		chain:            s.opts.Chain,
-		forwardWorks:     s.opts.ForwardWorks,
-		backwardWorks:    s.opts.BackwardWorks,
-	}
-	err = s.forward.Init()
-	if err != nil {
-		log.Error("Init forward spider error:%s", err.Error())
-		return err
-	}
-
-	s.backward = &EOSSpider{
-		games:            games,
-		bottomBlock:      uint32(s.opts.BottomBlock),
-		rpcAddr:          s.opts.RPCAddr,
-		mongoURI:         s.opts.MongoURI,
-		backward:         true,
-		forwardInterval:  s.opts.ForwardInterval,
-		backwardInterval: s.opts.BackwardInterval,
-		chainID:          s.opts.ChainID,
-		chain:            s.opts.Chain,
-	}
-	err = s.backward.Init()
-	if err != nil {
-		log.Error("Init backward spider error:%s", err.Error())
-		return err
-	}
-
-	return
-}
-
-func (s *Service) initETHSpider(games []*Game) (err error) {
-	s.forward = &ETHSpider{
-		games:            games,
-		bottomBlock:      s.opts.BottomBlock,
-		rpcAddr:          s.opts.RPCAddr,
-		mongoURI:         s.opts.MongoURI,
-		backward:         false,
-		forwardInterval:  s.opts.ForwardInterval,
-		backwardInterval: s.opts.BackwardInterval,
-		chainID:          s.opts.ChainID,
-		chain:            s.opts.Chain,
-	}
-	err = s.forward.Init()
-	if err != nil {
-		log.Error("Init forward spider error:%s", err.Error())
-		return err
-	}
-
-	s.backward = &ETHSpider{
-		games:            games,
-		bottomBlock:      s.opts.BottomBlock,
-		rpcAddr:          s.opts.RPCAddr,
-		mongoURI:         s.opts.MongoURI,
-		backward:         true,
-		forwardInterval:  s.opts.ForwardInterval,
-		backwardInterval: s.opts.BackwardInterval,
-		chainID:          s.opts.ChainID,
-		chain:            s.opts.Chain,
-	}
-	err = s.backward.Init()
-	if err != nil {
-		log.Error("Init backward spider error:%s", err.Error())
-		return err
-	}
-
-	return
-}
-
-func (s *Service) routine(sp Spider) {
+func (s *Service) routine(sp *Spider) {
 	s.wg.Add(1)
 	go func() {
-		sp.Run()
+		sp.Run(s.starting)
 		s.wg.Done()
 	}()
 }
 
 func (s *Service) Run() (err error) {
-
+	s.starting = make(chan struct{})
 	s.routine(s.forward)
 	s.routine(s.backward)
 	s.wg.Wait()

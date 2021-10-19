@@ -10,6 +10,8 @@ RPCAddr = "https://mainnet.infura.io/v3/1f48b32a51144c9fbf5b9aa4cf3a4066"
 BottomBlock = 9193266
 ForwardInterval = 12.0
 BackwardInterval = 3.0
+ForwardWorks = 1
+BackwardWorks = 1
 
 [[Games]]
     Name = "Axie Infinity"

@@ -10,6 +10,8 @@ RPCAddr = "https://bsc-dataseed.binance.org"
 BottomBlock = 1000000
 ForwardInterval = 3.0
 BackwardInterval = 1.5
+ForwardWorks = 1
+BackwardWorks = 1
 
 [[Games]]
     Name = "Crypto Blades"
