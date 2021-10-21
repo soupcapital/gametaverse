@@ -74,6 +74,7 @@ func (s *Spy) dealTweet(tweet *TweetInfo) {
 			if strings.Contains(txt, w) {
 				msg := fmt.Sprintf("%s@%s talk about:\n %s", tweet.Author, time.Time(tweet.CreateAt).Format("2006/01/02 15:04:05"), tweet.FullText)
 				s.tgbot.SendMessage(msg)
+				return
 			}
 		}
 	}
