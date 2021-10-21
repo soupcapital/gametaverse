@@ -16,10 +16,7 @@ type configInfo struct {
 	TwitterInterval uint32   `toml:"TwitterInterval"`
 	TwitterCount    uint32   `toml:"TwitterCount"`
 	Groups          []int64  `toml:"Groups"`
-	NoCoins         []string `toml:"NoCoins"`
-	MongoUser       string   `toml:"MongoUser"`
-	MongoPasswd     string   `toml:"MongoPasswd"`
-	MongoDBName     string   `toml:"MongoDBName"`
+	KeyWords        []string `toml:"KeyWords"`
 }
 
 var config configInfo

@@ -1,4 +1,4 @@
-package cti
+package twitterspy
 
 import (
 	"crypto/rand"
@@ -65,7 +65,7 @@ func (tsc *TwitterSearchConn) solidParams() map[string]string {
 }
 
 func (tsc *TwitterSearchConn) QueryV(v string, internal time.Duration, count uint32) (tweets map[string]TweetInfo, err error) {
-	log.Info("query for %s ", v)
+	//log.Info("query for %s ", v)
 	until := time.Now()
 	since := until.Add(-1 * internal)
 	params := tsc.solidParams()
@@ -114,7 +114,7 @@ func (tsc *TwitterSearchConn) QueryV(v string, internal time.Duration, count uin
 		log.Error("request error:%s", err.Error())
 		return
 	}
-	log.Info("resp is :%v", respJOSN)
+	//log.Info("resp is :%v", respJOSN)
 	if respJOSN.Errors != nil || len(respJOSN.Errors) > 0 {
 		return nil, ErrTokenForbid
 	}

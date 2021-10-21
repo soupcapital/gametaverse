@@ -1,4 +1,4 @@
-package cti
+package twitterspy
 
 import "time"
 
@@ -8,10 +8,7 @@ type options struct {
 	tgbotToken      string
 	twitterInterval time.Duration
 	twitterCount    uint32
-	noCoins         []string
-	dbName          string
-	dbUser          string
-	dbPasswd        string
+	keyWords        []string
 }
 
 func defaultOptions() options {
@@ -74,26 +71,9 @@ func WithTwitterCount(count uint32) Option {
 	})
 }
 
-func WithNoCoins(coins []string) Option {
+func WithKeyWords(words []string) Option {
 	return newFuncOption(func(o *options) {
-		o.noCoins = coins
-	})
-}
-
-func WithDBName(db string) Option {
-	return newFuncOption(func(o *options) {
-		o.dbName = db
-	})
-}
-
-func WithDBUser(user string) Option {
-	return newFuncOption(func(o *options) {
-		o.dbUser = user
-	})
-}
-
-func WithDBPasswd(passwd string) Option {
-	return newFuncOption(func(o *options) {
-		o.dbPasswd = passwd
+		o.keyWords = make([]string, len(words))
+		copy(o.keyWords, words)
 	})
 }

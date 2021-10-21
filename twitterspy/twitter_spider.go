@@ -1,4 +1,4 @@
-package cti
+package twitterspy
 
 import (
 	"fmt"
@@ -67,7 +67,7 @@ func (ts *TwitterSpider) updateTwitter() {
 			log.Error("QueryV error:%s", err.Error())
 			continue
 		}
-		log.Info("Got Tweets:%v", tweets)
+		log.Info("Query %v Got :%v", v, tweets)
 		for _, t := range tweets {
 			t.Author = v
 			msg := fmt.Sprintf("[%s@%s]:%s", v, time.Time(t.CreateAt).String(), t.FullText)

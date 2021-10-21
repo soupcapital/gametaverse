@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 ./stop.sh
 rm *.log *.out
-nohup ./cti -c config/config.toml &
+nohup ./twitterspy -c config.toml &

@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"gitee.com/c_z/cti"
 	"github.com/cz-theng/czkit-go/log"
+	"github.com/gametaverse/twitterspy"
 	"github.com/spf13/cobra"
 )
 
@@ -23,8 +23,6 @@ var rootCMD = &cobra.Command{
 func init() {
 	rootCMD.PersistentFlags().BoolVarP(&_version, "version", "v", false, "print version of test")
 	rootCMD.PersistentFlags().StringVarP(&_configFile, "config", "c", "", "config file path for test")
-
-	rootCMD.AddCommand(dbCMD)
 }
 
 func main() {
@@ -62,17 +60,19 @@ func _main(cmd *cobra.Command, args []string) {
 	logPathOpt := log.WithLogPath(logPath)
 	log.Init(logNameOpt, logPathOpt)
 
-	gropsOpt := cti.WithGroups(config.Groups)
-	vsOpt := cti.WithVs(config.Vs)
-	tokenOpt := cti.WithTGBotToken(config.TelegramToken)
-	internalOpt := cti.WithTwitterInternal(config.TwitterInterval)
-	countOpt := cti.WithTwitterCount(config.TwitterCount)
-	noCoinsOpt := cti.WithNoCoins(config.NoCoins)
-	dbUserOpt := cti.WithDBUser(config.MongoUser)
-	dbNameOpt := cti.WithDBName(config.MongoDBName)
-	dbPasswdOpt := cti.WithDBPasswd(config.MongoPasswd)
+	gropsOpt := twitterspy.WithGroups(config.Groups)
+	vsOpt := twitterspy.WithVs(config.Vs)
+	tokenOpt := twitterspy.WithTGBotToken(config.TelegramToken)
+	internalOpt := twitterspy.WithTwitterInternal(config.TwitterInterval)
+	countOpt := twitterspy.WithTwitterCount(config.TwitterCount)
+	wordsOpt := twitterspy.WithKeyWords(config.KeyWords)
 
-	cti.Init(gropsOpt, vsOpt, tokenOpt, internalOpt, countOpt, noCoinsOpt, dbUserOpt, dbNameOpt, dbPasswdOpt)
-	cti.StartService()
+	twitterspy.Init(gropsOpt,
+		vsOpt,
+		tokenOpt,
+		internalOpt,
+		countOpt,
+		wordsOpt)
+	twitterspy.StartService()
 
 }

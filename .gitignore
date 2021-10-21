@@ -4,3 +4,4 @@ yarn.lock
 gamefidata/cmd/gamefidata
 *.log
 dist_*
+twitterspy/cmd/twitterspy
