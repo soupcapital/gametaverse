@@ -44,6 +44,9 @@ func (ata *ETHAntenna) GetBlockHeight(ctx context.Context) (height uint64, err e
 func (ata *ETHAntenna) GetTrxByNum(ctx context.Context, num uint64) (trxes []*Transaction, err error) {
 	blk, err := ata.ethcli.BlockByNumber(ctx, big.NewInt(int64(num)))
 	if err != nil {
+		if strings.Contains(err.Error(), "non-empty transaction list but block header indicates no transactions") {
+			return nil, nil
+		}
 		return nil, err
 	}
 	for _, trx := range blk.Transactions() {
