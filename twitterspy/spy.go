@@ -63,10 +63,18 @@ func (s *Spy) dealTweet(tweet *TweetInfo) {
 	// }
 	txt := strings.ToLower(tweet.FullText)
 	for _, word := range s.opts.keyWords {
-		word = " " + word + " "
-		if strings.Contains(txt, strings.ToLower(word)) {
-			msg := fmt.Sprintf("%s@%s talk about:\n %s", tweet.Author, time.Time(tweet.CreateAt).Format("2006/01/02 15:04:05"), tweet.FullText)
-			s.tgbot.SendMessage(msg)
+		word = strings.ToLower(word)
+		words := []string{" " + word + " ",
+			" " + word + "\n",
+			"\n" + word + " ",
+			"\n" + word + "\n",
+			"#" + word + " ",
+			"#" + word + "\n"}
+		for _, w := range words {
+			if strings.Contains(txt, w) {
+				msg := fmt.Sprintf("%s@%s talk about:\n %s", tweet.Author, time.Time(tweet.CreateAt).Format("2006/01/02 15:04:05"), tweet.FullText)
+				s.tgbot.SendMessage(msg)
+			}
 		}
 	}
 }
