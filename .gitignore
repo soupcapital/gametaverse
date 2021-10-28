@@ -5,3 +5,4 @@ gamefidata/cmd/gamefidata
 *.log
 dist_*
 twitterspy/cmd/twitterspy
+gametaversebot/cmd/gametaversebot

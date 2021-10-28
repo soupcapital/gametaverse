@@ -102,7 +102,29 @@ Vs = [
     "CompanionsNFT",
     "cryptosoccerof",
     "planetsandbox",
-    "LeagueKingdoms"
+    "LeagueKingdoms",
+    "influenceth",
+    "thetanarena",
+    "metafish_bsc",
+    "decentraland",
+    "osirismetaverse",
+    "arconametaverse",
+    "nftspaceheroes",
+    "Immersys",
+    "PolkaMonsterBSC",
+    "ancientrealmsio",
+    "galaxynftgame",
+    "KuraiMetaverse",
+    "StarLinkETH",
+    "yoheroyolo",
+    "NetVRk1",
+    "PlayEmberSword",
+    "beyondearth_nft",
+    "osirismetaverse",
+    "nemesisgg",
+    "warenaofficial",
+    "KabyArena",
+    "theufotoken"
 ]
 TwitterInterval = 600
 TwitterCount = 100

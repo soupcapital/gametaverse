@@ -1,0 +1,10 @@
+RPCAddr = "https://data-hub.staging.gametaverse.io/public_api/events.json"
+LogFile = "gametaversebot.log"
+LogPath = "./"
+LogLevel = "Info"
+TelegramToken = "2058958408:AAGJ7qUpJ2CPOQnYZk3ttVEFZYHYHFdBeXU"
+DBURI = "mongodb+srv://cz:Solong2020@cluster1.g9w77.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+Robot = "gametaverse_bot"
+Groups = [
+    -707832068
+]
