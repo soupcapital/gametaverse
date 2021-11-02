@@ -4,5 +4,5 @@
 #./gamefidata eth -c ../scripts/config_polygon.toml 
 #./gamefidata eth -c ../scripts/config_eth.toml 
 #./gamefidata eth -c ../scripts/config_bsc.toml 
-./gamefidata wax -c ../scripts/config_wax.toml 
-#./gamefidata api -c ../scripts/config_api.toml 
+#./gamefidata wax -c ../scripts/config_wax.toml 
+./gamefidata api -c ../scripts/config_api.toml 

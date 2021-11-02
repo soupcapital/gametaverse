@@ -124,7 +124,8 @@ Vs = [
     "nemesisgg",
     "warenaofficial",
     "KabyArena",
-    "theufotoken"
+    "theufotoken",
+    "MetaWarsNFT"
 ]
 TwitterInterval = 600
 TwitterCount = 100
@@ -136,5 +137,10 @@ KeyWords = [
     "airdrop",
     "ama",
     "ido",
-    "igo"
+    "igo",
+    "raindrop",
+    "farming",
+    "live stream",
+    "contest",
+    "development progress"
 ]

@@ -189,10 +189,8 @@ func (api *API) QueryNews() (news []*News, err error) {
 		log.Error("request error:%s", err.Error())
 		return
 	}
-	log.Info("resp is :%v", respJOSN)
 	news = make([]*News, len(respJOSN.Newss))
-	for _, n := range respJOSN.Newss {
-		news = append(news, n)
-	}
+	copy(news, respJOSN.Newss)
+	log.Info("news:%+v", news)
 	return
 }

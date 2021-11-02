@@ -340,26 +340,30 @@ func (sp *Spider) insertDAU(actions map[string]*db.Action) (err error) {
 }
 
 func (sp *Spider) clearTick(timestamp uint64) (err error) {
-	ctx, cancel := context.WithTimeout(sp.ctx, 3*time.Second)
+	ctx, cancel := context.WithTimeout(sp.ctx, 30*time.Second)
 	defer cancel()
 
 	opts := mngopts.Update()
 	opts.SetUpsert(false)
-	filter := bson.M{
-		"ts": timestamp,
+
+	for _, g := range sp.games {
+		filter := bson.M{
+			"game": g.info.ID,
+			"ts":   timestamp,
+		}
+
+		update := bson.M{
+			"$set": bson.M{
+				"count": 0,
+			},
+		}
+		_, err := sp.countTbl.UpdateMany(ctx, filter, update, opts)
+		if err != nil {
+			log.Error("UpdateMany  error: %s", err.Error())
+			return err // return to show error
+		}
 	}
 
-	update := bson.M{
-		"$set": bson.M{
-			"count": 0,
-		},
-	}
-	rst, err := sp.countTbl.UpdateMany(ctx, filter, update, opts)
-	if err != nil {
-		log.Error("UpdateMany  error: %s", err.Error())
-		return err // return to show error
-	}
-	_ = rst
 	return
 }
 
