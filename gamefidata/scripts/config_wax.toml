@@ -31,5 +31,20 @@ BackwardWorks = 3
     Name = "Alien Worlds"
     ID  = "alien_worlds"
     [[Games.Contracts]]
-        Address = "m.federation"
+        Address="alien.worlds"
+        Type = ""
+    [[Games.Contracts]]
+        Address="m.federation"
+        Type = ""
+    [[Games.Contracts]]
+        Address="other.worlds"
+        Type = ""
+    [[Games.Contracts]]
+        Address="s.federation"
+        Type = ""
+    [[Games.Contracts]]
+        Address="federation"
+        Type = ""
+    [[Games.Contracts]]
+        Address="token.worlds"
         Type = ""

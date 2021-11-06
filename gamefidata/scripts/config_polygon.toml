@@ -17,20 +17,20 @@ BackwardWorks = 1
     Name = "Zed Run"
     ID  = "zed_run"
     [[Games.Contracts]]
-        Address = "0xA5F1Ea7DF861952863dF2e8d1312f7305dabf215"
-        Type = "erc721"
+        Address="0x8221735b9d7c2a1E9B2D76B214ab39466750872e"
+        Type = ""
     [[Games.Contracts]]
-        Address = "0x6f9F251551f92cec48C43ba59598fd7b07387F95"
-        Type = "game"
+        Address="0xA5F1Ea7DF861952863dF2e8d1312f7305dabf215"
+        Type = ""
     [[Games.Contracts]]
-        Address = "0x8221735b9d7c2a1E9B2D76B214ab39466750872e"
-        Type = "game"
+        Address="0x6f9F251551f92cec48C43ba59598fd7b07387F95"
+        Type = ""
     [[Games.Contracts]]
-        Address = "0xb6602D1f76A2d6a73FE839Cb3Fc4b7e0D9eC5544"
-        Type = "game"
+        Address="0xb6602D1f76A2d6a73FE839Cb3Fc4b7e0D9eC5544"
+        Type = ""
     [[Games.Contracts]]
-        Address = "0xb6602D1f76A2d6a73FE839Cb3Fc4b7e0D9eC5544"
-        Type = "game"
+        Address="0x26d6c8c9ca72af49d4E63e517A1cF0Af5435c78c"
+        Type = ""
 
 
 [[Games]]
@@ -108,6 +108,16 @@ BackwardWorks = 1
         Type = ""
     [[Games.Contracts]]
         Address = "0xee8F8F05eea48AE1F2b03a060D44E63Ab73d064a"
+        Type = ""
+
+[[Games]]
+    Name = "Aavegotchi"
+    ID  = "aavegotchi"
+    [[Games.Contracts]]
+        Address="0x86935F11C86623deC8a25696E1C19a8659CbF95d"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x385Eeac5cB85A38A9a07A70c73e0a3271CfB54A7"
         Type = ""
 
 

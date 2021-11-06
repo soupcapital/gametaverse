@@ -43,93 +43,427 @@ BackwardWorks = 1
     Name = "MOBOX"
     ID  = "mobox"
     [[Games.Contracts]]
-        Address = "0xdaD49e63F97c967955975490a432de3796C699E6"
+        Address="0xdaD49e63F97c967955975490a432de3796C699E6"
         Type = ""
     [[Games.Contracts]]
-        Address = "0xB4986E78eBBC09BAdf2D1c200c6300aACE6C2d4f"
+        Address="0xB4986E78eBBC09BAdf2D1c200c6300aACE6C2d4f"
         Type = ""
     [[Games.Contracts]]
-        Address = "0x63E760960333931fC75eABb0860a00991F21D91F"
+        Address="0x63E760960333931fC75eABb0860a00991F21D91F"
         Type = ""
     [[Games.Contracts]]
-        Address = "0x4Cad08CA7a8bab80CEDa046De39c042A9Cc59C3F"
+        Address="0x4Cad08CA7a8bab80CEDa046De39c042A9Cc59C3F"
         Type = ""
     [[Games.Contracts]]
-        Address = "0xc9c71DB791FAe54f19002341E988dd56d4B5cf42"
+        Address="0xc9c71DB791FAe54f19002341E988dd56d4B5cf42"
         Type = ""
     [[Games.Contracts]]
-        Address = "0xd03Fd9197C55ECd06cB6fbd8B5E554c36674126e"
+        Address="0xd03Fd9197C55ECd06cB6fbd8B5E554c36674126e"
         Type = ""
     [[Games.Contracts]]
-        Address = "0xF03EAfEF2dD2061Ec2d1f541b4700c66793431c5"
+        Address="0xF03EAfEF2dD2061Ec2d1f541b4700c66793431c5"
         Type = ""
     [[Games.Contracts]]
-        Address = "0x9377d04f61AF8AB51BBC4a03495e3dCaacC59249"
+        Address="0x9377d04f61AF8AB51BBC4a03495e3dCaacC59249"
         Type = ""
     [[Games.Contracts]]
-        Address = "0xD5576f705566Bd6a4adA6440Df980D8f7fcCB55a"
+        Address="0xD5576f705566Bd6a4adA6440Df980D8f7fcCB55a"
         Type = ""
     [[Games.Contracts]]
-        Address = "0x1bB3D32eD55F19483DeC3fDe05Add11454C09b76"
+        Address="0x1bB3D32eD55F19483DeC3fDe05Add11454C09b76"
         Type = ""
     [[Games.Contracts]]
-        Address = "0xBc480cBC625A61B66f99af65767B7C2adaBc287C"
+        Address="0xBc480cBC625A61B66f99af65767B7C2adaBc287C"
         Type = ""
     [[Games.Contracts]]
-        Address = "0x425f837Bdce5BEB0B09E4e45F06Eb8EFB4Fd9BE0"
+        Address="0x425f837Bdce5BEB0B09E4e45F06Eb8EFB4Fd9BE0"
         Type = ""
     [[Games.Contracts]]
-        Address = "0x592E9ef115096F0121202B2a5e30CD5AA228d117"
+        Address="0x592E9ef115096F0121202B2a5e30CD5AA228d117"
         Type = ""
     [[Games.Contracts]]
-        Address = "0x3bD6a582698ECCf6822dB08141818A1a8512c68D"
+        Address="0x3bD6a582698ECCf6822dB08141818A1a8512c68D"
         Type = ""
     [[Games.Contracts]]
-        Address = "0x1da9b6e37f006dD349089dEA21cb8261391593D5"
+        Address="0x1da9b6e37f006dD349089dEA21cb8261391593D5"
         Type = ""
     [[Games.Contracts]]
-        Address = "0x5Cc9AF3DEaAc89764eb98B0513E8d938D90B073D"
+        Address="0x5Cc9AF3DEaAc89764eb98B0513E8d938D90B073D"
         Type = ""
     [[Games.Contracts]]
-        Address = "0x5Fb3035d07E5d0E1D8Efbc5aE5b7546C15173035"
+        Address="0x5Fb3035d07E5d0E1D8Efbc5aE5b7546C15173035"
         Type = ""
     [[Games.Contracts]]
-        Address = "0x9442dAD1dF11C858A900f55291Dc1CF645FF66dF"
+        Address="0x9442dAD1dF11C858A900f55291Dc1CF645FF66dF"
         Type = ""
     [[Games.Contracts]]
-        Address = "0x918530a73C03E7E7024e9f8325618869A32cD8a1"
+        Address="0x918530a73C03E7E7024e9f8325618869A32cD8a1"
         Type = ""
     [[Games.Contracts]]
-        Address = "0xE90DacE4335a3C28cDE458A468B89dEf0C8904EB"
+        Address="0xE90DacE4335a3C28cDE458A468B89dEf0C8904EB"
         Type = ""
     [[Games.Contracts]]
-        Address = "0xe8eD0BF5EFEF4D0F4FE3C7AF8F48DAED5E756c84"
+        Address="0xe8eD0BF5EFEF4D0F4FE3C7AF8F48DAED5E756c84"
         Type = ""
     [[Games.Contracts]]
-        Address = "0x7cd4719482fEdF15a58757734A88d95aC61F4cBa"
+        Address="0x7cd4719482fEdF15a58757734A88d95aC61F4cBa"
         Type = ""
     [[Games.Contracts]]
-        Address = "0x5ce192da02391eB9755E7EBa10878A37F206Fd58"
+        Address="0x5ce192da02391eB9755E7EBa10878A37F206Fd58"
         Type = ""
     [[Games.Contracts]]
-        Address = "0x10cDB026C52A9713B62a0Cd9DbDC9316ed0B0Ca4"
+        Address="0x10cDB026C52A9713B62a0Cd9DbDC9316ed0B0Ca4"
         Type = ""
     [[Games.Contracts]]
-        Address = "0xDA5d712c4e6AA0067A5227F34D97AAFCF789113b"
+        Address="0xDA5d712c4e6AA0067A5227F34D97AAFCF789113b"
         Type = ""
     [[Games.Contracts]]
-        Address = "0xed8711fEff83b446158259981FD97645856e82A5"
+        Address="0xed8711fEff83b446158259981FD97645856e82A5"
         Type = ""
     [[Games.Contracts]]
-        Address = "0xAe5F14A9aed2b56121fb964A84a9DFf114296563"
+        Address="0xAe5F14A9aed2b56121fb964A84a9DFf114296563"
         Type = ""
     [[Games.Contracts]]
-        Address = "0x819e97C7Da2C784403B790121304DB9E6a038dE9"
+        Address="0x819e97C7Da2C784403B790121304DB9E6a038dE9"
         Type = ""
     [[Games.Contracts]]
-        Address = "0x689B1fcCF5B8E6f64B9F0e10bE1BfbA3039430Ba"
+        Address="0x689B1fcCF5B8E6f64B9F0e10bE1BfbA3039430Ba"
         Type = ""
     [[Games.Contracts]]
-        Address = "0x7B4e53126316DB92e0fAefD1886B4bF988c627C9"
+        Address="0x7B4e53126316DB92e0fAefD1886B4bF988c627C9"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0xAec271A66Feb3d47bDAb54DC38C36231657b007b"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x6b7A2C06826599D7cb1d993b5557F14E7970C791"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x77f040BD6ED8930830f27B83601b4a35969609d8"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x9cFA26eB210446FFFD248e6c048F11B51Ba61507"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x1100Fe08470Ec04B10166902fd14Dac2c6C7C4d0"
+        Type = ""
+
+[[Games]]
+    Name = "Wanaka Farm"
+    ID  = "wanaka_farm"
+    [[Games.Contracts]]
+        Address="0x339C72829AB7DD45C3C52f965E7ABe358dd8761E"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x12F299cB26452b428017340E79F79662aC8D73ef"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x083fad17f58d25ea6bd7f4beaa735cc02753e380"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x0c1bc0bac5a9d782d37489dfaaf9178cd1e114ca"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0xFE1Aca23A7a0DF3302DB88bDc39f59c577abc195"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x934c9198582bf2631128c5d4b051aacef9a6224f"
+        Type = ""
+
+
+[[Games]]
+    Name = "Knight War"
+    ID  = "knight_war"
+    [[Games.Contracts]]
+    Address="0x5D0E95C15cA50F13fB86938433269D03112409Fe"
+    Type = ""
+
+
+[[Games]]
+    Name = "CryptoBay"
+    ID  = "cryptobay"
+    [[Games.Contracts]]
+        Address="0x08b46Ef00ef4CC09a42a34C66A35b06d994CD356"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x9d333C812b82984399627d91663720734B6c387b"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x118B60763002f3Ba7603A3c17F946A0c7daB789F"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0xf11F070A405D3c661c587f9D378A7DBE52BFC985"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x93D0Ff622ED29E4600B00f294c25C0e3bb4e322E"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x41a5D20cd7f20B98124fd34E729B2Fc92032a74d"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0xe015a24f14A2c77Ec28A20Dd0CDE7bcBC495d4Ba"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x5bf8Af8fDB9953887cc1730cce5613e2b64111c3"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0xF10c34ef4f0431B07C6916060ea94aa7Af0BEa0a"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x9DDD0A52B5383aD53694D3D81EA93872E98eA267"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x9070F723121Ffe14DD78ABB3278827d2B0ffb26B"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x6b0aFC6b0cfA39EAb758700558942E4a45334047"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0xF1B4044ea2D5FaB7936bF576EB05dd9bACa05Df7"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x0B2e6298E2C862cF40c28aAC9c7953044e273F55"
+        Type = ""
+
+[[Games]]
+    Name = "BinaryX"
+    ID  = "binary_x"
+    [[Games.Contracts]]
+        Address="0x8b8de33B057aF4F089Dcb56F21Bc6B135F99276A"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x9ebbc6660a84baff9a9af9a8bd7a541ec7fb9130"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x8C851d1a123Ff703BD1f9dabe631b69902Df5f97"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0xb3a6381070B1a15169DEA646166EC0699fDAeA79"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0xe278bdf4541cc309b379f9a4e867f60fd6b7bc59"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0xc122ad907513224758f2b5fae732dc4042a6ed7b"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0xea83ba115d90bdd440624d054ea76357f79c6d55"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0xfA65a5751ef6079C1022Aa10b9163d7A2281360A"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x3a4D27B77B253bdb9AFec082D8f5cDE5A4D713E1"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x480d503B12ae928e8DcCd820CE45B2f6F39Ad598"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x21D4Da5833d93944B8340788C6b463ED8420838B"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x81E9aCe9511A7d56fd31940d1C49425CA3a2B8f8"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0xC5dDbb4ac27A939D914059A023C6A35F377B67Ff"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0xdcC5C1e7A3ADC8b7635565183a7385026502440B"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0xB84A69Ef7c5c823707b2Ba7bc23faA40f33242d1"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x8dFe5535576C720896E98b9c9DBAf81eE03eA903"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0xA92FE30CBB04fB647068e13208F5Ecd4EA52FF8d"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0xfBB36Af639251427D390c0294e8745631333234f"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x2d055e0b72F977b1A716ca3aAca0a5A2BBd3222B"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0xC143f8fc06d5851924b2b0e63F55B89659Fe82b6"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0xe278BDF4541cc309b379F9A4E867F60fD6B7BC59"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x698E165F2897e4daC68671c4cDFf337bbC543767"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x22F3E436dF132791140571FC985Eb17Ab1846494"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0xaF9A274c9668d68322B0dcD9043D79Cd1eBd41b3"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0xC6dB06fF6e97a6Dc4304f7615CdD392a9cF13F44"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0xF31913a9C8EFE7cE7F08A1c08757C166b572a937"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x4713A70db9AD47780EFC3300c08C17c4013DCa57"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x8B2DF673a3313BB3c0A03A154D9fFECbB2cCF26F"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x0594522127B6276C001554C15b900166BD98eC0E"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0xaf6B62B020C88C52B5060B4Dbc938d2D872eA8F1"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0xEc39831c3b13dFfcffDE0aFcedd138F4bd0384f8"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0xAB683C1E30FDbf14dF0d2936b9842aAbB8228090"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x759790df9Db509C568040f34F2578AAA399A67a0"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x534498D55d7bBC9BC80eFaAF177518530aD7881A"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x23e42A34Ab7aea7120964eCB712Db6444EE58786"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0xA100C0f774Ed525C186e6BeCDa88812427e1742d"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x092092Ec06C5D06775249c689AaD880336dD5c8e"
+        Type = ""
+
+[[Games]]
+    Name = "Step Hero"
+    ID  = "step_hero"
+    [[Games.Contracts]]
+        Address="0xE8176d414560cFE1Bf82Fd73B986823B89E4F545"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x700B5F25dBC9Ba319eF139c02839FAb638E35F86"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x1011fF3C5A4189fb86C1610ec10e300c1f968dBD"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x9823E10A0bF6F64F59964bE1A7f83090bf5728aB"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0xfdEe674Ee356972661cCD8761a2629DA78016870"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0xCB4Db2D1Cc5270C54ED01e3827455050F5574235"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0xD34FFB0D4073195cc5ea0402DC47C704aa8502C1"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0xEbaBCAa627290105b91517E0552BA536A32b48b9"
+        Type = ""
+        
+[[Games]]
+    Name = "CoPuppy"
+    ID  = "copuppy"
+    [[Games.Contracts]]
+        Address="0x82C19905B036bf4E329740989DCF6aE441AE26c1"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x746070Ef5f8c63b7EF13D1E4447490430aC3c3DD"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0xC100cd6eAcfCF4C9A39FC50fb0b1562A8893E422"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x8667464B94aC60065Dc778b19459b72246b39bbB"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x0B0386766C970dAd237a5179821EEAAD05Aa1E1c"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x23C39F13Bee691585D43065fB80e5B360d5322fE"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0xa9114F304968a71996f4Eed1cAaE4664B41ECB03"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x4d5626cbE20737A5bF1E41f8AB94186a4F133291"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x68d6fE7e5f9ce2ee7F9dD3909A85D8E46ED50885"
+        Type = ""
+
+[[Games]]
+    Name = "CryptoPlanet"
+    ID  = "crypto_planet"
+    [[Games.Contracts]]
+        Address="0xc1C3A5f43361EF0eB23625bAe897F32B695DdDB4"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x8D7a07cce6FE200D55f6B3e23082a8f3A61f2122"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x74807ccc33B738E430a9256cA47d2d080927AF5f"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x197Ea04912DC81fcD19992e6210168109Aa9C3Fe"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x89a7012558F756716a654e7230cb5475b11765C3"
+        Type = ""
+
+[[Games]]
+    Name = "Thetan Arena"
+    ID  = "thetan_arena"
+    [[Games.Contracts]]
+        Address="0xF0051fd4758147F1749D1696C9266d047B4c43Fa"
+        Type = ""
+
+[[Games]]
+    Name = "Vero Farm"
+    ID  = "vero_fram"
+    [[Games.Contracts]]
+        Address="0x0ef008ff963572d3dabc12e222420f537ddabf94"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0x1a98edc6d264d5331f5fb22eb7002d7cbff71536"
+        Type = ""
+    
+[[Games]]
+    Name = "Planet Sandbox"
+    ID  = "planet_sandbox"
+    [[Games.Contracts]]
+        Address="0x36bfBb1d5B3C9b336f3D64976599B6020cA805F1"
+        Type = ""
+    [[Games.Contracts]]
+        Address="0xD59896C6F17F62BB584BBdaAAb8d0E09fDDf691e"
+        Type = ""
+
+[[Games]]
+    Name = "MetaFish"
+    ID  = "metafish"
+    [[Games.Contracts]]
+        Address="0xe15176bcb7633be736e94ab6aa2e57a7ed5988ab"
+        Type = ""
+
+
+[[Games]]
+    Name = "Moniwar"
+    ID  = "moniwar"
+    [[Games.Contracts]]
+        Address="0x411Ec510c85C9e56271bF4E10364Ffa909E685D9"
+        Type = ""
+
+[[Games]]
+    Name = "My Pet Social"
+    ID  = "my_pet_social"
+    [[Games.Contracts]]
+        Address="0x0b1769de5a8baeb8902102422601846455d02092"
         Type = ""
 
