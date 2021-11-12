@@ -56,7 +56,6 @@ func (ata *ETHAntenna) GetTrxByNum(ctx context.Context, num uint64) (trxes []*Tr
 		})
 	}
 	return
-
 }
 
 func (ata *ETHAntenna) DealTrx4Game(game *Game, rawtrx *Transaction) (actions []*db.Action, err error) {

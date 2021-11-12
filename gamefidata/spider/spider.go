@@ -48,6 +48,8 @@ func NewSpider(games []*Game, opts options, backward bool) *Spider {
 		s.antenna = NewETHAntenna()
 	case "wax":
 		s.antenna = NewEOSAntenna()
+	case "solana":
+		s.antenna = NewSolanaAntenna()
 	}
 	return s
 }
@@ -274,7 +276,9 @@ func (sp *Spider) dealTrxes(trxes []*Transaction) (err error) {
 
 func (sp *Spider) dealTrxes4Game(game *Game, trxes []*Transaction) (err error) {
 	var actions = make(map[string]*db.Action)
+	//	log.Info("trxes:%v - %v", len(trxes), trxes)
 	for _, trx := range trxes {
+		//		log.Info("deal :%v-%v", game.info.Name, trx.raw)
 		as, err := sp.antenna.DealTrx4Game(game, trx)
 		if err != nil {
 			log.Error("deal game error: %s", err.Error())
