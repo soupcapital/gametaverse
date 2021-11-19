@@ -5,5 +5,5 @@
 #./gamefidata eth -c ../scripts/config_eth.toml 
 #./gamefidata eth -c ../scripts/config_bsc.toml 
 #./gamefidata wax -c ../scripts/config_wax.toml 
-./gamefidata solana -c ../scripts/config_solana.toml 
-#./gamefidata api -c ../scripts/config_api.toml 
+#./gamefidata solana -c ../scripts/config_solana.toml 
+./gamefidata api -c ../scripts/config_api.toml 
