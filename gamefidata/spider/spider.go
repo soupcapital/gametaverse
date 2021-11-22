@@ -46,6 +46,8 @@ func NewSpider(games []*Game, opts options, backward bool) *Spider {
 	switch opts.Chain {
 	case "polygon", "eth", "bsc":
 		s.antenna = NewETHAntenna()
+	case "avax":
+		s.antenna = NewAvaxAntenna()
 	case "wax":
 		s.antenna = NewEOSAntenna()
 	case "solana":
