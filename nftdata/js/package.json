@@ -1,6 +1,6 @@
 {
   "name": "@solong/nftdata",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "NFT Data on Solana JavaScript API.",
   "main": "dist/src/nftdata.js",
   "types": "dist/src/nftdata.d.ts",

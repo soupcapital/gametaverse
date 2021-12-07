@@ -5,5 +5,5 @@ export declare const SERUM_MAIN_NET = "https://solana-api.projectserum.com";
 export declare class MetaplexData {
     static connection: Connection;
     static setRPC(addr: string): void;
-    static findDataByOwner(ownerAddr: string): Promise<MetadataData[]>;
+    static findNftByOwner(ownerAddr: string): Promise<MetadataData[]>;
 }

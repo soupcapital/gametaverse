@@ -23,7 +23,7 @@ class MetaplexData {
     static setRPC(addr) {
         MetaplexData.connection = new web3_js_1.Connection(addr);
     }
-    static findDataByOwner(ownerAddr) {
+    static findNftByOwner(ownerAddr) {
         return __awaiter(this, void 0, void 0, function* () {
             let owner = new web3_js_1.PublicKey(ownerAddr);
             const accounts = yield mpl_core_1.TokenAccount.getTokenAccountsByOwner(MetaplexData.connection, owner);
@@ -38,5 +38,5 @@ class MetaplexData {
     }
 }
 exports.MetaplexData = MetaplexData;
-MetaplexData.connection = new web3_js_1.Connection(exports.MAIN_NET);
+MetaplexData.connection = new web3_js_1.Connection(exports.SERUM_MAIN_NET);
 //# sourceMappingURL=MetaplexData.js.map

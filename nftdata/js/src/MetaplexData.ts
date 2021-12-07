@@ -26,13 +26,13 @@ export  const SERUM_MAIN_NET = 'https://solana-api.projectserum.com'
 
 export class MetaplexData  {
 
-  static connection = new Connection(MAIN_NET)
+  static connection = new Connection(SERUM_MAIN_NET)
 
   static setRPC(addr: string) {
     MetaplexData.connection = new Connection(addr)
   }
 
-  static async findDataByOwner(
+  static async findNftByOwner(
     ownerAddr: string,
   ): Promise<MetadataData[]> {
     let owner =  new PublicKey(ownerAddr);
