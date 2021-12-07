@@ -1,0 +1,45 @@
+{
+  "name": "@solong/nftdata",
+  "version": "0.0.1",
+  "description": "NFT Data on Solana JavaScript API.",
+  "main": "dist/src/nftdata.js",
+  "types": "dist/src/nftdata.d.ts",
+  "scripts": {
+    "prepublish": "yarn build && yarn test",
+    "build:docs": "typedoc",
+    "build": "rimraf dist && tsc -p tsconfig.json",
+    "test": "echo nftdata tests coming up ...",
+    "lint": "eslint \"{src,test}/**/*.ts\" --format stylish",
+    "fix:lint": "yarn lint --fix",
+    "prettier": "prettier \"{src,test}/**/*.ts\" --check",
+    "fix:prettier": "prettier --write src/",
+    "fix": "yarn fix:lint && yarn fix:prettier"
+  },
+  "files": [
+    "/dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "nft",
+    "gametaverse",
+    "solana",
+    "blockchain"
+  ],
+  "homepage": "https://gametaverse.io/",
+  "repository": "https://gametaverse.io/",
+  "author": "Gametaverse Maintainers <contact@gametaverse.com>",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "@metaplex-foundation/mpl-core": "^0.0.1",
+    "@metaplex-foundation/mpl-token-metadata": "^0.0.2",
+    "@solana/spl-token": "^0.1.8",
+    "@solana/web3.js": "^1.31.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.3.0",
+    "rimraf": "^3.0.2"
+  }
+}
