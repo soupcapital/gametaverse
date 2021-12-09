@@ -7,6 +7,7 @@ import (
 
 	"github.com/cz-theng/czkit-go/log"
 	"github.com/gametaverse/twitterspy/db"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	mngopts "go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -96,8 +97,34 @@ func (ts *TwitterSpider) Start() (err error) {
 	}
 }
 
+func (ts *TwitterSpider) loadVs() (vs []string, err error) {
+	ctx, cancel := context.WithTimeout(ts.ctx, 20*time.Second)
+	defer cancel()
+
+	cursor, err := ts.vtable.Find(ctx, bson.M{})
+	if err != nil {
+		log.Error("Find vname error: ", err.Error())
+		return
+	}
+
+	var vnames []db.VName
+	if err = cursor.All(ctx, &vnames); err != nil {
+		log.Error("Find vname error: ", err.Error())
+		return
+	}
+	for _, vname := range vnames {
+		vs = append(vs, vname.ID)
+	}
+	return
+}
+
 func (ts *TwitterSpider) updateTwitter() {
-	for _, v := range ts.vs {
+	vs, err := ts.loadVs()
+	if err != nil {
+		log.Error("load Vs error:%s", err.Error())
+		return
+	}
+	for _, v := range vs {
 	AGAIN:
 		tweets, err := ts.conn.QueryV(v, ts.internal, ts.perCount)
 		if err != nil {
