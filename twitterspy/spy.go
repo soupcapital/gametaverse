@@ -97,7 +97,7 @@ func Init(opts ...Option) (err error) {
 	}
 
 	service.spider = NewTwitterSpider()
-	if err = service.spider.Init(service.msgChan, service.opts.vs, service.opts.twitterInterval, service.opts.twitterCount); err != nil {
+	if err = service.spider.Init(service.msgChan, service.opts.vs, service.opts.twitterInterval, service.opts.twitterCount, service.opts.MongoURI); err != nil {
 		log.Error("Twitter init error:%s", err.Error())
 		return
 	}

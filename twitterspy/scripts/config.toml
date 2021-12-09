@@ -2,6 +2,8 @@ RPCAddr = "127.0.0.1:8088"
 LogFile = "sti.log"
 LogPath = "./"
 LogLevel = "Info"
+#DBURI = "mongodb+srv://cz:Solong2020@cluster1.g9w77.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+DBURI = "mongodb+srv://gametaverse:gametaverse2021@cluster0.fnwxw.mongodb.net/d_gametaverse?retryWrites=true&w=majority"
 Vs = [
     "AxieInfinity",
     "bladescrypto",
@@ -125,7 +127,19 @@ Vs = [
     "warenaofficial",
     "KabyArena",
     "theufotoken",
-    "MetaWarsNFT"
+    "MetaWarsNFT",
+    "genopets",
+    "StarSharks_SSS",
+    "aavegotchi",
+    "0xmeligames",
+    "MetaverseMiner",
+    "SIPHERxyz",
+    "LeagueKingdoms",
+    "the_phantom_g",
+    "bnbheroes",
+    "placewar_game",
+    "talecraftio",
+    "IrreverentLabs"
 ]
 TwitterInterval = 600
 TwitterCount = 100

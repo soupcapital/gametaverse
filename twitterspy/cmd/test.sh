@@ -1,2 +1,3 @@
 #!/usr/bin/env bash
-./twitterspy -c ../scripts/config.toml
+#./twitterspy spider -c ../scripts/config.toml
+./twitterspy api -c ../scripts/config_api.toml

@@ -9,6 +9,7 @@ type options struct {
 	twitterInterval time.Duration
 	twitterCount    uint32
 	keyWords        []string
+	MongoURI        string
 }
 
 func defaultOptions() options {
@@ -56,6 +57,12 @@ func WithVs(vs []string) Option {
 func WithTGBotToken(token string) Option {
 	return newFuncOption(func(o *options) {
 		o.tgbotToken = token
+	})
+}
+
+func WithMongoURI(uri string) Option {
+	return newFuncOption(func(o *options) {
+		o.MongoURI = uri
 	})
 }
 

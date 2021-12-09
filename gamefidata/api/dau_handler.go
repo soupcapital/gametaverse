@@ -96,12 +96,12 @@ func (hdl *DAUHandler) Get(w http.ResponseWriter, r *http.Request) {
 		theDay += cSecondofDay
 	}
 
-	dau, err := hdl.dauByDate(ctx, game, gameTbl, startTS, endTS+cSecondofDay)
-	if err != nil {
-		encoder.Encode(ErrDB)
-		log.Error("dauByDate: %s", err.Error())
-		return
-	}
+	// dau, err := hdl.dauByDate(ctx, game, gameTbl, startTS, endTS+cSecondofDay)
+	// if err != nil {
+	// 	encoder.Encode(ErrDB)
+	// 	log.Error("dauByDate: %s", err.Error())
+	// 	return
+	// }
 
 	type Response struct {
 		Game  string    `json:"game"`
@@ -110,9 +110,9 @@ func (hdl *DAUHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rsp := Response{
-		Game:  game,
-		Data:  days,
-		Total: dau,
+		Game: game,
+		Data: days,
+		//	Total: dau,
 	}
 	encoder.Encode(rsp)
 }

@@ -1,4 +1,4 @@
-package main
+package spider
 
 import (
 	"fmt"
@@ -17,6 +17,7 @@ type configInfo struct {
 	TwitterCount    uint32   `toml:"TwitterCount"`
 	Groups          []int64  `toml:"Groups"`
 	KeyWords        []string `toml:"KeyWords"`
+	MongoURI        string   `toml:"DBURI"`
 }
 
 var config configInfo
