@@ -16,6 +16,11 @@ type VNameHandler struct {
 	URLHdl
 }
 
+type PostRequest struct {
+	Name   string `json:"vname"`
+	Status int    `json:"status"`
+}
+
 //Post is POST
 func (hdl *VNameHandler) Post(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -23,8 +28,21 @@ func (hdl *VNameHandler) Post(w http.ResponseWriter, r *http.Request) {
 	encoder := json.NewEncoder(w)
 	encoder.SetEscapeHTML(false)
 
-	vname := r.FormValue("vname")
-	if len(vname) == 0 {
+	var req PostRequest
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&req)
+	if err != nil {
+		log.Error("Decode request error:%s", err.Error())
+		encoder.Encode(ErrParam)
+		return
+	}
+	if len(req.Name) == 0 {
+		encoder.Encode(ErrParam)
+		return
+	}
+	if req.Status != int(db.VNSDigged) &&
+		req.Status != int(db.VNSTraced) &&
+		req.Status != int(db.VNSBlocked) {
 		encoder.Encode(ErrParam)
 		return
 	}
@@ -39,10 +57,10 @@ func (hdl *VNameHandler) Post(w http.ResponseWriter, r *http.Request) {
 
 	update := bson.M{
 		"$set": bson.M{
-			"status": 1,
+			"status": req.Status,
 		},
 	}
-	_, err := vnameTbl.UpdateByID(ctx, vname, update, opt)
+	_, err = vnameTbl.UpdateByID(ctx, req.Name, update, opt)
 	if err != nil {
 		log.Error("Update vname error: ", err.Error())
 		encoder.Encode(ErrDB)
@@ -56,8 +74,8 @@ func (hdl *VNameHandler) Post(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rsp := Response{
-		VName:  vname,
-		Status: 1,
+		VName:  req.Name,
+		Status: req.Status,
 		Err:    0,
 		ErrMsg: "",
 	}
@@ -141,18 +159,26 @@ func (hdl *VNameHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type Response struct {
-		VNames []string `json:"vanmes"`
+		Traced []string `json:"traced"`
+		Digged []string `json:"digged"`
 		Err    int      `json:"errno"`
 		ErrMsg string   `json:"errmsg"`
 	}
 
-	var names []string
+	var traced []string
+	var digged []string
 	for _, vname := range vnames {
-		names = append(names, vname.ID)
+		if vname.Status == int8(db.VNSTraced) {
+			traced = append(traced, vname.ID)
+		}
+		if vname.Status == int8(db.VNSDigged) {
+			digged = append(digged, vname.ID)
+		}
 	}
 
 	rsp := Response{
-		VNames: names,
+		Traced: traced,
+		Digged: digged,
 		Err:    0,
 		ErrMsg: "",
 	}

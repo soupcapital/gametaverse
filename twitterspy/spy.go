@@ -3,6 +3,7 @@ package twitterspy
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
@@ -15,13 +16,18 @@ type Spy struct {
 	tgbotMsgChan chan string
 	opts         options
 	msgChan      chan (TweetInfo)
-
-	ctx context.Context
+	userReg      *regexp.Regexp
+	ctx          context.Context
 }
 
 var service Spy
 
 func (s *Spy) start() (err error) {
+	s.userReg = regexp.MustCompile(`(^|[^@\w])@(\w{1,15})\b`)
+	if s.userReg == nil {
+		log.Error("regexp err:%s", err.Error())
+		return
+	}
 	go service.tgbot.Run()
 	go service.spider.Start()
 	go service.handleTGBotMsgLoop()
@@ -55,12 +61,29 @@ func (s *Spy) handleTestMsg() {
 	s.tgbot.SendMessage(msg)
 }
 
+func (s *Spy) digUser(tweet *TweetInfo) {
+	rst := s.userReg.FindAllStringSubmatch(tweet.FullText, -1)
+	for _, m := range rst {
+		if len(m) > 0 {
+			user := m[0]
+			if !strings.HasPrefix(user, "@") {
+				continue
+			}
+			user = strings.TrimLeft(user, "@")
+			log.Info("Add a dig user:%v", user)
+			s.spider.UpdateDigUser(user)
+		}
+	}
+}
+
 func (s *Spy) dealTweet(tweet *TweetInfo) {
 	// {
 	// 	// TODO: for tset
 	// 	msg := fmt.Sprintf("%s@%s talk about:\n %s", tweet.Author, time.Time(tweet.CreateAt).Format("2006/01/02 15:04:05"), tweet.FullText)
 	// 	s.tgbot.SendMessage(msg)
 	// }
+
+	s.digUser(tweet)
 	txt := strings.ToLower(tweet.FullText)
 	for _, word := range s.opts.keyWords {
 		word = strings.ToLower(word)

@@ -79,22 +79,69 @@ func (ts *TwitterSpider) Init(msgChan chan (TweetInfo), vs []string, internal ti
 	ts.internal = internal
 	ts.perCount = count
 	ts.msgChan = msgChan
-
-	if err = ts.initDB(dbUrl); err != nil {
-		return err
+	if len(dbUrl) > 0 {
+		if err = ts.initDB(dbUrl); err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
 func (ts *TwitterSpider) Start() (err error) {
 	ticker := time.NewTicker(ts.internal)
-	ts.updateTwitter()
+	ts.updateTwitter(nil)
 	for {
 		select {
 		case <-ticker.C:
-			ts.updateTwitter()
+			ts.updateTwitter(nil)
 		}
 	}
+}
+
+func (ts *TwitterSpider) Digger(done chan (struct{}), vs []string, count uint32) {
+	ts.updateTwitter(vs)
+	done <- struct{}{}
+}
+
+func (ts *TwitterSpider) UpdateDigUser(user string) (err error) {
+	vnameTbl := ts.db.Collection(db.VNameTable)
+
+	ctx, cancel := context.WithTimeout(ts.ctx, 1000*time.Second)
+	defer cancel()
+
+	filter := bson.M{
+		"_id": user,
+	}
+
+	curs, err := vnameTbl.Find(ctx, filter)
+	if err != nil {
+		log.Error("Find monitor error:", err.Error())
+		return err
+	}
+
+	var m db.VName
+	for curs.Next(ctx) {
+		curs.Decode(&m)
+		break
+	}
+
+	if m.Status == int8(db.VNSBlocked) {
+		return nil
+	}
+	opt := mngopts.Update()
+	opt.SetUpsert(true)
+
+	update := bson.M{
+		"$setOnInsert": bson.M{
+			"status": db.VNSDigged,
+		},
+	}
+	_, err = vnameTbl.UpdateByID(ctx, user, update, opt)
+	if err != nil {
+		log.Error("Update vname error: ", err.Error())
+		return
+	}
+	return
 }
 
 func (ts *TwitterSpider) loadVs() (vs []string, err error) {
@@ -113,16 +160,21 @@ func (ts *TwitterSpider) loadVs() (vs []string, err error) {
 		return
 	}
 	for _, vname := range vnames {
-		vs = append(vs, vname.ID)
+		if vname.Status == int8(db.VNSTraced) {
+			vs = append(vs, vname.ID)
+		}
 	}
 	return
 }
 
-func (ts *TwitterSpider) updateTwitter() {
-	vs, err := ts.loadVs()
-	if err != nil {
-		log.Error("load Vs error:%s", err.Error())
-		return
+func (ts *TwitterSpider) updateTwitter(vs []string) {
+	var err error
+	if len(vs) == 0 {
+		vs, err = ts.loadVs()
+		if err != nil {
+			log.Error("load Vs error:%s", err.Error())
+			return
+		}
 	}
 	for _, v := range vs {
 	AGAIN:
@@ -138,7 +190,7 @@ func (ts *TwitterSpider) updateTwitter() {
 			log.Error("QueryV error:%s", err.Error())
 			continue
 		}
-		log.Info("Query %v Got :%v", v, tweets)
+		//log.Info("Query %v Got :%v", v, tweets)
 		for _, t := range tweets {
 			t.Author = v
 			msg := fmt.Sprintf("[%s@%s]:%s", v, time.Time(t.CreateAt).String(), t.FullText)

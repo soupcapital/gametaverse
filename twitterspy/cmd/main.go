@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gametaverse/twitterspy/cmd/api"
+	"github.com/gametaverse/twitterspy/cmd/digger"
 	"github.com/gametaverse/twitterspy/cmd/spider"
 	"github.com/spf13/cobra"
 )
@@ -13,18 +14,18 @@ var (
 )
 
 var rootCMD = &cobra.Command{
-	Use:   "tttspy",
-	Short: "start an tttspy",
-	Long:  `start an tttspy`,
+	Use:   "twitterspy",
+	Short: "start an twitterspy",
+	Long:  `start an twitterspy`,
 	Run:   _main,
 }
 
 func init() {
-	rootCMD.PersistentFlags().BoolVarP(&_version, "version", "v", false, "print version of tttspy")
+	rootCMD.PersistentFlags().BoolVarP(&_version, "version", "v", false, "print version of twitterspy")
 
 	rootCMD.AddCommand(spider.CMD)
 	rootCMD.AddCommand(api.CMD)
-	// rootCMD.AddCommand(pancakeswap.CMD)
+	rootCMD.AddCommand(digger.CMD)
 }
 
 func main() {
