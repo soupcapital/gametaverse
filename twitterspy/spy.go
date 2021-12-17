@@ -66,6 +66,7 @@ func (s *Spy) digUser(tweet *TweetInfo) {
 	for _, m := range rst {
 		if len(m) > 0 {
 			user := m[0]
+			user = strings.TrimSpace(user)
 			if !strings.HasPrefix(user, "@") {
 				continue
 			}
@@ -77,11 +78,11 @@ func (s *Spy) digUser(tweet *TweetInfo) {
 }
 
 func (s *Spy) dealTweet(tweet *TweetInfo) {
-	// {
-	// 	// TODO: for tset
-	// 	msg := fmt.Sprintf("%s@%s talk about:\n %s", tweet.Author, time.Time(tweet.CreateAt).Format("2006/01/02 15:04:05"), tweet.FullText)
-	// 	s.tgbot.SendMessage(msg)
-	// }
+	{
+		// TODO: for tset
+		msg := fmt.Sprintf("%s@%s talk about:\n %s", tweet.Author, time.Time(tweet.CreateAt).Format("2006/01/02 15:04:05"), tweet.FullText)
+		log.Info("deal tweet:%v", msg)
+	}
 
 	s.digUser(tweet)
 	txt := strings.ToLower(tweet.FullText)
@@ -97,6 +98,7 @@ func (s *Spy) dealTweet(tweet *TweetInfo) {
 			if strings.Contains(txt, w) {
 				msg := fmt.Sprintf("%s@%s talk about:\n %s", tweet.Author, time.Time(tweet.CreateAt).Format("2006/01/02 15:04:05"), tweet.FullText)
 				s.tgbot.SendMessage(msg)
+				log.Info("[SEND]%s", msg)
 				return
 			}
 		}

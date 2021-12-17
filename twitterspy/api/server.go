@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/cz-theng/czkit-go/log"
+	"github.com/gametaverse/twitterspy"
 	"github.com/gametaverse/twitterspy/db"
 	"go.mongodb.org/mongo-driver/mongo"
 	mngopts "go.mongodb.org/mongo-driver/mongo/options"
@@ -20,6 +21,9 @@ type Server struct {
 	httpd     http.Server
 	router    *Router
 	db        *mongo.Database
+
+	token *twitterspy.Token
+	conn  *twitterspy.TwitterSearchConn
 }
 
 func NewServer() (svr *Server) {
@@ -50,12 +54,20 @@ func (svr *Server) Init(opts ...Option) (err error) {
 	svr.router = NewRouter()
 
 	svr.initHandler()
-
+	svr.token = twitterspy.NewToken()
+	if err = svr.token.Refresh(); err != nil {
+		return err
+	}
+	svr.conn = twitterspy.NewTwitterSearchConn()
+	if err = svr.conn.Init(svr.token.Value()); err != nil {
+		return err
+	}
 	return
 }
 
 func (svr *Server) initHandler() {
 	svr.router.RegistRaw("/twitterspy/api/v1/vname", &VNameHandler{URLHdl{server: svr}})
+	svr.router.RegistRaw("/twitterspy/api/v1/userinfo", &UserInfoHandler{URLHdl{server: svr}})
 }
 
 func (svr *Server) initDB(URI string) (err error) {

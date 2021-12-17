@@ -32,6 +32,10 @@ func NewTwitterSearchConn() *TwitterSearchConn {
 	return tsc
 }
 
+func (tsc *TwitterSearchConn) UpdateToken(token string) {
+	tsc.token = token
+}
+
 func (tsc *TwitterSearchConn) Init(token string) (err error) {
 	tsc.token = token
 	tsc.cli = &http.Client{}
@@ -120,4 +124,45 @@ func (tsc *TwitterSearchConn) QueryV(v string, internal time.Duration, count uin
 	}
 	tweets = respJOSN.GlobalObjects.Tweets
 	return
+}
+
+func (tsc *TwitterSearchConn) QueryUserInfo(v string) (user *TwitterUserInfo, err error) {
+	apiUrl := `https://twitter.com/i/api/graphql/jMaTS-_Ea8vh9rpKggJbCQ/UserByScreenName?variables=%7B%22screen_name%22%3A%22` + v + `%22%2C%22withHighlightedLabel%22%3Atrue%7D`
+
+	req, err := http.NewRequest("GET", apiUrl, nil)
+	if err != nil {
+		log.Error("create request error:%s", err.Error())
+		return
+	}
+
+	req.Header.Set("User-Agent", tsc.userAgent)
+	req.Header.Set("authorization", "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA")
+	req.Header.Set("x-guest-token", tsc.token)
+
+	resp, err := tsc.cli.Do(req)
+	if err != nil {
+		log.Error("request error:%s", err.Error())
+		return
+	}
+	defer resp.Body.Close()
+
+	bodyDecoder := json.NewDecoder(resp.Body)
+	respJOSN := &struct {
+		Errors []struct {
+			Code    int
+			Message string
+		}
+		Data struct {
+			User TwitterUserInfo `json:"user"`
+		} `json:"data"`
+	}{}
+	if err = bodyDecoder.Decode(respJOSN); err != nil {
+		log.Error("request error:%s", err.Error())
+		return
+	}
+	if respJOSN.Errors != nil || len(respJOSN.Errors) > 0 {
+		return nil, ErrTokenForbid
+	}
+	//log.Info("user:%v", respJOSN.Data.User)
+	return &respJOSN.Data.User, nil
 }

@@ -10,6 +10,7 @@ import (
 
 const (
 	_twitterIndexURL = "https://twitter.com"
+	_bearer          = `Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA`
 )
 
 type Token struct {
@@ -23,6 +24,10 @@ func NewToken() *Token {
 	t.cli = &http.Client{}
 	t.regexp = regexp.MustCompile(`\("gt=(\d+);`)
 	return t
+}
+
+func (t *Token) Value() string {
+	return t.token
 }
 
 func (t *Token) Refresh() error {
