@@ -39,6 +39,7 @@ func (hdl *UserInfoHandler) Get(w http.ResponseWriter, r *http.Request) {
 			encoder.Encode(ErrParam)
 			return
 		}
+		hdl.server.conn.UpdateToken(hdl.server.token.Value())
 	}
 
 	userInfo, err := hdl.server.conn.QueryUserInfo(vname)
@@ -49,6 +50,7 @@ func (hdl *UserInfoHandler) Get(w http.ResponseWriter, r *http.Request) {
 			encoder.Encode(ErrParam)
 			return
 		}
+		hdl.server.conn.UpdateToken(hdl.server.token.Value())
 		userInfo, err = hdl.server.conn.QueryUserInfo(vname)
 		if err != nil {
 			log.Error("QueryUserInfo  error:%s", err.Error())

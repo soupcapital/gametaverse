@@ -9,8 +9,7 @@ import (
 )
 
 var (
-	_rpcAddr      string
-	_twitterCount uint32
+	_configFile string
 )
 
 var CMD = &cobra.Command{
@@ -21,25 +20,34 @@ var CMD = &cobra.Command{
 }
 
 func init() {
-	CMD.PersistentFlags().StringVarP(&_rpcAddr, "rpc", "r", "", "rpc addr of vname")
-	CMD.PersistentFlags().Uint32VarP(&_twitterCount, "count", "c", 100, "count of twitter to digg")
+	CMD.PersistentFlags().StringVarP(&_configFile, "config", "c", "", "config file path for test")
 }
 
 func _main(cmd *cobra.Command, args []string) {
 
-	if len(_rpcAddr) == 0 {
+	if len(_configFile) > 0 {
+		if err := loadConfig(_configFile); err != nil {
+			return
+		}
+	} else {
 		cmd.Usage()
 		return
 	}
 
 	logFile := "digger.log"
 	logPath := "./"
+	if len(config.LogPath) > 0 {
+		logPath = config.LogPath
+	}
+	if len(config.LogFile) > 0 {
+		logFile = config.LogFile
+	}
 
 	logNameOpt := log.WithLogName(logFile)
 	logPathOpt := log.WithLogPath(logPath)
 	log.Init(logNameOpt, logPathOpt)
 
-	err := digger.Init(_rpcAddr, _twitterCount)
+	err := digger.Init(config.DBURI)
 	if err != nil {
 		fmt.Printf("init error:%s", err.Error())
 		return

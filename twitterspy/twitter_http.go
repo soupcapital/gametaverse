@@ -146,6 +146,10 @@ func (tsc *TwitterSearchConn) QueryUserInfo(v string) (user *TwitterUserInfo, er
 	}
 	defer resp.Body.Close()
 
+	// body, err := ioutil.ReadAll(resp.Body)
+	// log.Info("body:%v", string(body))
+
+	// return
 	bodyDecoder := json.NewDecoder(resp.Body)
 	respJOSN := &struct {
 		Errors []struct {
