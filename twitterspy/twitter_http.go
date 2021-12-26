@@ -68,10 +68,10 @@ func (tsc *TwitterSearchConn) solidParams() map[string]string {
 	return parmas
 }
 
-func (tsc *TwitterSearchConn) QueryV(v string, internal time.Duration, count uint32) (tweets map[string]TweetInfo, err error) {
+//func (tsc *TwitterSearchConn) QueryV(v string, internal time.Duration, count uint32) (tweets map[string]TweetInfo, err error) {
+func (tsc *TwitterSearchConn) QueryV(v string, since, until time.Time, count uint32) (tweets map[string]TweetInfo, err error) {
 	//log.Info("query for %s ", v)
-	until := time.Now()
-	since := until.Add(-1 * internal)
+
 	params := tsc.solidParams()
 	sinceStr := strconv.FormatUint(uint64(since.Unix()), 10)
 	untilStr := strconv.FormatUint(uint64(until.Unix()), 10)

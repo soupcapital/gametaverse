@@ -26,8 +26,12 @@ func (t JSONTime) MarshalJSON() ([]byte, error) {
 }
 
 type TweetInfo struct {
-	CreateAt JSONTime `json:"created_at"`
-	ID       uint64   `json:"id"`
-	FullText string   `json:"full_text"`
-	Author   string   `json:"author"`
+	CreateAt      JSONTime `json:"created_at"`
+	ID            uint64   `json:"id"`
+	FullText      string   `json:"full_text"`
+	Author        string   `json:"author"`
+	RetweetCount  int      `json:"retweet_count"`
+	FavoriteCount int      `json:"favorite_count"`
+	ReplyCount    int      `json:"reply_count"`
+	QuoteCount    int      `json:"quote_count"`
 }

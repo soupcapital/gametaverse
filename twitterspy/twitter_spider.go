@@ -176,9 +176,11 @@ func (ts *TwitterSpider) updateTwitter(vs []string) {
 			return
 		}
 	}
+	until := time.Now()
+	since := until.Add(-1 * ts.internal)
 	for _, v := range vs {
 	AGAIN:
-		tweets, err := ts.conn.QueryV(v, ts.internal, ts.perCount)
+		tweets, err := ts.conn.QueryV(v, since, until, ts.perCount)
 		if err != nil {
 			if err == ErrTokenForbid {
 				if err = ts.token.Refresh(); err == nil {
