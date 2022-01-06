@@ -6,6 +6,7 @@ import (
 	"github.com/gametaverse/twitterspy/cmd/api"
 	"github.com/gametaverse/twitterspy/cmd/digger"
 	"github.com/gametaverse/twitterspy/cmd/spider"
+	"github.com/gametaverse/twitterspy/cmd/token"
 	"github.com/spf13/cobra"
 )
 
@@ -26,6 +27,7 @@ func init() {
 	rootCMD.AddCommand(spider.CMD)
 	rootCMD.AddCommand(api.CMD)
 	rootCMD.AddCommand(digger.CMD)
+	rootCMD.AddCommand(token.CMD)
 }
 
 func main() {

@@ -47,7 +47,7 @@ func _main(cmd *cobra.Command, args []string) {
 	logPathOpt := log.WithLogPath(logPath)
 	log.Init(logNameOpt, logPathOpt)
 
-	err := digger.Init(config.DBURI)
+	err := digger.Init(config.DBURI, config.TokenRPC)
 	if err != nil {
 		fmt.Printf("init error:%s", err.Error())
 		return

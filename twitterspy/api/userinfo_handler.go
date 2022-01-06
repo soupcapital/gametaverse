@@ -33,24 +33,14 @@ func (hdl *UserInfoHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if len(hdl.server.token.Value()) == 0 {
-		if err := hdl.server.token.Refresh(); err != nil {
-			log.Error("Refresh token error:%s", err.Error())
-			encoder.Encode(ErrParam)
-			return
-		}
-		hdl.server.conn.UpdateToken(hdl.server.token.Value())
-	}
-
 	userInfo, err := hdl.server.conn.QueryUserInfo(vname)
 
 	if err == twitterspy.ErrTokenForbid {
-		if err = hdl.server.token.Refresh(); err != nil {
+		if err = hdl.server.conn.RefreshToken(); err != nil {
 			log.Error("Refresh token error:%s", err.Error())
 			encoder.Encode(ErrParam)
 			return
 		}
-		hdl.server.conn.UpdateToken(hdl.server.token.Value())
 		userInfo, err = hdl.server.conn.QueryUserInfo(vname)
 		if err != nil {
 			log.Error("QueryUserInfo  error:%s", err.Error())

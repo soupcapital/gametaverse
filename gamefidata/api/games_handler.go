@@ -20,6 +20,10 @@ type GamesHandler struct {
 func (hdl *GamesHandler) Post(w http.ResponseWriter, r *http.Request) {
 }
 
+//Delete is DELETE
+func (hdl *GamesHandler) Delete(w http.ResponseWriter, r *http.Request) {
+}
+
 //Get is GET
 func (hdl *GamesHandler) Get(w http.ResponseWriter, r *http.Request) {
 	log.Info("deal with sort")

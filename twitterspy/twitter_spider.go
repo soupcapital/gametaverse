@@ -15,7 +15,6 @@ import (
 
 type TwitterSpider struct {
 	tgbot    *TGBot
-	token    *Token
 	vs       []string
 	conn     *TwitterSearchConn
 	internal time.Duration
@@ -29,7 +28,6 @@ type TwitterSpider struct {
 
 func NewTwitterSpider() *TwitterSpider {
 	ts := &TwitterSpider{}
-	ts.token = NewToken()
 	ts.conn = NewTwitterSearchConn()
 	ts.ctx = context.Background()
 	return ts
@@ -65,15 +63,12 @@ func (ts *TwitterSpider) initDB(uri string) (err error) {
 	return
 }
 
-func (ts *TwitterSpider) Init(msgChan chan (TweetInfo), vs []string, internal time.Duration, count uint32, dbUrl string) (err error) {
+func (ts *TwitterSpider) Init(msgChan chan (TweetInfo), vs []string, internal time.Duration, count uint32, dbUrl string, tokenRPC string) (err error) {
 	_vs := make([]string, len(vs))
 	copy(_vs, vs)
 	ts.vs = _vs
 
-	if err = ts.token.Refresh(); err != nil {
-		return err
-	}
-	if err = ts.conn.Init(ts.token.token); err != nil {
+	if err = ts.conn.Init(tokenRPC); err != nil {
 		return err
 	}
 	ts.internal = internal
@@ -183,8 +178,7 @@ func (ts *TwitterSpider) updateTwitter(vs []string) {
 		tweets, err := ts.conn.QueryV(v, since, until, ts.perCount)
 		if err != nil {
 			if err == ErrTokenForbid {
-				if err = ts.token.Refresh(); err == nil {
-					ts.conn.token = ts.token.token
+				if err = ts.conn.RefreshToken(); err == nil {
 					log.Info("Refresh token success and goto Again")
 					goto AGAIN
 				}

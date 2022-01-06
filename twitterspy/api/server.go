@@ -22,8 +22,7 @@ type Server struct {
 	router    *Router
 	db        *mongo.Database
 
-	token *twitterspy.Token
-	conn  *twitterspy.TwitterSearchConn
+	conn *twitterspy.TwitterSearchConn
 }
 
 func NewServer() (svr *Server) {
@@ -54,12 +53,9 @@ func (svr *Server) Init(opts ...Option) (err error) {
 	svr.router = NewRouter()
 
 	svr.initHandler()
-	svr.token = twitterspy.NewToken()
-	if err = svr.token.Refresh(); err != nil {
-		return err
-	}
+
 	svr.conn = twitterspy.NewTwitterSearchConn()
-	if err = svr.conn.Init(svr.token.Value()); err != nil {
+	if err = svr.conn.Init(svr.opts.TokenRPC); err != nil {
 		return err
 	}
 	return

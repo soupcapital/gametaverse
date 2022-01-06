@@ -59,24 +59,10 @@ func (hdl *UserStatusHandler) Get(w http.ResponseWriter, r *http.Request) {
 		encoder.Encode(ErrTimestamp)
 		return
 	}
-	since := dayTime
-	until := dayTime.Add(twitterspy.SecOfDay * time.Second)
-	tweets, err := hdl.server.conn.QueryV(vname, since, until, 100)
-	if err != nil {
-		log.Error("query tweets error:%s", err.Error())
-		encoder.Encode(ErrQueryTweets)
-		return
-	}
 
 	favCount := 0
-	replayCount := 0
+	replyCount := 0
 	retweetCount := 0
-
-	for _, tweet := range tweets {
-		favCount += tweet.FavoriteCount
-		replayCount += tweet.ReplyCount
-		retweetCount += tweet.RetweetCount
-	}
 
 	dayOneTS := dayTS - twitterspy.SecOfDay
 	dayOneInfo, err := hdl.queryDiggerInfoForOneDay(vname, dayOneTS)
@@ -96,12 +82,15 @@ func (hdl *UserStatusHandler) Get(w http.ResponseWriter, r *http.Request) {
 		encoder.Encode(ErrNoDataForDay)
 		return
 	}
+	favCount = dayInfo.FavoriteCount
+	replyCount = dayInfo.ReplyCount
+	retweetCount = dayInfo.RetweetCount
 
 	type Response struct {
 		Increase      int     `increase`
 		IncreaseRate  float32 `increase_rate`
 		TweetCount    int     `tweet_count`
-		ReplayCount   int     `tweet_replay_count`
+		ReplyCount    int     `tweet_reply_count`
 		RetweetCount  int     `tweet_retweet_count`
 		FavoriteCount int     `tweet_favorite_count`
 		Err           int     `json:"errno"`
@@ -117,7 +106,7 @@ func (hdl *UserStatusHandler) Get(w http.ResponseWriter, r *http.Request) {
 		IncreaseRate:  float32(incRate),
 		TweetCount:    dayInfo.TweetsCount - dayOneInfo.TweetsCount,
 		FavoriteCount: favCount,
-		ReplayCount:   replayCount,
+		ReplyCount:    replyCount,
 		RetweetCount:  retweetCount,
 		Err:           0,
 		ErrMsg:        "",

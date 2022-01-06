@@ -3,3 +3,5 @@ LogPath = "./"
 LogLevel = "Info"
 DBURI = "mongodb+srv://cz:Solong2020@cluster1.g9w77.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
 #DBURI = "mongodb+srv://gametaverse:gametaverse2021@cluster0.fnwxw.mongodb.net/d_gametaverse?retryWrites=true&w=majority"
+TokenRPC = "http://127.0.0.1:8090/twitterspy/api/v1/token"
+

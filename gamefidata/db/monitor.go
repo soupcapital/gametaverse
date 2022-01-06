@@ -9,6 +9,7 @@ const (
 )
 
 type Monitor struct {
-	ID       string `json:"_id" bson:"_id"`
-	TopBlock uint64 `json:"topblock" bson:"topblock"`
+	ID           string `json:"_id" bson:"_id"`
+	TopBlock     uint64 `json:"topblock" bson:"topblock"`
+	LatestUpdate uint64 `json:"latest" bson:"latest"`
 }

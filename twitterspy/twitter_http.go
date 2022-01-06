@@ -18,12 +18,14 @@ const (
 
 var (
 	ErrTokenForbid = errors.New("Token is forbidden")
+	ErrToken       = errors.New("Get token error")
 )
 
 type TwitterSearchConn struct {
 	cli       *http.Client
 	url       string
 	token     string
+	tokenRPC  string
 	userAgent string
 }
 
@@ -32,17 +34,49 @@ func NewTwitterSearchConn() *TwitterSearchConn {
 	return tsc
 }
 
-func (tsc *TwitterSearchConn) UpdateToken(token string) {
-	tsc.token = token
-}
-
-func (tsc *TwitterSearchConn) Init(token string) (err error) {
-	tsc.token = token
+func (tsc *TwitterSearchConn) Init(tokenRPC string) (err error) {
+	tsc.tokenRPC = tokenRPC
 	tsc.cli = &http.Client{}
 	if r, err := rand.Int(rand.Reader, big.NewInt(int64(len(userAgents)))); err == nil {
 		tsc.userAgent = userAgents[r.Int64()]
 	}
 	tsc.url = baseURL
+	if err = tsc.RefreshToken(); err != nil {
+		log.Error("Refresh token error")
+		return
+	}
+	return nil
+}
+
+func (tsc *TwitterSearchConn) RefreshToken() (err error) {
+
+	req, err := http.NewRequest("GET", tsc.tokenRPC, nil)
+	if err != nil {
+		log.Error("create request error:%s", err.Error())
+		return
+	}
+
+	resp, err := tsc.cli.Do(req)
+	if err != nil {
+		log.Error("request error:%s", err.Error())
+		return
+	}
+	defer resp.Body.Close()
+
+	bodyDecoder := json.NewDecoder(resp.Body)
+	respJOSN := &struct {
+		Token  string `json:"token"`
+		Err    int    `json:"errno"`
+		ErrMsg string `json:"errmsg"`
+	}{}
+	if err = bodyDecoder.Decode(respJOSN); err != nil {
+		log.Error("request error:%s", err.Error())
+		return
+	}
+	if respJOSN.Err > 0 {
+		return ErrToken
+	}
+	tsc.token = respJOSN.Token
 	return nil
 }
 
@@ -95,6 +129,7 @@ func (tsc *TwitterSearchConn) QueryV(v string, since, until time.Time, count uin
 	req.URL.RawQuery = qv.Encode()
 	req.Header.Set("User-Agent", tsc.userAgent)
 	req.Header.Set("authorization", "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA")
+	//log.Info("token:%s", tsc.token)
 	req.Header.Set("x-guest-token", tsc.token)
 
 	resp, err := tsc.cli.Do(req)

@@ -1,5 +1,10 @@
 package twitterspy
 
+import (
+	"crypto/rand"
+	"math/big"
+)
+
 var (
 	userAgents = []string{
 		`Mozilla/4.0 (compatible; MSIE 9.0; Windows NT 6.1)`,
@@ -17,3 +22,11 @@ var (
 		`Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729)`,
 	}
 )
+
+func UserAgent() string {
+	userAgent := `Mozilla/5.0 (Windows NT 6.1; Win64; x64; Trident/7.0; rv:11.0) like Gecko`
+	if r, err := rand.Int(rand.Reader, big.NewInt(int64(len(userAgents)))); err == nil {
+		userAgent = userAgents[r.Int64()]
+	}
+	return userAgent
+}

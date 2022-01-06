@@ -11,6 +11,7 @@ type configInfo struct {
 	LogPath  string `toml:"LogPath"`
 	LogLevel string `toml:"LogLevel"`
 	DBURI    string `toml:"DBURI"`
+	TokenRPC string `toml:"TokenRPC"`
 }
 
 var config configInfo

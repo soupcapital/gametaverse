@@ -20,6 +20,10 @@ type DAUHandler struct {
 func (hdl *DAUHandler) Post(w http.ResponseWriter, r *http.Request) {
 }
 
+//Delete is DELETE
+func (hdl *DAUHandler) Delete(w http.ResponseWriter, r *http.Request) {
+}
+
 //Get is GET
 func (hdl *DAUHandler) Get(w http.ResponseWriter, r *http.Request) {
 	log.Info("deal with dau")

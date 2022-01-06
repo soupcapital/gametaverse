@@ -16,6 +16,10 @@ type AllHandler struct {
 	URLHdl
 }
 
+//Delete is DELETE
+func (hdl *AllHandler) Delete(w http.ResponseWriter, r *http.Request) {
+}
+
 //Post is POST
 func (hdl *AllHandler) Post(w http.ResponseWriter, r *http.Request) {
 }

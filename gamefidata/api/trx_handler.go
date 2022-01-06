@@ -20,6 +20,10 @@ type TrxHandler struct {
 func (hdl *TrxHandler) Post(w http.ResponseWriter, r *http.Request) {
 }
 
+//Delete is DELETE
+func (hdl *TrxHandler) Delete(w http.ResponseWriter, r *http.Request) {
+}
+
 //Get is GET
 func (hdl *TrxHandler) Get(w http.ResponseWriter, r *http.Request) {
 	log.Info("deal with trx")

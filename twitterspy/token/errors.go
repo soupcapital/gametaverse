@@ -1,4 +1,4 @@
-package api
+package token
 
 type APIError struct {
 	ErrNo  int32  `json:"errno"`

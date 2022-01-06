@@ -20,6 +20,10 @@ type SortHandler struct {
 func (hdl *SortHandler) Post(w http.ResponseWriter, r *http.Request) {
 }
 
+//Delete is DELETE
+func (hdl *SortHandler) Delete(w http.ResponseWriter, r *http.Request) {
+}
+
 type GameDAU struct {
 	GameID string `bson:"_id" json:"game"`
 	DAU    int    `bson:"dau" json:"dau"`

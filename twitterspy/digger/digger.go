@@ -19,7 +19,6 @@ type Digger struct {
 
 	db       *mongo.Database
 	dbClient *mongo.Client
-	token    *twitterspy.Token
 	conn     *twitterspy.TwitterSearchConn
 }
 
@@ -60,21 +59,12 @@ func (d *Digger) dealUser(name string) (err error) {
 	ctx, cancel := context.WithTimeout(d.ctx, 5*time.Second)
 	defer cancel()
 
-	if len(d.token.Value()) == 0 {
-		if err = d.token.Refresh(); err != nil {
-			log.Error("Refresh token error:%s", err.Error())
-			return
-		}
-		d.conn.UpdateToken(d.token.Value())
-	}
-
 	userInfo, err := d.conn.QueryUserInfo(name)
 	if err == twitterspy.ErrTokenForbid {
-		if err = d.token.Refresh(); err != nil {
+		if err = d.conn.RefreshToken(); err != nil {
 			log.Error("Refresh token error:%s", err.Error())
 			return
 		}
-		d.conn.UpdateToken(d.token.Value())
 		userInfo, err = d.conn.QueryUserInfo(name)
 		if err != nil {
 			log.Error("QueryUserInfo  error:%s", err.Error())
@@ -84,7 +74,39 @@ func (d *Digger) dealUser(name string) (err error) {
 	if err != nil {
 		return
 	}
+
 	ts := time.Now().Unix() / twitterspy.SecOfDay * twitterspy.SecOfDay
+	until := time.Unix(ts, 0)
+	since := time.Unix(ts-twitterspy.SecOfDay, 0)
+
+	tweets, err := d.conn.QueryV(name, since, until, 100)
+	if err != nil {
+		if err == twitterspy.ErrTokenForbid {
+			if err = d.conn.RefreshToken(); err != nil {
+				log.Error("Refresh token error:%s", err.Error())
+				return
+			}
+			tweets, err = d.conn.QueryV(name, since, until, 100)
+			if err != nil {
+				log.Error("query tweets error:%s", err.Error())
+				return
+			}
+		} else {
+			log.Error("query tweets error:%s", err.Error())
+			return
+		}
+	}
+
+	favCount := 0
+	replyCount := 0
+	retweetCount := 0
+
+	for _, tweet := range tweets {
+		favCount += tweet.FavoriteCount
+		replyCount += tweet.ReplyCount
+		retweetCount += tweet.RetweetCount
+	}
+
 	diggerTbl := d.db.Collection(db.DiggerTable)
 	id := fmt.Sprintf("%s_%d", name, ts)
 
@@ -96,6 +118,9 @@ func (d *Digger) dealUser(name string) (err error) {
 			"name": name,
 			"fc":   userInfo.Legacy.FollowersCount,
 			"tc":   userInfo.Legacy.StatusesCount,
+			"ftc":  favCount,
+			"rpc":  replyCount,
+			"rtc":  retweetCount,
 			"ts":   ts,
 		},
 	}
@@ -149,15 +174,11 @@ func (d *Digger) loop() {
 	}
 }
 
-func Init(mongoAddr string) (err error) {
+func Init(mongoAddr string, tokenRPC string) (err error) {
 	_digger.ctx = context.Background()
 
-	_digger.token = twitterspy.NewToken()
-	if err = _digger.token.Refresh(); err != nil {
-		return err
-	}
 	_digger.conn = twitterspy.NewTwitterSearchConn()
-	if err = _digger.conn.Init(_digger.token.Value()); err != nil {
+	if err = _digger.conn.Init(tokenRPC); err != nil {
 		return err
 	}
 

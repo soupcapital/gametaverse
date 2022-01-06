@@ -1,4 +1,4 @@
-package api
+package token
 
 import (
 	"fmt"
@@ -7,12 +7,10 @@ import (
 )
 
 type configInfo struct {
-	LogFile    string `toml:"LogFile"`
-	LogPath    string `toml:"LogPath"`
-	LogLevel   string `toml:"LogLevel"`
-	DBURI      string `toml:"DBURI"`
-	ListenAddr string `toml:"ListenAddr"`
-	TokenRPC   string `toml:"TokenRPC"`
+	RPCAddr  string `toml:"RPCAddr"`
+	LogFile  string `toml:"LogFile"`
+	LogPath  string `toml:"LogPath"`
+	LogLevel string `toml:"LogLevel"`
 }
 
 var config configInfo

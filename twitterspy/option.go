@@ -10,6 +10,7 @@ type options struct {
 	twitterCount    uint32
 	keyWords        []string
 	MongoURI        string
+	TokenRPC        string
 }
 
 func defaultOptions() options {
@@ -82,5 +83,11 @@ func WithKeyWords(words []string) Option {
 	return newFuncOption(func(o *options) {
 		o.keyWords = make([]string, len(words))
 		copy(o.keyWords, words)
+	})
+}
+
+func WithTokenRPC(addr string) Option {
+	return newFuncOption(func(o *options) {
+		o.TokenRPC = addr
 	})
 }

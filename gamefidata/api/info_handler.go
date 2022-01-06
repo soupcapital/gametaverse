@@ -20,6 +20,10 @@ type InfoHandler struct {
 func (hdl *InfoHandler) Post(w http.ResponseWriter, r *http.Request) {
 }
 
+//Delete is DELETE
+func (hdl *InfoHandler) Delete(w http.ResponseWriter, r *http.Request) {
+}
+
 //Get is GET
 func (hdl *InfoHandler) Get(w http.ResponseWriter, r *http.Request) {
 	log.Info("deal with dau")

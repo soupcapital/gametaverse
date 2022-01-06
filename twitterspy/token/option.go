@@ -1,10 +1,7 @@
-package api
+package token
 
 type options struct {
-	PrivKey    string
-	MongoURI   string
 	ListenAddr string
-	TokenRPC   string
 }
 
 func defaultOptions() options {
@@ -29,20 +26,8 @@ func newFuncOption(f func(*options)) *funcOption {
 	}
 }
 
-func WithMongoURI(URI string) Option {
-	return newFuncOption(func(o *options) {
-		o.MongoURI = URI
-	})
-}
-
 func WithListenAddr(addr string) Option {
 	return newFuncOption(func(o *options) {
 		o.ListenAddr = addr
-	})
-}
-
-func WithTokenRPC(addr string) Option {
-	return newFuncOption(func(o *options) {
-		o.TokenRPC = addr
 	})
 }

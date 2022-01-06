@@ -51,6 +51,7 @@ func _main(cmd *cobra.Command, args []string) {
 	countOpt := twitterspy.WithTwitterCount(config.TwitterCount)
 	wordsOpt := twitterspy.WithKeyWords(config.KeyWords)
 	mongoUrlOpt := twitterspy.WithMongoURI(config.MongoURI)
+	tokenRPCOpt := twitterspy.WithTokenRPC(config.TokenRPC)
 
 	twitterspy.Init(gropsOpt,
 		vsOpt,
@@ -58,6 +59,7 @@ func _main(cmd *cobra.Command, args []string) {
 		internalOpt,
 		countOpt,
 		mongoUrlOpt,
+		tokenRPCOpt,
 		wordsOpt)
 	twitterspy.StartService()
 

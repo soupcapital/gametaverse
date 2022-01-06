@@ -1,10 +1,8 @@
-package api
+package token
 
 import (
-	"fmt"
-
 	"github.com/cz-theng/czkit-go/log"
-	"github.com/gametaverse/twitterspy/api"
+	"github.com/gametaverse/twitterspy/token"
 	"github.com/spf13/cobra"
 )
 
@@ -13,9 +11,9 @@ var (
 )
 
 var CMD = &cobra.Command{
-	Use:   "api",
-	Short: "start an api",
-	Long:  `start an api`,
+	Use:   "token",
+	Short: "start an token",
+	Long:  `start an token`,
 	Run:   _main,
 }
 
@@ -33,7 +31,7 @@ func _main(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	logFile := "api.log"
+	logFile := "token.log"
 	logPath := "./"
 	if len(config.LogPath) > 0 {
 		logPath = config.LogPath
@@ -46,18 +44,15 @@ func _main(cmd *cobra.Command, args []string) {
 	logPathOpt := log.WithLogPath(logPath)
 	log.Init(logNameOpt, logPathOpt)
 
-	mongoURIOpt := api.WithMongoURI(config.DBURI)
-	listenAddrOpt := api.WithListenAddr(config.ListenAddr)
-	tokenRPCOpt := api.WithTokenRPC(config.TokenRPC)
-	apiApp := api.NewServer()
-	err := apiApp.Init(
-		mongoURIOpt,
-		tokenRPCOpt,
-		listenAddrOpt)
-	if err != nil {
-		fmt.Printf("Init error:%s \n", err.Error())
+	rpcAddrOpt := token.WithListenAddr(config.RPCAddr)
+	svr := token.NewServer()
+	if err := svr.Init(rpcAddrOpt); err != nil {
+		log.Error("Init server error:%s", err.Error())
+		return
+	}
+	if err := svr.Run(); err != nil {
+		log.Error("run server error:%s", err.Error())
 		return
 	}
 
-	apiApp.Run()
 }

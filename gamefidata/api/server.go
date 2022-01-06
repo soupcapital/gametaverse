@@ -61,6 +61,8 @@ func (svr *Server) initHandler() {
 	svr.router.RegistRaw("/gamefidata/api/v1/sort", &SortHandler{URLHdl{server: svr}})
 	svr.router.RegistRaw("/gamefidata/api/v1/all", &AllHandler{URLHdl{server: svr}})
 	svr.router.RegistRaw("/gamefidata/api/v1/games", &GamesHandler{URLHdl{server: svr}})
+	svr.router.RegistRaw("/gamefidata/api/v1/game_proj", &GameProjHandler{URLHdl{server: svr}})
+	svr.router.RegistRaw("/gamefidata/api/v1/game_contract", &GameContractHandler{URLHdl{server: svr}})
 }
 
 func (svr *Server) initDB(URI string) (err error) {

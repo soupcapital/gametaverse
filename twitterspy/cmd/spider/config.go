@@ -18,6 +18,7 @@ type configInfo struct {
 	Groups          []int64  `toml:"Groups"`
 	KeyWords        []string `toml:"KeyWords"`
 	MongoURI        string   `toml:"DBURI"`
+	TokenRPC        string   `toml:"TokenRPC"`
 }
 
 var config configInfo
