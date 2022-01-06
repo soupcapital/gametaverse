@@ -1,5 +1,5 @@
 RPCAddr = "127.0.0.1:8088"
-LogFile = "sti.log"
+LogFile = "spider.log"
 LogPath = "./"
 LogLevel = "Info"
 DBURI = "mongodb+srv://cz:Solong2020@cluster1.g9w77.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"

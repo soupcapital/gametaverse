@@ -1,10 +1,8 @@
 package twitterspy
 
 import (
-	"bytes"
-	"crypto/rand"
+	"encoding/json"
 	"errors"
-	"math/big"
 	"net/http"
 	"regexp"
 
@@ -12,7 +10,8 @@ import (
 )
 
 const (
-	_twitterIndexURL = "https://twitter.com"
+	//_twitterIndexURL = "https://twitter.com"
+	_twitterIndexURL = "https://api.twitter.com/1.1/guest/activate.json"
 )
 
 var (
@@ -29,9 +28,6 @@ type Token struct {
 func NewToken() *Token {
 	t := &Token{}
 	t.cli = &http.Client{}
-	if r, err := rand.Int(rand.Reader, big.NewInt(int64(len(userAgents)))); err == nil {
-		t.userAgent = userAgents[r.Int64()]
-	}
 	t.regexp = regexp.MustCompile(`\("gt=(\d+);`)
 	return t
 }
@@ -41,16 +37,15 @@ func (t *Token) Value() string {
 }
 
 func (t *Token) Refresh() error {
-	if r, err := rand.Int(rand.Reader, big.NewInt(int64(len(userAgents)))); err == nil {
-		t.userAgent = userAgents[r.Int64()]
-	}
-	req, err := http.NewRequest("GET", _twitterIndexURL, nil)
+
+	req, err := http.NewRequest("POST", _twitterIndexURL, nil)
 	if err != nil {
 		log.Error("create request error:%s", err.Error())
 		return err
 	}
 
-	//req.Header.Set("User-Agent", t.userAgent)
+	req.Header.Set("User-Agent", UserAgent())
+	req.Header.Set("authorization", "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA")
 	resp, err := t.cli.Do(req)
 	if err != nil {
 		log.Error("cli.Do error:%s", err.Error())
@@ -58,21 +53,20 @@ func (t *Token) Refresh() error {
 	}
 	defer resp.Body.Close()
 
-	buf := new(bytes.Buffer)
-	if _, err := buf.ReadFrom(resp.Body); err != nil {
-		log.Error("ReadFrom response  error:%s", err.Error())
+	bodyDecoder := json.NewDecoder(resp.Body)
+	respJOSN := &struct {
+		Code       int    `json:"code"`
+		Message    string `json:"message"`
+		GuestToken string `json:"guest_token"`
+	}{}
+	if err = bodyDecoder.Decode(respJOSN); err != nil {
+		log.Error("request error:%s", err.Error())
 		return err
 	}
-	//log.Info("buf:%s", string(buf.Bytes()))
 
-	tBuf := t.regexp.Find(buf.Bytes())
-	if tBuf == nil {
-		log.Info("no token")
-		return ErrNoToken
-	} else {
-		t.token = string(tBuf[5 : len(tBuf)-1])
-		log.Info("token is %s", t.token)
+	if respJOSN.Code != 0 {
+		return errors.New(respJOSN.Message)
 	}
-
+	t.token = respJOSN.GuestToken
 	return nil
 }

@@ -50,7 +50,7 @@ func (svr *Server) initHandler() {
 
 func (svr *Server) Run() (err error) {
 
-	go svr.tokenLoop()
+	//go svr.tokenLoop()
 
 	err = svr.httpd.ListenAndServe()
 	if err != nil {
