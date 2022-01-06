@@ -1,5 +1,5 @@
 TARGET:=twitterspy
-TAG=v0.1.5
+TAG=v0.1.6
 DIST_DIR=../dist_$(TARGET)_$(TAG)
 
 SRC_FILES := $(shell find ../ -type  f | grep "\.go"   )
