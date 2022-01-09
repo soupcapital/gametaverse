@@ -67,7 +67,7 @@ func (hdl *ScoreHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sort.Slice(dayInfos, func(i, j int) bool {
-		return dayInfos[i].FavoriteCount >= dayInfos[j].FavoriteCount
+		return dayInfos[i].Score >= dayInfos[j].Score
 	})
 
 	type BillboardItem struct {
