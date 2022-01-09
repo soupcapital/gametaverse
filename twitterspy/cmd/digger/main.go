@@ -10,6 +10,8 @@ import (
 
 var (
 	_configFile string
+	_score      bool
+	_date       string
 )
 
 var CMD = &cobra.Command{
@@ -21,6 +23,8 @@ var CMD = &cobra.Command{
 
 func init() {
 	CMD.PersistentFlags().StringVarP(&_configFile, "config", "c", "", "config file path for test")
+	CMD.PersistentFlags().BoolVarP(&_score, "score", "s", false, "mark to score")
+	CMD.PersistentFlags().StringVarP(&_date, "date", "d", "", "date to mark score")
 }
 
 func _main(cmd *cobra.Command, args []string) {
@@ -52,5 +56,13 @@ func _main(cmd *cobra.Command, args []string) {
 		fmt.Printf("init error:%s", err.Error())
 		return
 	}
-	digger.Start()
+
+	if _score {
+		err = digger.MakeScore(_date)
+	} else {
+		err = digger.Start()
+	}
+	if err != nil {
+		fmt.Printf("run with error:%s", err.Error())
+	}
 }

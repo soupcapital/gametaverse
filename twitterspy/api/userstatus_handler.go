@@ -42,7 +42,7 @@ func (hdl *UserStatusHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dayTime, err := time.Parse(cDateFormat, date)
+	dayTime, err := time.Parse(twitterspy.DateFormat, date)
 	if err != nil {
 		encoder.Encode(ErrParam)
 		return
@@ -77,7 +77,7 @@ func (hdl *UserStatusHandler) Get(w http.ResponseWriter, r *http.Request) {
 		encoder.Encode(ErrDB)
 		return
 	}
-	if dayOneInfo == nil {
+	if dayOneInfo == nil || dayInfo == nil {
 		log.Error("day one info is nil")
 		encoder.Encode(ErrNoDataForDay)
 		return
@@ -93,6 +93,7 @@ func (hdl *UserStatusHandler) Get(w http.ResponseWriter, r *http.Request) {
 		ReplyCount    int     `tweet_reply_count`
 		RetweetCount  int     `tweet_retweet_count`
 		FavoriteCount int     `tweet_favorite_count`
+		Score         float32 `score`
 		Err           int     `json:"errno"`
 		ErrMsg        string  `json:"errmsg"`
 	}
@@ -108,6 +109,7 @@ func (hdl *UserStatusHandler) Get(w http.ResponseWriter, r *http.Request) {
 		FavoriteCount: favCount,
 		ReplyCount:    replyCount,
 		RetweetCount:  retweetCount,
+		Score:         dayInfo.Score,
 		Err:           0,
 		ErrMsg:        "",
 	}
@@ -122,7 +124,7 @@ func (hdl *UserStatusHandler) queryDiggerInfoForOneDay(name string, dateTS int64
 	diggerTbl := hdl.server.db.Collection(db.DiggerTable)
 	sr := diggerTbl.FindOne(ctx, bson.M{"_id": id})
 	if sr == nil || sr.Err() != nil {
-		log.Error("Find vname[%s] error", name)
+		log.Error("Find vname[%s] error", id)
 		return
 	}
 	userStatus := &db.Digger{}

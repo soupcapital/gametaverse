@@ -2,7 +2,9 @@ package digger
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/cz-theng/czkit-go/log"
@@ -174,6 +176,154 @@ func (d *Digger) loop() {
 	}
 }
 
+func (d *Digger) makeScore(dayTS int64) (err error) {
+	if dayTS <= twitterspy.SecOfDay {
+		return nil
+	}
+
+	infos, err := d.queryDiggerInfoForOneDay(dayTS)
+	if err != nil {
+		log.Error("queryDiggerInfoForOneDay error:%s", err.Error())
+		return
+	}
+	dayOneTs := dayTS - twitterspy.SecOfDay
+	log.Info("==============begin=============")
+	d.dumpInfos(infos)
+	if err = d.calculateX(infos); err != nil {
+		return
+	}
+
+	if err = d.calculateY(infos, dayOneTs); err != nil {
+		return
+	}
+
+	if err = d.calculateZ(infos); err != nil {
+		return
+	}
+
+	if err = d.updateScore(infos); err != nil {
+		return
+	}
+
+	return
+}
+func (d *Digger) dumpInfos(infos []*db.Digger) {
+	//return
+	for i, info := range infos {
+		log.Info("%d:%v", i, info)
+	}
+}
+
+func (d *Digger) calculateX(infos []*db.Digger) (err error) {
+	sort.Slice(infos, func(i, j int) bool {
+		return infos[i].FavoriteCount >= infos[j].FavoriteCount
+	})
+	if infos[0].FavoriteCount != 0 {
+		for _, info := range infos {
+			info.Score = 100 * float32(info.FavoriteCount) / float32(infos[0].FavoriteCount)
+		}
+	}
+
+	sort.Slice(infos, func(i, j int) bool {
+		return infos[i].TweetsCount >= infos[j].TweetsCount
+	})
+	if infos[0].TweetsCount != 0 {
+		for _, info := range infos {
+			info.Score += 200 * float32(info.TweetsCount) / float32(infos[0].TweetsCount)
+		}
+	}
+
+	sort.Slice(infos, func(i, j int) bool {
+		return infos[i].ReplyCount >= infos[j].ReplyCount
+	})
+	if infos[0].ReplyCount != 0 {
+		for _, info := range infos {
+			info.Score += 300 * float32(info.ReplyCount) / float32(infos[0].ReplyCount)
+		}
+	}
+
+	return
+}
+
+func (d *Digger) calculateY(infos []*db.Digger, dayOneTs int64) (err error) {
+	dayOneinfos, err := d.queryDiggerInfoForOneDay(dayOneTs)
+	if err != nil {
+		log.Error("queryDiggerInfoForOneDay dayOne error:%s", err.Error())
+		return
+	}
+
+	for _, info := range infos {
+		found := false
+		for _, dayOneInfo := range dayOneinfos {
+			if info.Name == dayOneInfo.Name {
+				found = true
+				if dayOneInfo.FollowerCount != 0 {
+					info.Score *= (float32(info.FollowerCount) - float32(dayOneInfo.FollowerCount)) / float32(dayOneInfo.FollowerCount)
+				} else {
+					info.Score *= 1
+				}
+			}
+			if !found {
+				info.Score *= 1
+			}
+		}
+	}
+
+	return
+}
+
+func (d *Digger) calculateZ(infos []*db.Digger) (err error) {
+	for _, info := range infos {
+		if info.TweetsCount == 0 {
+			info.Score /= 99
+		} else {
+			info.Score /= float32(info.TweetsCount)
+		}
+	}
+	return
+}
+
+func (d *Digger) updateScore(infos []*db.Digger) (err error) {
+	diggerTbl := d.db.Collection(db.DiggerTable)
+	for _, info := range infos {
+		ctx, cancel := context.WithTimeout(d.ctx, 3*time.Second)
+		defer cancel()
+		id := info.ID
+
+		opt := mngopts.Update()
+		opt.SetUpsert(true)
+
+		update := bson.M{
+			"$set": bson.M{
+				"score": info.Score,
+			},
+		}
+		_, err = diggerTbl.UpdateByID(ctx, id, update, opt)
+		if err != nil {
+			log.Error("Update [%s] score error: ", info.ID, err.Error())
+			return
+		}
+	}
+	return
+}
+
+func (d *Digger) queryDiggerInfoForOneDay(dateTS int64) (infos []*db.Digger, err error) {
+	ctx, cancel := context.WithTimeout(d.ctx, 1000*time.Second)
+	defer cancel()
+
+	diggerTbl := d.db.Collection(db.DiggerTable)
+	curs, err := diggerTbl.Find(ctx, bson.M{"ts": dateTS})
+	if err != nil {
+		log.Error("Find ts[%v] error", dateTS)
+		return
+	}
+	if err = curs.All(ctx, &infos); err != nil {
+		log.Error("Decode digger infos error: ", err.Error())
+		return
+	}
+	return
+}
+
 func Init(mongoAddr string, tokenRPC string) (err error) {
 	_digger.ctx = context.Background()
 
@@ -188,7 +338,7 @@ func Init(mongoAddr string, tokenRPC string) (err error) {
 	return
 }
 
-func Start() {
+func Start() (err error) {
 	done := make(chan (struct{}))
 	nowTS := time.Now().Unix()
 	dt := twitterspy.SecOfDay - (nowTS % twitterspy.SecOfDay)
@@ -202,4 +352,19 @@ func Start() {
 			return
 		}
 	}
+	return
+}
+
+func MakeScore(date string) (err error) {
+	dayTime, err := time.Parse(twitterspy.DateFormat, date)
+	if err != nil {
+		return
+	}
+	dayTS := dayTime.Unix()
+	if dayTS%twitterspy.SecOfDay != 0 {
+		log.Error("dateTS:%v", dayTS)
+		return errors.New("worng date")
+	}
+	log.Info("Deal score for ts:%v", dayTS)
+	return _digger.makeScore(dayTS)
 }

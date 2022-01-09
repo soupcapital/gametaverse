@@ -65,6 +65,7 @@ func (svr *Server) initHandler() {
 	svr.router.RegistRaw("/twitterspy/api/v1/vname", &VNameHandler{URLHdl{server: svr}})
 	svr.router.RegistRaw("/twitterspy/api/v1/userinfo", &UserInfoHandler{URLHdl{server: svr}})
 	svr.router.RegistRaw("/twitterspy/api/v1/userstatus", &UserStatusHandler{URLHdl{server: svr}})
+	svr.router.RegistRaw("/twitterspy/api/v1/score", &ScoreHandler{URLHdl{server: svr}})
 }
 
 func (svr *Server) initDB(URI string) (err error) {
