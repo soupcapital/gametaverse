@@ -4,10 +4,16 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/cz-theng/czkit-go/log"
+	"github.com/gametaverse/twitterspy/db"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	mngopts "go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
 type Spy struct {
@@ -18,6 +24,9 @@ type Spy struct {
 	msgChan      chan (TweetInfo)
 	userReg      *regexp.Regexp
 	ctx          context.Context
+	db           *mongo.Database
+	dbClient     *mongo.Client
+	tweetTbl     *mongo.Collection
 }
 
 var service Spy
@@ -77,6 +86,30 @@ func (s *Spy) digUser(tweet *TweetInfo) {
 	}
 }
 
+func (s *Spy) storeTweet(tweet *TweetInfo) (err error) {
+	ctx, cancel := context.WithTimeout(s.ctx, 10*time.Second)
+	defer cancel()
+	opt := mngopts.Update()
+	opt.SetUpsert(true)
+
+	ts := time.Time(tweet.CreateAt).Unix()
+	update := bson.M{
+		"$set": bson.M{
+			"status": db.TSFound,
+			"txt":    tweet.FullText,
+			"ts":     ts,
+			"vname":  tweet.Author,
+			"tid":    strconv.FormatInt(int64(tweet.ID), 10),
+		},
+	}
+	_, err = s.tweetTbl.UpdateByID(ctx, tweet.ID, update, opt)
+	if err != nil {
+		log.Error("Update vname error: ", err.Error())
+		return
+	}
+	return
+}
+
 func (s *Spy) dealTweet(tweet *TweetInfo) {
 	{
 		// TODO: for tset
@@ -98,6 +131,7 @@ func (s *Spy) dealTweet(tweet *TweetInfo) {
 			if strings.Contains(txt, w) {
 				msg := fmt.Sprintf("%s@%s talk about:\n %s", tweet.Author, time.Time(tweet.CreateAt).Format("2006/01/02 15:04:05"), tweet.FullText)
 				s.tgbot.SendMessage(msg)
+				s.storeTweet(tweet)
 				log.Info("[SEND]%s", msg)
 				return
 			}
@@ -121,6 +155,12 @@ func Init(opts ...Option) (err error) {
 		return
 	}
 
+	if err = service.initDB(service.opts.MongoURI); err != nil {
+		log.Error("DB init error:%s", err.Error())
+		return
+
+	}
+
 	service.spider = NewTwitterSpider()
 	if err = service.spider.Init(service.msgChan, service.opts.vs, service.opts.twitterInterval, service.opts.twitterCount, service.opts.MongoURI, service.opts.TokenRPC); err != nil {
 		log.Error("Twitter init error:%s", err.Error())
@@ -128,6 +168,36 @@ func Init(opts ...Option) (err error) {
 	}
 
 	return nil
+}
+
+func (s *Spy) initDB(uri string) (err error) {
+	s.dbClient, err = mongo.NewClient(mngopts.Client().ApplyURI(uri))
+	if err != nil {
+		log.Error("new client error: %s", err.Error())
+		return
+	}
+	ctx, _ := context.WithTimeout(s.ctx, 10*time.Second)
+	err = s.dbClient.Connect(ctx)
+	if err != nil {
+		log.Error("connect mongo error:%s", err.Error())
+		return
+	}
+
+	err = s.dbClient.Ping(ctx, readpref.Primary())
+	if err != nil {
+		log.Error("ping mongo error:%s", err.Error())
+	} else {
+		log.Info("connect mongo success")
+	}
+
+	s.db = s.dbClient.Database(db.DBName)
+	if s.db == nil {
+		log.Error("db is null, please init db first")
+		return
+	}
+
+	s.tweetTbl = s.db.Collection(db.TweetTable)
+	return
 }
 
 func StartService() (err error) {

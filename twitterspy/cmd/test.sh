@@ -3,4 +3,4 @@
 ./twitterspy api -c ../scripts/config_api.toml
 #./twitterspy digger -c ../scripts/config_digger.toml
 #./twitterspy token -c ../scripts/config_token.toml
-#./twitterspy digger -c ../scripts/config_digger.toml -s -d "2022-01-09"
+#./twitterspy digger -c ../scripts/config_digger.toml -s -d "2022-01-10"

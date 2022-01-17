@@ -187,8 +187,6 @@ func (d *Digger) makeScore(dayTS int64) (err error) {
 		return
 	}
 	dayOneTs := dayTS - twitterspy.SecOfDay
-	log.Info("==============begin=============")
-	d.dumpInfos(infos)
 	if err = d.calculateX(infos); err != nil {
 		return
 	}
@@ -204,6 +202,8 @@ func (d *Digger) makeScore(dayTS int64) (err error) {
 	if err = d.updateScore(infos); err != nil {
 		return
 	}
+	log.Info("============== dump[%v] =============", dayTS)
+	d.dumpInfos(infos)
 
 	return
 }
@@ -220,7 +220,7 @@ func (d *Digger) calculateX(infos []*db.Digger) (err error) {
 	})
 	if infos[0].FavoriteCount != 0 {
 		for _, info := range infos {
-			info.Score = 100 * float32(info.FavoriteCount) / float32(infos[0].FavoriteCount)
+			info.Score = (10000) * 100 * float32(info.FavoriteCount) / float32(infos[0].FavoriteCount)
 		}
 	}
 

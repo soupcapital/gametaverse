@@ -76,9 +76,9 @@ func (hdl *ScoreHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type Response struct {
-		Billboard []*BillboardItem
-		Err       int    `json:"errno"`
-		ErrMsg    string `json:"errmsg"`
+		Billboard []*BillboardItem `json:"billboard"`
+		Err       int              `json:"errno"`
+		ErrMsg    string           `json:"errmsg"`
 	}
 	var items []*BillboardItem
 	maxLen := 100
