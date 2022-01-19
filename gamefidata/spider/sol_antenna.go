@@ -181,20 +181,20 @@ func (ata *SolAntenna) GetTrxByNum(ctx context.Context, num uint64) (trxes []*Tr
 
 }
 
-func (ata *SolAntenna) DealTrx4Game(game *Game, rawtrx *Transaction) (actions []*db.Action, err error) {
+func (ata *SolAntenna) DealTrx4Game(game *GameInfo, rawtrx *Transaction) (actions []*db.Action, err error) {
 	trx, ok := rawtrx.raw.(*TransactionInfo)
 	if !ok {
 		return nil, ErrUnknownTrx
 	}
 
-	for _, c := range game.info.Contracts {
+	for _, c := range game.Contracts {
 		for _, instr := range trx.Message.Instructions {
 			progID := trx.Message.AccountKeys[instr.ProgramIDIndex]
-			if strings.EqualFold(c.Address, progID) {
+			if strings.EqualFold(c, progID) {
 				//log.Info("[%v]instr:%v", len(trx.Message.Instructions), instr)
 				from := trx.Message.AccountKeys[instr.Accounts[0]]
 				action := &db.Action{
-					GameID:    game.info.ID,
+					GameID:    game.ID,
 					Timestamp: rawtrx.timestamp,
 					User:      from,
 					Count:     1,

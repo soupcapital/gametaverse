@@ -49,12 +49,12 @@ func (ata *EOSAntenna) GetTrxByNum(ctx context.Context, num uint64) (trxes []*Tr
 	return
 }
 
-func (ata *EOSAntenna) DealTrx4Game(game *Game, rawtrx *Transaction) (actions []*db.Action, err error) {
+func (ata *EOSAntenna) DealTrx4Game(game *GameInfo, rawtrx *Transaction) (actions []*db.Action, err error) {
 	trx, ok := rawtrx.raw.(*eos.TransactionReceipt)
 	if !ok {
 		return nil, ErrUnknownTrx
 	}
-	for _, c := range game.info.Contracts {
+	for _, c := range game.Contracts {
 		if trx.TransactionReceiptHeader.Status != eos.TransactionStatusExecuted {
 			continue
 		}
@@ -68,7 +68,7 @@ func (ata *EOSAntenna) DealTrx4Game(game *Game, rawtrx *Transaction) (actions []
 		}
 		for _, act := range strx.Actions {
 			cName := act.Account
-			if c.Address != cName.String() {
+			if c != cName.String() {
 				continue
 			}
 			from := ""
@@ -76,7 +76,7 @@ func (ata *EOSAntenna) DealTrx4Game(game *Game, rawtrx *Transaction) (actions []
 				if auth.Permission.String() == "active" {
 					from = auth.Actor.String()
 					action := &db.Action{
-						GameID:    game.info.ID,
+						GameID:    game.ID,
 						Timestamp: rawtrx.timestamp,
 						User:      from,
 						Count:     1,

@@ -21,7 +21,7 @@ type Spider struct {
 	ctx       context.Context
 	antenna   Antennaer
 	cancelFun context.CancelFunc
-	games     []*Game
+	games     []*GameInfo
 	opts      options
 
 	dbClient  *mongo.Client
@@ -35,13 +35,17 @@ type Spider struct {
 	monitorTbl   *mongo.Collection
 	dauTbl       *mongo.Collection
 	countTbl     *mongo.Collection
+
+	wg        *sync.WaitGroup
+	stopGuard chan struct{}
+	//gamesPipe chan []*Game
 }
 
-func NewSpider(games []*Game, opts options, backward bool) *Spider {
+func NewSpider(opts options, backward bool) *Spider {
 	s := &Spider{
-		games:    games,
-		opts:     opts,
-		backward: backward,
+		opts:      opts,
+		backward:  backward,
+		stopGuard: make(chan struct{}),
 	}
 	switch opts.Chain {
 	case "polygon", "eth", "bsc":
@@ -73,6 +77,12 @@ func (sp *Spider) Init() (err error) {
 		return err
 	}
 
+	return
+}
+
+// only can be invoke when worker stopped
+func (sp *Spider) UpdateGames(games []*GameInfo) (err error) {
+	sp.games = games
 	return
 }
 
@@ -122,7 +132,19 @@ func (sp *Spider) initDB(URI string) (err error) {
 	return
 }
 
-func (sp *Spider) Run(starting chan struct{}) {
+func (sp *Spider) Stop() {
+	log.Info("before channle")
+	sp.stopGuard <- struct{}{}
+	log.Info("after channle")
+}
+
+func (sp *Spider) Run(ctx context.Context, beacon chan struct{}, wg *sync.WaitGroup) {
+
+	defer func() {
+		if wg != nil {
+			wg.Done()
+		}
+	}()
 	err := sp.loadTopBlock()
 	if err != nil {
 		log.Error("load top block:", err.Error())
@@ -130,9 +152,9 @@ func (sp *Spider) Run(starting chan struct{}) {
 	}
 
 	if sp.backward {
-		sp.goBackward(starting)
+		sp.goBackward(ctx, beacon)
 	} else {
-		sp.goForward(starting)
+		sp.goForward(ctx, beacon)
 	}
 }
 
@@ -216,32 +238,38 @@ func (sp *Spider) getTrxFromBlocks(start uint64, count int) (trxes []*Transactio
 	return trxes, nil
 }
 
-func (sp *Spider) goForward(starting chan struct{}) {
-	<-starting
+func (sp *Spider) goForward(ctx context.Context, beacon chan struct{}) {
+	<-beacon
 	sp.headBlock = sp.topBlock
 	log.Info("go forward from %v", sp.headBlock)
 	count := sp.opts.ForwardWorks
 	for {
-		s1 := time.Now()
-		trxes, err := sp.getTrxFromBlocks(sp.headBlock, count)
-		if err != nil {
-			log.Error("get %d block[%d]:%s", count, sp.headBlock, err.Error())
-			time.Sleep(time.Duration(sp.opts.ForwardInterval * float32(time.Second)))
-			continue
+		select {
+		case <-ctx.Done():
+			log.Info("forward got stop guard")
+			return
+		default:
+			s1 := time.Now()
+			trxes, err := sp.getTrxFromBlocks(sp.headBlock, count)
+			if err != nil {
+				log.Error("get %d block[%d]:%s", count, sp.headBlock, err.Error())
+				time.Sleep(time.Duration(sp.opts.ForwardInterval * float32(time.Second)))
+				continue
+			}
+			err = sp.dealTrxes(trxes)
+			if err != nil {
+				log.Error("deal %d block[%d]:%s", count, sp.headBlock, err.Error())
+				time.Sleep(time.Duration(sp.opts.ForwardInterval * float32(time.Second)))
+				continue
+			}
+			if (sp.headBlock/uint64(count))%10 == 0 {
+				sp.storeTopBlock(sp.headBlock)
+			}
+			sp.headBlock += uint64(count)
+			s2 := time.Now()
+			d := s2.Sub(s1)
+			log.Info("%d blocks cost d is %v", count, d)
 		}
-		err = sp.dealTrxes(trxes)
-		if err != nil {
-			log.Error("deal %d block[%d]:%s", count, sp.headBlock, err.Error())
-			time.Sleep(time.Duration(sp.opts.ForwardInterval * float32(time.Second)))
-			continue
-		}
-		if (sp.headBlock/uint64(count))%10 == 0 {
-			sp.storeTopBlock(sp.headBlock)
-		}
-		sp.headBlock += uint64(count)
-		s2 := time.Now()
-		d := s2.Sub(s1)
-		log.Info("%d blocks cost d is %v", count, d)
 	}
 }
 
@@ -276,11 +304,9 @@ func (sp *Spider) dealTrxes(trxes []*Transaction) (err error) {
 	return nil
 }
 
-func (sp *Spider) dealTrxes4Game(game *Game, trxes []*Transaction) (err error) {
+func (sp *Spider) dealTrxes4Game(game *GameInfo, trxes []*Transaction) (err error) {
 	var actions = make(map[string]*db.Action)
-	//	log.Info("trxes:%v - %v", len(trxes), trxes)
 	for _, trx := range trxes {
-		//		log.Info("deal :%v-%v", game.info.Name, trx.raw)
 		as, err := sp.antenna.DealTrx4Game(game, trx)
 		if err != nil {
 			log.Error("deal game error: %s", err.Error())
@@ -354,7 +380,7 @@ func (sp *Spider) clearTick(timestamp uint64) (err error) {
 
 	for _, g := range sp.games {
 		filter := bson.M{
-			"game": g.info.ID,
+			"game": g.ID,
 			"ts":   timestamp,
 		}
 
@@ -411,7 +437,7 @@ func (sp *Spider) insertCount(actions map[string]*db.Action) (err error) {
 	return nil
 }
 
-func (sp *Spider) goBackward(starting chan struct{}) {
+func (sp *Spider) goBackward(ctx context.Context, starting chan struct{}) {
 	sp.tailBlock = sp.topBlock
 	log.Info("go backforward from :%v", sp.tailBlock)
 	count := sp.opts.BackwardWorks
@@ -420,43 +446,49 @@ func (sp *Spider) goBackward(starting chan struct{}) {
 	log.Info("interval:%v", interval)
 	var minTimeStamp uint64 = math.MaxUint64
 	for {
-		trxes, err := sp.getTrxFromBlocks(sp.tailBlock, count)
-		if err != nil {
-			log.Error("get %d block[%d]:%s", count, sp.tailBlock, err.Error())
-			time.Sleep(time.Duration(sp.opts.BackwardInterval * float32(time.Second)))
-			continue
-		}
-		oldMinTS := minTimeStamp
-		for _, trx := range trxes {
-			if trx.timestamp < minTimeStamp {
-				minTimeStamp = trx.timestamp
-			}
-		}
-		// the interval won't bigger than 24h
-		if oldMinTS > minTimeStamp {
-			err = sp.clearTick(minTimeStamp)
+		select {
+		case <-ctx.Done():
+			log.Info("backward got stop guard")
+			return
+		default:
+			trxes, err := sp.getTrxFromBlocks(sp.tailBlock, count)
 			if err != nil {
-				log.Info("clear tick error:%s", err.Error())
-				return
+				log.Error("get %d block[%d]:%s", count, sp.tailBlock, err.Error())
+				time.Sleep(time.Duration(sp.opts.BackwardInterval * float32(time.Second)))
+				continue
 			}
-			if oldMinTS == math.MaxUint64 {
-				starting <- struct{}{}
+			oldMinTS := minTimeStamp
+			for _, trx := range trxes {
+				if trx.timestamp < minTimeStamp {
+					minTimeStamp = trx.timestamp
+				}
 			}
+			// the interval won't bigger than 24h
+			if oldMinTS > minTimeStamp {
+				err = sp.clearTick(minTimeStamp)
+				if err != nil {
+					log.Info("clear tick error:%s", err.Error())
+					return
+				}
+				if oldMinTS == math.MaxUint64 {
+					starting <- struct{}{}
+				}
+			}
+			err = sp.dealTrxes(trxes)
+			if err != nil {
+				log.Error("deal %d block[%d]:%s", count, sp.tailBlock, err.Error())
+				time.Sleep(time.Duration(sp.opts.BackwardInterval * float32(time.Second)))
+				continue
+			}
+			if (sp.tailBlock/uint64(count))%10 == 0 {
+				log.Info("back to block to: %v", sp.tailBlock)
+			}
+			sp.tailBlock -= uint64(count)
+			if sp.tailBlock <= sp.opts.BottomBlock {
+				break
+			}
+			time.Sleep(interval)
 		}
-		err = sp.dealTrxes(trxes)
-		if err != nil {
-			log.Error("deal %d block[%d]:%s", count, sp.tailBlock, err.Error())
-			time.Sleep(time.Duration(sp.opts.BackwardInterval * float32(time.Second)))
-			continue
-		}
-		if (sp.tailBlock/uint64(count))%10 == 0 {
-			log.Info("back to block to: %v", sp.tailBlock)
-		}
-		sp.tailBlock -= uint64(count)
-		if sp.tailBlock <= sp.opts.BottomBlock {
-			break
-		}
-		time.Sleep(interval)
 	}
 	log.Info("done all backfoward")
 }

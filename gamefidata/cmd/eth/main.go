@@ -31,7 +31,7 @@ func init() {
 func _main(cmd *cobra.Command, args []string) {
 
 	if len(_configFile) > 0 {
-		if err := loadConfig(_configFile); err != nil {
+		if err := spider.LoadConfig(_configFile); err != nil {
 			return
 		}
 	} else {
@@ -41,31 +41,30 @@ func _main(cmd *cobra.Command, args []string) {
 
 	logFile := "spider.log"
 	logPath := "./"
-	if len(config.LogPath) > 0 {
-		logPath = config.LogPath
+	if len(spider.Config.LogPath) > 0 {
+		logPath = spider.Config.LogPath
 	}
-	if len(config.LogFile) > 0 {
-		logFile = config.LogFile
+	if len(spider.Config.LogFile) > 0 {
+		logFile = spider.Config.LogFile
 	}
 
 	logNameOpt := log.WithLogName(logFile)
 	logPathOpt := log.WithLogPath(logPath)
 	log.Init(logNameOpt, logPathOpt)
 
-	gamsOpt := spider.WithGames(config.Games)
-	privKeyOpt := spider.WithPrivKey(config.PrivKey)
-	mongoURIOpt := spider.WithMongoURI(config.DBURI)
-	chainOpt := spider.WithChain(config.Chain)
-	chainIDOpt := spider.WithChainID(config.ChainID)
-	rpcAddrOpt := spider.WithRPCAddr(config.RPCAddr)
-	bottomBlockOpt := spider.WithBottomBlock(config.BottomBlock)
-	fintervalOpt := spider.WithForwardInterval(config.ForwardInterval)
-	bintervalOpt := spider.WithBackwardInterval(config.BackwardInterval)
-	fworksOpt := spider.WithForwardWorks(config.ForwardWorks)
-	bworksOpt := spider.WithBackwardWorks(config.BackwardWorks)
+	privKeyOpt := spider.WithPrivKey(spider.Config.PrivKey)
+	mongoURIOpt := spider.WithMongoURI(spider.Config.DBURI)
+	chainOpt := spider.WithChain(spider.Config.Chain)
+	chainIDOpt := spider.WithChainID(spider.Config.ChainID)
+	rpcAddrOpt := spider.WithRPCAddr(spider.Config.RPCAddr)
+	bottomBlockOpt := spider.WithBottomBlock(spider.Config.BottomBlock)
+	fintervalOpt := spider.WithForwardInterval(spider.Config.ForwardInterval)
+	bintervalOpt := spider.WithBackwardInterval(spider.Config.BackwardInterval)
+	fworksOpt := spider.WithForwardWorks(spider.Config.ForwardWorks)
+	bworksOpt := spider.WithBackwardWorks(spider.Config.BackwardWorks)
 
 	if _initDB {
-		err := db.CreateAndInitDB(config.DBURI)
+		err := db.CreateAndInitDB(spider.Config.DBURI)
 		if err != nil {
 			log.Error("DB error:%s", err.Error())
 		}
@@ -74,7 +73,6 @@ func _main(cmd *cobra.Command, args []string) {
 
 	spiderApp := spider.New()
 	err := spiderApp.Init(privKeyOpt,
-		gamsOpt,
 		chainOpt,
 		chainIDOpt,
 		rpcAddrOpt,

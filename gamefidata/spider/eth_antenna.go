@@ -58,13 +58,13 @@ func (ata *ETHAntenna) GetTrxByNum(ctx context.Context, num uint64) (trxes []*Tr
 	return
 }
 
-func (ata *ETHAntenna) DealTrx4Game(game *Game, rawtrx *Transaction) (actions []*db.Action, err error) {
+func (ata *ETHAntenna) DealTrx4Game(game *GameInfo, rawtrx *Transaction) (actions []*db.Action, err error) {
 	trx, ok := rawtrx.raw.(*types.Transaction)
 	if !ok {
 		return nil, ErrUnknownTrx
 	}
 
-	for _, c := range game.info.Contracts {
+	for _, c := range game.Contracts {
 		msg, err := trx.AsMessage(types.NewLondonSigner(big.NewInt(int64(ata.chainID))), big.NewInt(0))
 		if err != nil {
 			log.Error("[%s:%v]AsMessage error:%s", trx.Hash().Hex(), trx.Type(), err.Error())
@@ -73,10 +73,10 @@ func (ata *ETHAntenna) DealTrx4Game(game *Game, rawtrx *Transaction) (actions []
 		if trx.To() == nil {
 			continue // done with 0x0000...000
 		}
-		if strings.EqualFold(c.Address, trx.To().Hex()) {
+		if strings.EqualFold(c, trx.To().Hex()) {
 			from := msg.From().Hex()
 			action := &db.Action{
-				GameID:    game.info.ID,
+				GameID:    game.ID,
 				Timestamp: rawtrx.timestamp,
 				User:      from,
 				Count:     1,
