@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/cz-theng/czkit-go/log"
+	"github.com/gametaverse/twitterspy"
 	"github.com/gametaverse/twitterspy/db"
 	"go.mongodb.org/mongo-driver/bson"
 	mngopts "go.mongodb.org/mongo-driver/mongo/options"
@@ -154,9 +155,7 @@ func (hdl *TweetHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	opt := mngopts.Update()
 	opt.SetUpsert(true)
-	filter := bson.M{
-		"status": db.TSFound,
-	}
+	filter := bson.M{}
 	cursor, err := tweetTbl.Find(ctx, filter)
 	if err != nil {
 		log.Error("Find vname error: ", err.Error())
@@ -171,6 +170,15 @@ func (hdl *TweetHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var valiedTweets []db.Tweet
+	nowTs := time.Now().Unix()
+	for _, t := range tweets {
+		if t.Timestamp < nowTs-2*twitterspy.SecOfDay {
+			continue
+		}
+		valiedTweets = append(valiedTweets, t)
+	}
+
 	type Response struct {
 		Tweets []db.Tweet `json:"tweets"`
 		Err    int        `json:"errno"`
@@ -178,7 +186,7 @@ func (hdl *TweetHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rsp := Response{
-		Tweets: tweets,
+		Tweets: valiedTweets,
 		Err:    0,
 		ErrMsg: "",
 	}
