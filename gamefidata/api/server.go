@@ -7,19 +7,21 @@ import (
 
 	"github.com/cz-theng/czkit-go/log"
 	"github.com/gametaverse/gamefidata/db"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	mngopts "go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
 type Server struct {
-	ctx       context.Context
-	cancelFun context.CancelFunc
-	dbClient  *mongo.Client
-	opts      options
-	httpd     http.Server
-	router    *Router
-	db        *mongo.Database
+	ctx        context.Context
+	cancelFun  context.CancelFunc
+	dbClient   *mongo.Client
+	opts       options
+	httpd      http.Server
+	router     *Router
+	db         *mongo.Database
+	monitorTbl *mongo.Collection
 }
 
 func NewServer() (svr *Server) {
@@ -90,6 +92,34 @@ func (svr *Server) initDB(URI string) (err error) {
 		log.Error("db is null, please init db first")
 		return
 	}
+
+	svr.monitorTbl = svr.db.Collection(db.MonitorTableName)
+	if svr.monitorTbl == nil {
+		log.Error("collection is null, please init db first")
+		return
+	}
+	return
+}
+
+func (svr *Server) UpdateMonitor(chain string) (err error) {
+	ctx, cancel := context.WithTimeout(svr.ctx, 5*time.Second)
+	defer cancel()
+
+	monitorField := db.MonitorFieldName + "_" + chain
+	opt := mngopts.Update()
+	opt.SetUpsert(true)
+	ts := time.Now().Unix()
+	update := bson.M{
+		"$set": bson.M{
+			"latest": ts,
+		},
+	}
+	_, err = svr.monitorTbl.UpdateByID(ctx, monitorField, update, opt)
+	if err != nil {
+		log.Error("Update  monitor latest error: ", err.Error())
+		return
+	}
+	log.Info("Update  monitor latest:%d ", ts)
 	return
 }
 

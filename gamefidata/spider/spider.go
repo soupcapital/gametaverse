@@ -103,7 +103,7 @@ func (sp *Spider) initDB(URI string) (err error) {
 	if err != nil {
 		log.Error("ping mongo error:%s", err.Error())
 	} else {
-		log.Info("connect mongo success")
+		log.Info("spider connect mongo success")
 	}
 
 	sp.db = sp.dbClient.Database(db.DBName)

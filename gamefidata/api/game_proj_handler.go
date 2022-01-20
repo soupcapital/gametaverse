@@ -88,6 +88,7 @@ func (hdl *GameProjHandler) Post(w http.ResponseWriter, r *http.Request) {
 func (hdl *GameProjHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	type PostRequest struct {
 		GameID string `json:"game_id"`
+		Chain  string `json:"chain"`
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -103,12 +104,17 @@ func (hdl *GameProjHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		encoder.Encode(ErrParam)
 		return
 	}
-	if len(req.GameID) == 0 {
+	if len(req.GameID) == 0 ||
+		len(req.Chain) == 0 {
 		encoder.Encode(ErrParam)
 		return
 	}
+	if !spider.ValiedChainName(req.Chain) {
+		encoder.Encode(ErrUnknownChain)
+		return
+	}
 
-	if err := hdl.deleteGame(req.GameID); err != nil {
+	if err := hdl.deleteGame(req.GameID, req.Chain); err != nil {
 		log.Error("delete game %s error:%s", req.GameID, err.Error())
 		encoder.Encode(ErrDeleteGame)
 		return
@@ -221,10 +227,14 @@ func (hdl *GameProjHandler) insertGame(gameID string, gameName string, chain str
 		log.Error("insert game:%s error:%s", gameID, err.Error())
 	}
 	log.Info("insert game[%v] success with:%v", game, rst.InsertedID)
+	if err = hdl.server.UpdateMonitor(chain); err != nil {
+		log.Error("update monitor lastest error:%s", err.Error())
+		return
+	}
 	return
 }
 
-func (hdl *GameProjHandler) deleteGame(gameID string) (err error) {
+func (hdl *GameProjHandler) deleteGame(gameID, chain string) (err error) {
 	gameTbl := hdl.server.db.Collection(db.GameTableName)
 
 	ctx, cancel := context.WithTimeout(hdl.server.ctx, 10*time.Second)
@@ -239,5 +249,9 @@ func (hdl *GameProjHandler) deleteGame(gameID string) (err error) {
 		log.Error("delete game:%s error:%s", gameID, err.Error())
 	}
 	log.Info("delete game[%v] success with count:%v", gameID, rst.DeletedCount)
+	if err = hdl.server.UpdateMonitor(chain); err != nil {
+		log.Error("update monitor lastest error:%s", err.Error())
+		return
+	}
 	return
 }

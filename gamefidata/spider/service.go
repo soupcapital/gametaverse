@@ -85,7 +85,7 @@ func (s *Service) initDB(URI string) (err error) {
 	if err != nil {
 		log.Error("ping mongo error:%s", err.Error())
 	} else {
-		log.Info("connect mongo success")
+		log.Info("service connect mongo success")
 	}
 
 	s.db = s.dbClient.Database(db.DBName)
@@ -199,9 +199,11 @@ func (s *Service) loadLatestTS() (ts uint64, err error) {
 }
 
 func (s *Service) checkAndStart() {
-	if updated, err := s.checkConfig(); err != nil {
+	if updated, err := s.checkConfig(); err == nil {
 		if updated {
 			s.restart()
+		} else {
+			log.Info("check config once and no need to do anything")
 		}
 	} else {
 		log.Info("check config error:%s", err.Error())

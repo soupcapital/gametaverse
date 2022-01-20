@@ -8,6 +8,7 @@ import (
 
 	"github.com/cz-theng/czkit-go/log"
 	"github.com/gametaverse/gamefidata/db"
+	"github.com/gametaverse/gamefidata/spider"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	mngopts "go.mongodb.org/mongo-driver/mongo/options"
@@ -22,6 +23,7 @@ func (hdl *GameContractHandler) Post(w http.ResponseWriter, r *http.Request) {
 
 	type PostRequest struct {
 		GameID    string   `json:"game_id"`
+		Chain     string   `json:"chain"`
 		Contracts []string `json:"contracts"`
 	}
 
@@ -38,8 +40,13 @@ func (hdl *GameContractHandler) Post(w http.ResponseWriter, r *http.Request) {
 		encoder.Encode(ErrParam)
 		return
 	}
-	if len(req.GameID) == 0 {
+	if len(req.GameID) == 0 ||
+		len(req.Chain) == 0 {
 		encoder.Encode(ErrParam)
+		return
+	}
+	if !spider.ValiedChainName(req.Chain) {
+		encoder.Encode(ErrUnknownChain)
 		return
 	}
 
@@ -70,6 +77,12 @@ func (hdl *GameContractHandler) Post(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error("Update contracts for game[%s] error: ", req.GameID, err.Error())
 		encoder.Encode(ErrDB)
+		return
+	}
+
+	if err = hdl.server.UpdateMonitor(req.Chain); err != nil {
+		log.Error("update monitor lastest error:%s", err.Error())
+		encoder.Encode(ErrUpdateMonitor)
 		return
 	}
 
