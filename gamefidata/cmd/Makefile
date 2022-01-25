@@ -1,5 +1,5 @@
 TARGET:=gamefidata
-TAG=v0.2.6
+TAG=v0.2.8
 DIST_DIR=../dist_$(TARGET)_$(TAG)
 
 SRC_FILES := $(shell find ../ -type  f | grep "\.go"   )

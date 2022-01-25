@@ -4,3 +4,5 @@
 ./start_eth.sh
 ./start_polygon.sh 
 ./start_wax.sh 
+./start_solana.sh 
+./start_avax.sh 
