@@ -45,6 +45,7 @@ func (s *Service) Init(opts ...Option) (err error) {
 	s.ctx = context.Background()
 
 	s.monitorField = db.MonitorFieldName + "_" + s.opts.Chain
+	log.Info("monitorFiled:%s", s.monitorField)
 
 	if err = s.initDB(s.opts.MongoURI); err != nil {
 		log.Error("init db error: %s", err.Error())
@@ -119,8 +120,7 @@ func (s *Service) routine(ctx context.Context, sp *Spider) {
 func (s *Service) updateGames() (err error) {
 	ctx, cancel := context.WithTimeout(s.ctx, 10*time.Second)
 	defer cancel()
-
-	cursor, err := s.gameTbl.Find(ctx, bson.M{})
+	cursor, err := s.gameTbl.Find(ctx, bson.M{"chain": s.opts.Chain})
 	if err != nil {
 		log.Error("Find game error: ", err.Error())
 		return
@@ -136,7 +136,7 @@ func (s *Service) updateGames() (err error) {
 	for _, game := range dbgames {
 		info := &GameInfo{
 			Name:      game.Name,
-			ID:        game.ID,
+			ID:        game.ID + "_" + s.opts.Chain,
 			Contracts: game.Contracts,
 		}
 		games = append(games, info)
@@ -182,6 +182,7 @@ func (s *Service) loadLatestTS() (ts uint64, err error) {
 	filter := bson.M{
 		"_id": s.monitorField,
 	}
+	log.Info("filter :%v", filter)
 	curs, err := s.monitorTbl.Find(ctx, filter)
 	if err != nil {
 		log.Error("Find monitor error:", err.Error())

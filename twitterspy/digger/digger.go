@@ -340,18 +340,22 @@ func Init(mongoAddr string, tokenRPC string) (err error) {
 
 func Start() (err error) {
 	done := make(chan (struct{}))
-	nowTS := time.Now().Unix()
-	dt := twitterspy.SecOfDay - (nowTS % twitterspy.SecOfDay)
-	loopTimer := time.NewTimer(time.Duration(dt * int64(time.Second)))
+	ticker := time.NewTicker(time.Second)
 	for {
 		select {
-		case <-loopTimer.C:
-			_digger.loop()
-			loopTimer.Reset(time.Duration(twitterspy.SecOfDay * int64(time.Second)))
+		case t := <-ticker.C:
+			if t.Unix()%twitterspy.SecOfDay == 0 {
+				_digger.loop()
+			}
 		case <-done:
 			return
 		}
 	}
+	return
+}
+
+func DigToday() (err error) {
+	_digger.loop()
 	return
 }
 
