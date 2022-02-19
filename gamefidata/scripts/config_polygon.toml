@@ -7,12 +7,13 @@ DBURI = "mongodb+srv://cz:Solong2020@cluster1.g9w77.mongodb.net/myFirstDatabase?
 Chain = "polygon"
 ChainID = 137
 #RPCAddr = "https://rpc-mainnet.maticvigil.com"
-RPCAddr = "https://polygon-rpc.com/"
+#RPCAddr = "https://polygon-rpc.com/"
+RPCAddr = "https://rpc.ankr.com/polygon"
 BottomBlock = 1000000
 ForwardInterval = 2.0
 BackwardInterval = 1.0
 ForwardWorks = 1
-BackwardWorks = 1
+BackwardWorks = 10
 
 [[Games]]
     Name = "Zed Run"

@@ -9,9 +9,9 @@ ChainID = 56
 RPCAddr = "https://bsc-dataseed.binance.org"
 BottomBlock = 1000000
 ForwardInterval = 3.0
-BackwardInterval = 1.5
+BackwardInterval = 1.0
 ForwardWorks = 1
-BackwardWorks = 1
+BackwardWorks = 10
 
 [[Games]]
     Name = "Crypto Blades"

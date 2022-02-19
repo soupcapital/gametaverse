@@ -6,12 +6,13 @@ DBURI = "mongodb+srv://cz:Solong2020@cluster1.g9w77.mongodb.net/myFirstDatabase?
 #DBURI = "mongodb+srv://gametaverse:gametaverse2021@cluster0.fnwxw.mongodb.net/d_gametaverse?retryWrites=true&w=majority"
 Chain = "avax"
 ChainID = 43114
-RPCAddr = "https://api.avax.network/ext/bc/C/rpc"
+#RPCAddr = "https://api.avax.network/ext/bc/C/rpc"
+RPCAddr = "https://rpc.ankr.com/avalanche"
 BottomBlock = 100000
 ForwardInterval = 1.0
 BackwardInterval = 1.0
 ForwardWorks = 1
-BackwardWorks = 1
+BackwardWorks = 10
 
 [[Games]]
     Name = "Trader Joe"
