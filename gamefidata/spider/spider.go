@@ -159,36 +159,15 @@ func (sp *Spider) Run(ctx context.Context, beacon chan struct{}, wg *sync.WaitGr
 }
 
 func (sp *Spider) loadTopBlock() (err error) {
-	ctx, cancel := context.WithTimeout(sp.ctx, 5*time.Second)
-	defer cancel()
-	filter := bson.M{
-		"_id": sp.monitorField,
-	}
-	curs, err := sp.monitorTbl.Find(ctx, filter)
-	if err != nil {
-		log.Error("Find monitor error:", err.Error())
-		return err
-	}
-
-	for curs.Next(ctx) {
-		var m db.Monitor
-		curs.Decode(&m)
-		log.Info("t_monitor:%v", m)
-		sp.topBlock = m.TopBlock
-		break
-	}
-
-	if sp.topBlock == 0 {
-		// No such record
-		log.Info("go to get block")
+	for {
 		sp.topBlock, err = sp.getBlockHeight()
 		if err != nil {
 			log.Error("get block height error:", err.Error())
-			return err
+			time.Sleep(100 * time.Millisecond)
 		}
+		log.Info("get block height :%v", sp.topBlock)
+		return nil
 	}
-	log.Info("topBlock:%v", sp.topBlock)
-	return
 }
 
 func (sp *Spider) getBlockHeight() (height uint64, err error) {
@@ -274,23 +253,7 @@ func (sp *Spider) goForward(ctx context.Context, beacon chan struct{}) {
 }
 
 func (sp *Spider) storeTopBlock(number uint64) (err error) {
-	ctx, cancel := context.WithTimeout(sp.ctx, 5*time.Second)
-	defer cancel()
 
-	opt := mngopts.Update()
-	opt.SetUpsert(true)
-
-	update := bson.M{
-		"$set": bson.M{
-			"topblock": number,
-		},
-	}
-	_, err = sp.monitorTbl.UpdateByID(ctx, sp.monitorField, update, opt)
-	if err != nil {
-		log.Error("Update top block error: ", err.Error())
-		return
-	}
-	log.Info("Update top block to:%d ", number)
 	return
 }
 
@@ -343,7 +306,7 @@ func (sp *Spider) insertDAU(actions map[string]*db.Action) (err error) {
 	var docs []interface{}
 	for _, a := range actions {
 
-		tail := ghash.DJBHash([]byte(a.GameID + a.User))
+		tail := ghash.DJBHash([]byte(a.GameID + sp.opts.Chain + a.User))
 		hashID := a.Timestamp<<32 | uint64(tail)
 		//log.Info("tail:%v, ts:%v hash:%v", tail, a.Timestamp, hashID)
 		doc := db.DAU{
@@ -351,6 +314,7 @@ func (sp *Spider) insertDAU(actions map[string]*db.Action) (err error) {
 			GameID:    a.GameID,
 			Timestamp: a.Timestamp,
 			User:      a.User,
+			Chain:     sp.opts.Chain,
 		}
 		docs = append(docs, doc)
 	}
@@ -380,8 +344,9 @@ func (sp *Spider) clearTick(timestamp uint64) (err error) {
 
 	for _, g := range sp.games {
 		filter := bson.M{
-			"game": g.ID,
-			"ts":   timestamp,
+			"game":  g.ID,
+			"chain": sp.opts.Chain,
+			"ts":    timestamp,
 		}
 
 		update := bson.M{
@@ -417,8 +382,9 @@ func (sp *Spider) insertCount(actions map[string]*db.Action) (err error) {
 		opts := mngopts.Update()
 		opts.SetUpsert(true)
 		filter := bson.M{
-			"game": a.GameID,
-			"ts":   a.Timestamp,
+			"game":  a.GameID,
+			"ts":    a.Timestamp,
+			"chain": sp.opts.Chain,
 		}
 
 		update := bson.M{

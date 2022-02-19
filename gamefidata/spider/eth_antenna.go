@@ -63,13 +63,13 @@ func (ata *ETHAntenna) DealTrx4Game(game *GameInfo, rawtrx *Transaction) (action
 	if !ok {
 		return nil, ErrUnknownTrx
 	}
-
+	msg, err := trx.AsMessage(types.NewLondonSigner(big.NewInt(int64(ata.chainID))), big.NewInt(0))
+	if err != nil {
+		log.Error("[%s:%v]AsMessage error:%s", trx.Hash().Hex(), trx.Type(), err.Error())
+		return
+	}
 	for _, c := range game.Contracts {
-		msg, err := trx.AsMessage(types.NewLondonSigner(big.NewInt(int64(ata.chainID))), big.NewInt(0))
-		if err != nil {
-			log.Error("[%s:%v]AsMessage error:%s", trx.Hash().Hex(), trx.Type(), err.Error())
-			continue
-		}
+
 		if trx.To() == nil {
 			continue // done with 0x0000...000
 		}

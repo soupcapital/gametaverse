@@ -129,7 +129,7 @@ func (hdl *TrxHandler) trxByDate(ctx context.Context, game string, gameTbl *mong
 		rec := db.Count{}
 		cur.Decode(&rec)
 		log.Info("Trx aggregate record:%v", rec)
-		count = int(rec.Count)
+		count += int(rec.Count)
 	}
 	return count, nil
 }

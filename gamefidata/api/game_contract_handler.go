@@ -50,7 +50,7 @@ func (hdl *GameContractHandler) Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if existed, err := hdl.isGameExisted(req.GameID); !existed {
+	if existed, err := hdl.isGameExisted(req.GameID, req.Chain); !existed {
 		if err != nil {
 			log.Error("game:%s isGameExisted error:%s", req.GameID, err.Error())
 			encoder.Encode(ErrDB)
@@ -73,7 +73,12 @@ func (hdl *GameContractHandler) Post(w http.ResponseWriter, r *http.Request) {
 			"contracts": req.Contracts,
 		},
 	}
-	_, err = gameTbl.UpdateByID(ctx, req.GameID, update, opt)
+	//_, err = gameTbl.UpdateByID(ctx, req.GameID, update, opt)
+	filter := bson.M{
+		"_id":   req.GameID,
+		"chain": req.Chain,
+	}
+	_, err = gameTbl.UpdateMany(ctx, filter, update, opt)
 	if err != nil {
 		log.Error("Update contracts for game[%s] error: ", req.GameID, err.Error())
 		encoder.Encode(ErrDB)
@@ -113,8 +118,9 @@ func (hdl *GameContractHandler) Get(w http.ResponseWriter, r *http.Request) {
 	encoder.SetEscapeHTML(false)
 
 	gameID := r.FormValue("game_id")
+	chain := r.FormValue("chain")
 
-	if len(gameID) == 0 {
+	if len(gameID) == 0 || len(chain) == 0 {
 		encoder.Encode(ErrParam)
 		return
 	}
@@ -125,7 +131,8 @@ func (hdl *GameContractHandler) Get(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	filter := bson.M{
-		"_id": gameID,
+		"_id":   gameID,
+		"chain": chain,
 	}
 
 	rst := gameTbl.FindOne(ctx, filter)
@@ -158,7 +165,7 @@ func (hdl *GameContractHandler) Get(w http.ResponseWriter, r *http.Request) {
 	encoder.Encode(rsp)
 }
 
-func (hdl *GameContractHandler) isGameExisted(gameID string) (existed bool, err error) {
+func (hdl *GameContractHandler) isGameExisted(gameID string, chain string) (existed bool, err error) {
 
 	gameTbl := hdl.server.db.Collection(db.GameTableName)
 
@@ -169,7 +176,8 @@ func (hdl *GameContractHandler) isGameExisted(gameID string) (existed bool, err 
 	opt.SetUpsert(true)
 
 	filter := bson.M{
-		"_id": gameID,
+		"_id":   gameID,
+		"chain": chain,
 	}
 
 	rst := gameTbl.FindOne(ctx, filter)

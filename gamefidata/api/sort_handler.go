@@ -44,6 +44,7 @@ func (hdl *SortHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	start := r.FormValue("start")
 	end := r.FormValue("end")
+	chain := r.FormValue("chain")
 
 	if len(end) == 0 ||
 		len(start) == 0 {
@@ -82,7 +83,7 @@ func (hdl *SortHandler) Get(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(hdl.server.ctx, 100*time.Second)
 	defer cancel()
 
-	daus, err := hdl.dauByDate(ctx, gameTbl, startTS, endTS)
+	daus, err := hdl.dauByDate(ctx, gameTbl, startTS, endTS, chain)
 	if err != nil {
 		encoder.Encode(ErrDB)
 		log.Error("daus: %s", err.Error())
@@ -90,7 +91,7 @@ func (hdl *SortHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	trxTbl := hdl.server.db.Collection(db.CountTableName)
-	trxes, err := hdl.trxByDate(ctx, trxTbl, startTS, endTS)
+	trxes, err := hdl.trxByDate(ctx, trxTbl, startTS, endTS, chain)
 	if err != nil {
 		encoder.Encode(ErrDB)
 		log.Error("trxes: %s", err.Error())
@@ -109,7 +110,7 @@ func (hdl *SortHandler) Get(w http.ResponseWriter, r *http.Request) {
 	encoder.Encode(rsp)
 }
 
-func (hdl *SortHandler) dauByDate(ctx context.Context, gameTbl *mongo.Collection, start, end int64) (games []GameDAU, err error) {
+func (hdl *SortHandler) dauByDate(ctx context.Context, gameTbl *mongo.Collection, start, end int64, chain string) (games []GameDAU, err error) {
 	log.Info("games start:%v end:%v", start, end)
 	groupStage := bson.M{
 		"$group": bson.M{"_id": bson.M{
@@ -127,6 +128,11 @@ func (hdl *SortHandler) dauByDate(ctx context.Context, gameTbl *mongo.Collection
 			"ts": bson.M{"$lte": end},
 		},
 	}
+	matchStage3 := bson.M{
+		"$match": bson.M{
+			"chain": chain,
+		},
+	}
 	groupStage2 := bson.M{
 		"$group": bson.M{"_id": "$_id.game", "dau": bson.M{"$sum": 1}},
 	}
@@ -135,7 +141,11 @@ func (hdl *SortHandler) dauByDate(ctx context.Context, gameTbl *mongo.Collection
 	}
 
 	pipeline := []bson.M{}
-	pipeline = append(pipeline, matchStage1, matchStage2, groupStage, groupStage2, sortStage)
+	if len(chain) == 0 {
+		pipeline = append(pipeline, matchStage1, matchStage2, groupStage, groupStage2, sortStage)
+	} else {
+		pipeline = append(pipeline, matchStage1, matchStage2, matchStage3, groupStage, groupStage2, sortStage)
+	}
 
 	cur, err := gameTbl.Aggregate(ctx, pipeline)
 	if err != nil {
@@ -152,7 +162,7 @@ func (hdl *SortHandler) dauByDate(ctx context.Context, gameTbl *mongo.Collection
 	return games, nil
 }
 
-func (hdl *SortHandler) trxByDate(ctx context.Context, gameTbl *mongo.Collection, start, end int64) (games []GameTrx, err error) {
+func (hdl *SortHandler) trxByDate(ctx context.Context, gameTbl *mongo.Collection, start, end int64, chain string) (games []GameTrx, err error) {
 
 	groupStage := bson.M{
 		"$group": bson.M{"_id": "$game", "trx": bson.M{"$sum": "$count"}},
@@ -167,12 +177,21 @@ func (hdl *SortHandler) trxByDate(ctx context.Context, gameTbl *mongo.Collection
 			"ts": bson.M{"$lte": end},
 		},
 	}
+	matchStage3 := bson.M{
+		"$match": bson.M{
+			"chain": chain,
+		},
+	}
 	sortStage := bson.M{
 		"$sort": bson.M{"trx": -1},
 	}
 
 	pipeline := []bson.M{}
-	pipeline = append(pipeline, matchStage1, matchStage2, groupStage, sortStage)
+	if len(chain) == 0 {
+		pipeline = append(pipeline, matchStage1, matchStage2, groupStage, sortStage)
+	} else {
+		pipeline = append(pipeline, matchStage1, matchStage2, matchStage3, groupStage, sortStage)
+	}
 
 	cur, err := gameTbl.Aggregate(ctx, pipeline)
 	if err != nil {

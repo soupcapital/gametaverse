@@ -163,12 +163,14 @@ func (hdl *GameProjHandler) Get(w http.ResponseWriter, r *http.Request) {
 	type RspGameInfo struct {
 		GameID   string `json:"game_id"`
 		GameName string `json:"game_name"`
+		Chain    string `json:"chain"`
 	}
 	var gameInfos []*RspGameInfo
 	for _, game := range games {
 		gameInfo := &RspGameInfo{
 			GameID:   game.ID,
 			GameName: game.Name,
+			Chain:    game.Chain,
 		}
 		gameInfos = append(gameInfos, gameInfo)
 	}

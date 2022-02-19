@@ -135,8 +135,9 @@ func (s *Service) updateGames() (err error) {
 	var games []*GameInfo
 	for _, game := range dbgames {
 		info := &GameInfo{
-			Name:      game.Name,
-			ID:        game.ID + "_" + s.opts.Chain,
+			Name: game.Name,
+			//ID:        game.ID + "_" + s.opts.Chain,
+			ID:        game.ID,
 			Contracts: game.Contracts,
 		}
 		games = append(games, info)
