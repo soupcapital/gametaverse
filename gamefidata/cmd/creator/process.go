@@ -116,9 +116,9 @@ func (hdl *browser) queryPage(addr string, page int) (contracts []ContractInfo, 
 				case 8:
 					s.Find("a").Each(func(i int, s *goquery.Selection) {
 						if title, ok := s.Attr("title"); ok {
-							words := strings.Split(title, "  ")
-							if len(words) == 2 {
-								contract = words[1]
+							words := strings.Split(title, " ")
+							if len(words) >= 2 {
+								contract = words[len(words)-1]
 							}
 						}
 					})
