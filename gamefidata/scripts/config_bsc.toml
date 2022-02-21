@@ -6,7 +6,7 @@ DBURI = "mongodb+srv://cz:Solong2020@cluster1.g9w77.mongodb.net/myFirstDatabase?
 #DBURI = "mongodb+srv://gametaverse:gametaverse2021@cluster0.fnwxw.mongodb.net/d_gametaverse?retryWrites=true&w=majority"
 Chain = "bsc"
 ChainID = 56
-RPCAddr = "https://bsc-dataseed.binance.org"
+RPCAddr = "https://rpc.ankr.com/bsc"
 BottomBlock = 1000000
 ForwardInterval = 3.0
 BackwardInterval = 1.0
