@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -21,14 +22,16 @@ type ContractInfo struct {
 
 var _browser browser
 
-func process(addr string, chain string) {
-	_browser.process(addr, chain)
+func process(addr string, chain string, proxy string) {
+	_browser.process(addr, chain, proxy)
 }
 
 type browser struct {
+	proxy string
 }
 
-func (hdl *browser) process(addr string, chain string) {
+func (hdl *browser) process(addr string, chain string, proxy string) {
+	hdl.proxy = proxy
 	rpcBase := fmt.Sprintf("https://etherscan.io/txs?a=%s&f=5", addr)
 	switch chain {
 	case "bsc":
@@ -60,25 +63,37 @@ func (hdl *browser) process(addr string, chain string) {
 
 	fmt.Println("========================================================================================")
 	for _, c := range contracts {
-		fmt.Printf("[%s@%s] create:%s\n", c.Creator, c.Datetime, c.Contract)
+		//fmt.Printf("[%s@%s] create:%s\n", c.Creator, c.Datetime, c.Contract)
+		fmt.Printf("%s\n", c.Contract)
 	}
 	fmt.Println("========================================================================================")
 }
 
 func (hdl *browser) queryPage(addr string, page int) (contracts []ContractInfo, err error) {
-	url := fmt.Sprintf("%s&p=%d", addr, page)
-	req, err := http.NewRequest("GET", url, nil)
+	requrl := fmt.Sprintf("%s&p=%d", addr, page)
+	req, err := http.NewRequest("GET", requrl, nil)
 	if err != nil {
 		log.Printf("new request error:%s", err.Error())
 		return
 	}
 
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.80 Safari/537.36")
-
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
-	cli := &http.Client{Transport: tr}
+	if len(hdl.proxy) != 0 {
+		proxy := func(_ *http.Request) (*url.URL, error) {
+			return url.Parse(hdl.proxy)
+		}
+		tr = &http.Transport{
+			Proxy:           proxy,
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
+	}
+
+	cli := &http.Client{
+		Transport: tr,
+	}
 	resp, err := cli.Do(req)
 	if err != nil {
 		log.Printf("request error:%s", err.Error())
