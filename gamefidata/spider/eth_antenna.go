@@ -44,7 +44,8 @@ func (ata *ETHAntenna) GetBlockHeight(ctx context.Context) (height uint64, err e
 func (ata *ETHAntenna) GetTrxByNum(ctx context.Context, num uint64) (trxes []*Transaction, err error) {
 	blk, err := ata.ethcli.BlockByNumber(ctx, big.NewInt(int64(num)))
 	if err != nil {
-		if strings.Contains(err.Error(), "non-empty transaction list but block header indicates no transactions") {
+		if strings.Contains(err.Error(), "non-empty transaction list but block header indicates no transactions") ||
+			strings.Contains(err.Error(), "not found") {
 			return nil, nil
 		}
 		return nil, err
@@ -63,18 +64,18 @@ func (ata *ETHAntenna) DealTrx4Game(game *GameInfo, rawtrx *Transaction) (action
 	if !ok {
 		return nil, ErrUnknownTrx
 	}
+	if trx.To() == nil {
+		return // done with 0x0000...000
+	}
 	msg, err := trx.AsMessage(types.NewLondonSigner(big.NewInt(int64(ata.chainID))), big.NewInt(0))
 	if err != nil {
 		log.Error("[%s:%v]AsMessage error:%s", trx.Hash().Hex(), trx.Type(), err.Error())
 		return
 	}
+	to := trx.To().Hex()
+	from := msg.From().Hex()
 	for _, c := range game.Contracts {
-
-		if trx.To() == nil {
-			continue // done with 0x0000...000
-		}
-		if strings.EqualFold(c, trx.To().Hex()) {
-			from := msg.From().Hex()
+		if strings.EqualFold(c, to) {
 			action := &db.Action{
 				GameID:    game.ID,
 				Timestamp: rawtrx.timestamp,
@@ -82,7 +83,6 @@ func (ata *ETHAntenna) DealTrx4Game(game *GameInfo, rawtrx *Transaction) (action
 				Count:     1,
 			}
 			actions = append(actions, action)
-
 		}
 	}
 	return actions, nil

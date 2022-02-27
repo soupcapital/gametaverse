@@ -148,6 +148,7 @@ func (s *Service) updateGames() (err error) {
 }
 
 func (s *Service) restart() {
+	log.Info("restart again")
 	if s.cancel != nil {
 		s.cancel()
 	}
@@ -158,7 +159,7 @@ func (s *Service) restart() {
 		return
 	}
 
-	ctx, cancel := context.WithCancel(s.ctx)
+	ctx, cancel := context.WithCancel(context.Background())
 	s.cancel = cancel
 	s.routine(ctx, s.forward)
 	s.routine(ctx, s.backward)
