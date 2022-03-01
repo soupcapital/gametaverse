@@ -192,7 +192,9 @@ func (sp *Spider) getTrxFromBlocks(start uint64, count int) (trxes []*Transactio
 	for i := 0; i < count; i++ {
 		wg.Add(1)
 		go func(i uint64) {
-			trx, err := sp.antenna.GetTrxByNum(sp.ctx, i)
+			ctx, cancel := context.WithTimeout(sp.ctx, 60*time.Second)
+			defer cancel()
+			trx, err := sp.antenna.GetTrxByNum(ctx, i)
 			if err != nil {
 				log.Error("get block[%d] error:%s", i, err.Error())
 			}
@@ -295,7 +297,7 @@ func (sp *Spider) dealTrxes4Game(game *GameInfo, trxes []*Transaction) (err erro
 		as, err := sp.antenna.DealTrx4Game(game, trx)
 		if err != nil {
 			log.Error("deal game error: %s", err.Error())
-			return err // for show errors
+			continue
 		}
 		for _, a := range as {
 			key := fmt.Sprintf("%v_%v_%v", a.GameID, a.Timestamp, a.User)

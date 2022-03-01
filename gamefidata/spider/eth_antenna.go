@@ -69,7 +69,7 @@ func (ata *ETHAntenna) DealTrx4Game(game *GameInfo, rawtrx *Transaction) (action
 	}
 	msg, err := trx.AsMessage(types.NewLondonSigner(big.NewInt(int64(ata.chainID))), big.NewInt(0))
 	if err != nil {
-		log.Error("[%s:%v]AsMessage error:%s", trx.Hash().Hex(), trx.Type(), err.Error())
+		//log.Error("[%s:%v]AsMessage error:%s", trx.Hash().Hex(), trx.Type(), err.Error())
 		return
 	}
 	to := trx.To().Hex()
