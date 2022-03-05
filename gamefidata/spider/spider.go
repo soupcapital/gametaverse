@@ -221,55 +221,6 @@ func (sp *Spider) getTrxFromBlocks(start uint64, count int) (trxes []*Transactio
 	return trxes, nil
 }
 
-func (sp *Spider) goForward(ctx context.Context, beacon chan struct{}) {
-	for {
-		select {
-		case <-beacon:
-			goto FUNC
-		case <-ctx.Done():
-			log.Info("forward got stop guard")
-			return
-		default:
-			time.Sleep(100 * time.Millisecond)
-		}
-	}
-FUNC:
-	sp.headBlock = sp.topBlock
-	log.Info("go forward from %v", sp.headBlock)
-	count := sp.opts.ForwardWorks
-	for {
-		select {
-		case <-ctx.Done():
-			log.Info("forward got stop guard")
-			return
-		default:
-			s1 := time.Now()
-			trxes, err := sp.getTrxFromBlocks(sp.headBlock, count)
-			if err != nil {
-				log.Error("get %d block[%d]:%s", count, sp.headBlock, err.Error())
-				time.Sleep(time.Duration(sp.opts.ForwardInterval * float32(time.Second)))
-				continue
-			}
-			err = sp.dealTrxes(trxes)
-			if err != nil {
-				log.Error("deal %d block[%d]:%s", count, sp.headBlock, err.Error())
-				time.Sleep(time.Duration(sp.opts.ForwardInterval * float32(time.Second)))
-				continue
-			}
-			if len(trxes) == 0 {
-				time.Sleep(time.Duration(sp.opts.ForwardInterval * float32(time.Second)))
-			}
-			if (sp.headBlock/uint64(count))%10 == 0 {
-				sp.storeTopBlock(sp.headBlock)
-			}
-			sp.headBlock += uint64(count)
-			s2 := time.Now()
-			d := s2.Sub(s1)
-			log.Info("%d blocks[%d] cost d is %v", count, sp.headBlock, d)
-		}
-	}
-}
-
 func (sp *Spider) storeTopBlock(number uint64) (err error) {
 
 	return
@@ -296,7 +247,7 @@ func (sp *Spider) dealTrxes4Game(game *GameInfo, trxes []*Transaction) (err erro
 	for _, trx := range trxes {
 		as, err := sp.antenna.DealTrx4Game(game, trx)
 		if err != nil {
-			log.Error("deal game error: %s", err.Error())
+			log.Error("deal game error: %s block:%v", err.Error(), trx.block)
 			continue
 		}
 		for _, a := range as {
@@ -424,6 +375,65 @@ func (sp *Spider) insertCount(actions map[string]*db.Action) (err error) {
 	}
 
 	return nil
+}
+
+func (sp *Spider) goForward(ctx context.Context, beacon chan struct{}) {
+	for {
+		select {
+		case <-beacon:
+			goto FUNC
+		case <-ctx.Done():
+			log.Info("forward got stop guard")
+			return
+		default:
+			time.Sleep(100 * time.Millisecond)
+		}
+	}
+FUNC:
+	sp.headBlock = sp.topBlock
+	log.Info("go forward from %v", sp.headBlock)
+	count := sp.opts.ForwardWorks
+	emptyTxErrNum := 0
+	for {
+		select {
+		case <-ctx.Done():
+			log.Info("forward got stop guard")
+			return
+		default:
+			s1 := time.Now()
+			trxes, err := sp.getTrxFromBlocks(sp.headBlock, count)
+			if err != nil {
+				log.Error("get %d block[%d]:%s", count, sp.headBlock, err.Error())
+				time.Sleep(time.Duration(sp.opts.ForwardInterval * float32(time.Second)))
+				continue
+			}
+			if len(trxes) == 0 {
+				emptyTxErrNum += 1
+
+				time.Sleep(time.Duration(sp.opts.ForwardInterval * float32(time.Second)))
+				if emptyTxErrNum > 3 {
+					emptyTxErrNum = 0
+					sp.headBlock += uint64(count)
+
+				}
+				continue
+			}
+			err = sp.dealTrxes(trxes)
+			if err != nil {
+				log.Error("deal %d block[%d]:%s", count, sp.headBlock, err.Error())
+				time.Sleep(time.Duration(sp.opts.ForwardInterval * float32(time.Second)))
+				continue
+			}
+
+			if (sp.headBlock/uint64(count))%10 == 0 {
+				sp.storeTopBlock(sp.headBlock)
+			}
+			sp.headBlock += uint64(count)
+			s2 := time.Now()
+			d := s2.Sub(s1)
+			log.Info("%d blocks[%d] cost d is %v", count, sp.headBlock, d)
+		}
+	}
 }
 
 func (sp *Spider) goBackward(ctx context.Context, starting chan struct{}) {

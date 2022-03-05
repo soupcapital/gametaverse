@@ -9,6 +9,7 @@ import (
 type Transaction struct {
 	timestamp uint64
 	raw       interface{}
+	block     uint64
 }
 
 type Antennaer interface {

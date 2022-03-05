@@ -54,6 +54,7 @@ func (ata *ETHAntenna) GetTrxByNum(ctx context.Context, num uint64) (trxes []*Tr
 		trxes = append(trxes, &Transaction{
 			timestamp: utils.StartSecForDay(blk.Header().Time),
 			raw:       trx,
+			block:     num,
 		})
 	}
 	return
@@ -74,6 +75,7 @@ func (ata *ETHAntenna) DealTrx4Game(game *GameInfo, rawtrx *Transaction) (action
 	}
 	to := trx.To().Hex()
 	from := msg.From().Hex()
+	//log.Info("deal tx of block[%d] tx:%v", rawtrx.block, trx.Hash())
 	for _, c := range game.Contracts {
 		if strings.EqualFold(c, to) {
 			action := &db.Action{
