@@ -6,3 +6,5 @@ gamefidata/cmd/gamefidata
 dist_*
 twitterspy/cmd/twitterspy
 gametaversebot/cmd/gametaversebot
+gfdp/cmd/gfdp
+gfdp/cmd/nohup.out
