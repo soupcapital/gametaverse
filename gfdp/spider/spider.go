@@ -174,7 +174,7 @@ func (sp *Spider) getTrxFromBlocks(start uint64, count int) (trxes []*Transactio
 			defer cancel()
 			trx, err := sp.antenna.GetTrxByNum(ctx, i)
 			if err != nil {
-				log.Error("get block error:%s", err.Error())
+				log.Error("get block[%d] error:%s", i, err.Error())
 			}
 			rst := &result{
 				trxes: trx,
