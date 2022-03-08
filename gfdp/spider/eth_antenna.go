@@ -2,7 +2,6 @@ package spider
 
 import (
 	"context"
-	"encoding/hex"
 	"math/big"
 	"strings"
 	"time"
@@ -74,16 +73,13 @@ func (ata *ETHAntenna) DealTrx(rawtrx *Transaction) (txes []*db.Transaction, err
 		log.Error("[%s:%v]AsMessage error:%s", trx.Hash().Hex(), trx.Type(), err.Error())
 		return
 	}
-	hash := trx.Hash().Hex()
 	to := trx.To().Hex()
 	from := msg.From().Hex()
 	tx := &db.Transaction{
-		Hash:      hash,
 		Block:     rawtrx.block,
 		Timestamp: time.Unix(int64(rawtrx.timestamp), 0),
 		From:      strings.ToLower(from),
 		To:        strings.ToLower(to),
-		Data:      hex.EncodeToString(trx.Data()),
 	}
 	txes = append(txes, tx)
 

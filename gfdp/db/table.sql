@@ -1,9 +1,8 @@
-CREATE TABLE t_txs (tx_hash String NOT NULL,
+CREATE TABLE t_txs (
   ts DateTime,
   blk_num UInt64,
   from String,
-  to String, 
-  data String
+  to String 
 )   ENGINE = ReplacingMergeTree()
-    ORDER BY  (blk_num,ts, to, tx_hash)
+    ORDER BY  (blk_num,ts, to)
     PRIMARY KEY (blk_num,ts,to);

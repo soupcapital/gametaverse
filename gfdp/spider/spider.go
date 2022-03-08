@@ -2,6 +2,7 @@ package spider
 
 import (
 	"context"
+	"strings"
 	"sync"
 	"time"
 
@@ -15,8 +16,10 @@ type Spider struct {
 	antenna   Antennaer
 	cancelFun context.CancelFunc
 	opts      options
+	wg        sync.WaitGroup
 
-	curBlock uint64
+	forwardBlock  uint64
+	backwardBlock uint64
 
 	stopGuard chan struct{}
 	dbConn    clickhouse.Conn
@@ -73,26 +76,7 @@ func (sp *Spider) initDb() (err error) {
 		MaxIdleConns:    5,
 		ConnMaxLifetime: time.Hour,
 	})
-	// ctx := sp.ctx
-	// if err := sp.dbConn.Exec(ctx, `DROP TABLE IF EXISTS t_txs`); err != nil {
-	// 	log.Error("drop table error:%s", err.Error())
-	// 	return err
-	// }
-	// err = sp.dbConn.Exec(ctx, `
-	// 	CREATE TABLE IF NOT EXISTS t_txs (
-	// 		tx_hash String NOT NULL,
-	// 		ts DateTime,
-	// 		from String,
-	// 		to String,
-	// 		data String
-	// 	)   ENGINE = ReplacingMergeTree()
-	// 		ORDER BY  (ts, to, tx_hash)
-	// 		PRIMARY KEY (ts,to);
-	// `)
-	// if err != nil {
-	// 	log.Error("creat table error:%s", err.Error())
-	// 	return err
-	// }
+
 	return
 }
 
@@ -111,16 +95,49 @@ func (sp *Spider) Run(ctx context.Context, wg *sync.WaitGroup) {
 
 	var err error
 
-	sp.curBlock, err = sp.loadMaxBlock()
+	maxBlock, err := sp.loadMaxBlock()
 	if err != nil {
 		log.Error("get max block error:%s", err.Error())
 		return
 	}
-	if sp.curBlock == 0 {
-		sp.curBlock = sp.opts.BottomBlock
+	minBlock, err := sp.loadMinBlock()
+	if err != nil {
+		log.Error("get max block error:%s", err.Error())
+		return
 	}
-	log.Info("curBlock:%d", sp.curBlock)
-	sp.run(ctx)
+
+	ctxMin, cancel := context.WithTimeout(sp.ctx, 60*time.Second)
+	defer cancel()
+	curHeight, err := sp.antenna.GetBlockHeight(ctxMin)
+	if err != nil {
+		log.Error("get cur block error:%s", err.Error())
+		return
+	}
+
+	if minBlock == 0 {
+		if maxBlock == 0 {
+			minBlock = curHeight
+			maxBlock = curHeight
+		} else {
+			log.Error("minBlock and maxBlock are not all0")
+			return
+		}
+	}
+	if minBlock == maxBlock {
+		minBlock -= 1
+	}
+	sp.backwardBlock = minBlock
+	sp.forwardBlock = maxBlock
+	log.Info("back from[%d] and forward from[%d]", sp.backwardBlock, sp.forwardBlock)
+	sp.routine(ctx, sp.goForward)
+	sp.routine(ctx, sp.goBackward)
+
+	sp.wg.Wait()
+}
+
+func (sp *Spider) routine(ctx context.Context, fn func(context.Context, *sync.WaitGroup)) {
+	sp.wg.Add(1)
+	go fn(ctx, &sp.wg)
 }
 
 func (sp *Spider) loadMaxBlock() (block uint64, err error) {
@@ -130,7 +147,16 @@ func (sp *Spider) loadMaxBlock() (block uint64, err error) {
 		log.Error("query error:%s", err.Error())
 		return
 	}
+	return
+}
 
+func (sp *Spider) loadMinBlock() (block uint64, err error) {
+	ctx, cancel := context.WithTimeout(sp.ctx, 5*time.Second)
+	defer cancel()
+	if err = sp.dbConn.QueryRow(ctx, "SELECT MIN(blk_num) FROM t_txs").Scan(&block); err != nil {
+		log.Error("query error:%s", err.Error())
+		return
+	}
 	return
 }
 
@@ -162,7 +188,7 @@ func (sp *Spider) getTrxFromBlocks(start uint64, count int) (trxes []*Transactio
 	i := 0
 	for rst := range rstChan {
 		if rst.err != nil {
-			return nil, ErrGetBlock
+			return nil, rst.err
 		}
 		trxes = append(trxes, rst.trxes...)
 		i++
@@ -186,19 +212,17 @@ func (sp *Spider) dealTrxes(trxes []*Transaction) (err error) {
 	if len(allTx) == 0 {
 		return nil
 	}
-	//log.Info("Insert into [%d] tx", len(allTx))
 	batch, err := sp.dbConn.PrepareBatch(sp.ctx, "INSERT INTO t_txs")
 	if err != nil {
 		log.Info("PrepareBatch error:%s", err.Error())
 		return err
 	}
 	for _, tx := range allTx {
-		if err = batch.Append(tx.Hash,
+		if err = batch.Append(
 			tx.Timestamp,
 			tx.Block,
 			tx.From,
-			tx.To,
-			tx.Data); err != nil {
+			tx.To); err != nil {
 			log.Error("batch append error:%s", err.Error())
 			continue
 		}
@@ -207,7 +231,13 @@ func (sp *Spider) dealTrxes(trxes []*Transaction) (err error) {
 	return
 }
 
-func (sp *Spider) run(ctx context.Context) {
+func (sp *Spider) goForward(ctx context.Context, wg *sync.WaitGroup) {
+	defer func() {
+		if wg != nil {
+			wg.Done()
+		}
+	}()
+
 	count := sp.opts.ForwardWorks
 	for {
 		select {
@@ -215,22 +245,64 @@ func (sp *Spider) run(ctx context.Context) {
 			log.Info("forward got stop guard")
 			return
 		default:
-			trxes, err := sp.getTrxFromBlocks(sp.curBlock, count)
+			trxes, err := sp.getTrxFromBlocks(sp.forwardBlock, count)
 			if err != nil {
-				log.Error("get %d block[%d]:%s", count, sp.curBlock, err.Error())
+				if !strings.Contains(err.Error(), "not found") {
+					log.Error("get %d block[%d]:%s", count, sp.forwardBlock, err.Error())
+				}
 				time.Sleep(time.Duration(sp.opts.ForwardInterval * float32(time.Second)))
 				continue
 			}
-			//log.Info("got %d txes from block[%d]", len(trxes), sp.curBlock)
 			err = sp.dealTrxes(trxes)
 			if err != nil {
-				log.Error("deal %d block[%d]:%s", count, sp.curBlock, err.Error())
+				log.Error("deal %d block[%d]:%s", count, sp.forwardBlock, err.Error())
 				time.Sleep(time.Duration(sp.opts.ForwardInterval * float32(time.Second)))
 				continue
 			}
-			sp.curBlock += uint64(count)
-			if (sp.curBlock/uint64(count))%10 == 0 {
-				log.Info("back to block to: %v", sp.curBlock)
+			sp.forwardBlock += uint64(count)
+			if (sp.forwardBlock/uint64(count))%10 == 0 {
+				log.Info("[PROC] forward to block to: %v", sp.forwardBlock)
+			}
+		}
+	}
+}
+
+func (sp *Spider) goBackward(ctx context.Context, wg *sync.WaitGroup) {
+	defer func() {
+		if wg != nil {
+			wg.Done()
+		}
+	}()
+
+	count := sp.opts.BackwardWorks
+	for {
+		select {
+		case <-ctx.Done():
+			log.Info("backward got stop guard")
+			return
+		default:
+			trxes, err := sp.getTrxFromBlocks(sp.backwardBlock-uint64(count), count)
+			if err != nil {
+				if !strings.Contains(err.Error(), "not found") {
+					log.Error("get %d block[%d]:%s", count, sp.backwardBlock, err.Error())
+					time.Sleep(time.Duration(sp.opts.BackwardInterval * float32(time.Second)))
+					continue
+				}
+			}
+			err = sp.dealTrxes(trxes)
+			if err != nil {
+				log.Error("deal %d block[%d]:%s", count, sp.backwardBlock, err.Error())
+				time.Sleep(time.Duration(sp.opts.ForwardInterval * float32(time.Second)))
+				continue
+			}
+			sp.backwardBlock -= uint64(count)
+			if (sp.backwardBlock/uint64(count))%10 == 0 {
+				log.Info("[PROC]backward to block to: %v", sp.backwardBlock)
+			}
+
+			if sp.backwardBlock <= sp.opts.BottomBlock {
+				log.Info("Backward to bottom")
+				return
 			}
 		}
 	}
