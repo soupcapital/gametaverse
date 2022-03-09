@@ -300,7 +300,7 @@ func (sp *Spider) goBackward(ctx context.Context, wg *sync.WaitGroup) {
 			err = sp.dealTrxes(trxes)
 			if err != nil {
 				log.Error("deal %d block[%d]:%s", count, sp.backwardBlock, err.Error())
-				time.Sleep(time.Duration(sp.opts.ForwardInterval * float32(time.Second)))
+				time.Sleep(time.Duration(sp.opts.BackwardInterval * float32(time.Second)))
 				continue
 			}
 			sp.backwardBlock -= uint64(count)
