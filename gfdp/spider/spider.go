@@ -2,6 +2,7 @@ package spider
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"sync"
 	"time"
@@ -23,6 +24,7 @@ type Spider struct {
 
 	stopGuard chan struct{}
 	dbConn    clickhouse.Conn
+	dbTbl     string
 }
 
 func NewSpider(opts options) *Spider {
@@ -33,13 +35,16 @@ func NewSpider(opts options) *Spider {
 	switch opts.Chain {
 	case "polygon", "eth", "bsc":
 		s.antenna = NewETHAntenna()
-		// case "avax":
-		// 	s.antenna = NewAvaxAntenna()
-		// case "wax":
-		// 	s.antenna = NewEOSAntenna()
-		// case "solana":
-		// 	s.antenna = NewSolanaAntenna()
+	// case "avax":
+	// 	s.antenna = NewAvaxAntenna()
+	// case "wax":
+	// 	s.antenna = NewEOSAntenna()
+	// case "solana":
+	// 	s.antenna = NewSolanaAntenna()
+	default:
+		return nil
 	}
+	s.dbTbl = fmt.Sprintf("t_tx_%s", opts.Chain)
 	return s
 }
 
@@ -143,7 +148,8 @@ func (sp *Spider) routine(ctx context.Context, fn func(context.Context, *sync.Wa
 func (sp *Spider) loadMaxBlock() (block uint64, err error) {
 	ctx, cancel := context.WithTimeout(sp.ctx, 5*time.Second)
 	defer cancel()
-	if err = sp.dbConn.QueryRow(ctx, "SELECT MAX(blk_num) FROM t_txs").Scan(&block); err != nil {
+	sql := fmt.Sprintf("SELECT MAX(blk_num) FROM %s", sp.dbTbl)
+	if err = sp.dbConn.QueryRow(ctx, sql).Scan(&block); err != nil {
 		log.Error("query error:%s", err.Error())
 		return
 	}
@@ -153,7 +159,8 @@ func (sp *Spider) loadMaxBlock() (block uint64, err error) {
 func (sp *Spider) loadMinBlock() (block uint64, err error) {
 	ctx, cancel := context.WithTimeout(sp.ctx, 5*time.Second)
 	defer cancel()
-	if err = sp.dbConn.QueryRow(ctx, "SELECT MIN(blk_num) FROM t_txs").Scan(&block); err != nil {
+	sql := fmt.Sprintf("SELECT MIN(blk_num) FROM %s", sp.dbTbl)
+	if err = sp.dbConn.QueryRow(ctx, sql).Scan(&block); err != nil {
 		log.Error("query error:%s", err.Error())
 		return
 	}
@@ -212,7 +219,8 @@ func (sp *Spider) dealTrxes(trxes []*Transaction) (err error) {
 	if len(allTx) == 0 {
 		return nil
 	}
-	batch, err := sp.dbConn.PrepareBatch(sp.ctx, "INSERT INTO t_txs")
+	sql := fmt.Sprintf("INSERT INTO %s", sp.dbTbl)
+	batch, err := sp.dbConn.PrepareBatch(sp.ctx, sql)
 	if err != nil {
 		log.Info("PrepareBatch error:%s", err.Error())
 		return err

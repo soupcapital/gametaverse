@@ -1,4 +1,4 @@
-CREATE TABLE t_txs (
+CREATE TABLE t_tx_bsc (
   ts DateTime,
   blk_num UInt64,
   from String,
