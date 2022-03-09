@@ -1,5 +1,5 @@
 TARGET:=gfdp
-TAG=v0.2.12
+TAG=v0.1.2
 DIST_DIR=../dist_$(TARGET)_$(TAG)
 
 SRC_FILES := $(shell find ../ -type  f | grep "\.go"   )
