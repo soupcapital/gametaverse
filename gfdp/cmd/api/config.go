@@ -10,8 +10,11 @@ type configInfo struct {
 	LogFile    string `toml:"LogFile"`
 	LogPath    string `toml:"LogPath"`
 	LogLevel   string `toml:"LogLevel"`
-	DBURI      string `toml:"DBURI"`
+	DbUrl      string `toml:"DbUrl"`
 	ListenAddr string `toml:"ListenAddr"`
+	DbUser     string `toml:"DbUser"`
+	DbPasswd   string `toml:"DbPasswd"`
+	DbName     string `toml:"DbName"`
 }
 
 var config configInfo

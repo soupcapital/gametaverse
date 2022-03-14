@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/cz-theng/czkit-go/log"
-	"github.com/gametaverse/gfdp/api"
+	"github.com/gametaverse/gfdp/rpc"
 	"github.com/spf13/cobra"
 )
 
@@ -47,16 +47,24 @@ func _main(cmd *cobra.Command, args []string) {
 	logNameOpt := log.WithLogName(logFile)
 	logPathOpt := log.WithLogPath(logPath)
 	log.Init(logNameOpt, logPathOpt)
-	mongoURIOpt := api.WithMongoURI(config.DBURI)
-	listenAddrOpt := api.WithListenAddr(config.ListenAddr)
+	listenAddrOpt := rpc.WithListenAddr(config.ListenAddr)
+	dbAddrOpt := rpc.WithDbUrl(config.DbUrl)
+	dbUserOpt := rpc.WithDbUser(config.DbUser)
+	dbPasswdOpt := rpc.WithDbPasswd(config.DbPasswd)
+	dbNameOpt := rpc.WithDbName(config.DbName)
 
-	apiApp := api.NewServer()
-	err := apiApp.Init(mongoURIOpt,
-		listenAddrOpt)
+	app := rpc.NewServer()
+	err := app.Init(
+		dbAddrOpt,
+		listenAddrOpt,
+		dbUserOpt,
+		dbPasswdOpt,
+		dbNameOpt,
+	)
 	if err != nil {
 		fmt.Printf("Init error:%s \n", err.Error())
 		return
 	}
 
-	apiApp.Run()
+	app.Run()
 }

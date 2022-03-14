@@ -229,6 +229,7 @@ func (sp *Spider) dealTrxes(trxes []*Transaction) (err error) {
 		if err = batch.Append(
 			tx.Timestamp,
 			tx.Block,
+			tx.Index,
 			tx.From,
 			tx.To); err != nil {
 			log.Error("batch append error:%s", err.Error())
@@ -247,6 +248,7 @@ func (sp *Spider) goForward(ctx context.Context, wg *sync.WaitGroup) {
 	}()
 
 	count := sp.opts.ForwardWorks
+	notFoundCount := 0
 	for {
 		select {
 		case <-ctx.Done():
@@ -255,12 +257,18 @@ func (sp *Spider) goForward(ctx context.Context, wg *sync.WaitGroup) {
 		default:
 			trxes, err := sp.getTrxFromBlocks(sp.forwardBlock, count)
 			if err != nil {
-				if !strings.Contains(err.Error(), "not found") {
+				if strings.Contains(err.Error(), "not found") {
+					notFoundCount += 1
+					if notFoundCount >= 30 {
+						sp.forwardBlock += uint64(count)
+					}
+				} else {
 					log.Error("get %d block[%d]:%s", count, sp.forwardBlock, err.Error())
 				}
 				time.Sleep(time.Duration(sp.opts.ForwardInterval * float32(time.Second)))
 				continue
 			}
+			notFoundCount = 0
 			err = sp.dealTrxes(trxes)
 			if err != nil {
 				log.Error("deal %d block[%d]:%s", count, sp.forwardBlock, err.Error())

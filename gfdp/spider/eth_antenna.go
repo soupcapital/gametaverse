@@ -49,10 +49,11 @@ func (ata *ETHAntenna) GetTrxByNum(ctx context.Context, num uint64) (trxes []*Tr
 		}
 		return nil, err
 	}
-	for _, trx := range blk.Transactions() {
+	for i, trx := range blk.Transactions() {
 		trxes = append(trxes, &Transaction{
 			timestamp: blk.Header().Time,
 			block:     num,
+			index:     uint16(i),
 			raw:       trx,
 		})
 	}
@@ -77,6 +78,7 @@ func (ata *ETHAntenna) DealTrx(rawtrx *Transaction) (txes []*db.Transaction, err
 	from := msg.From().Hex()
 	tx := &db.Transaction{
 		Block:     rawtrx.block,
+		Index:     rawtrx.index,
 		Timestamp: time.Unix(int64(rawtrx.timestamp), 0),
 		From:      strings.ToLower(from),
 		To:        strings.ToLower(to),

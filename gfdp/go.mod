@@ -9,4 +9,6 @@ require (
 	github.com/ethereum/go-ethereum v1.10.16
 	github.com/spf13/cobra v1.3.0
 	go.mongodb.org/mongo-driver v1.8.3
+	google.golang.org/grpc v1.42.0
+	google.golang.org/protobuf v1.27.1
 )
