@@ -3,8 +3,10 @@ syntax = "proto3";
 option go_package = "github.com/gametaverse/gfdp/rpc/pb";
 
 service DBProxy {
-  rpc Dau (DauReq) returns (DauRsp) {}
-  rpc TxCount (TxCountReq) returns (TxCountRsp) {}
+  rpc Dau (GameReq) returns (DauRsp) {}
+  rpc TxCount (GameReq) returns (TxCountRsp) {}
+  rpc ChainDau (ChainGameReq) returns (DauRsp) {}
+  rpc ChainTxCount (ChainGameReq) returns (TxCountRsp) {}
 }
 
 enum Chain {
@@ -14,25 +16,29 @@ enum Chain {
   ETH = 3;
 }
 
-message DauReq {
+message Contract {
   Chain chain = 1;
+  string address = 2;
+}
+
+message GameReq {
   int64 start = 2;
   int64 end = 3;
-  repeated string contracts = 4;
+  repeated Contract contracts = 4;
 }
 
 message DauRsp {
   uint64 dau = 1;
 }
 
-message TxCountReq {
-  Chain chain = 1;
-  int64 start = 2;
-  int64 end = 3;
-  repeated string contracts = 4;
-}
-
 
 message TxCountRsp {
   uint64 count = 1;
+}
+
+
+message ChainGameReq {
+  int64 start = 2;
+  int64 end = 3;
+  repeated Chain chains = 4;
 }

@@ -18,8 +18,10 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DBProxyClient interface {
-	Dau(ctx context.Context, in *DauReq, opts ...grpc.CallOption) (*DauRsp, error)
-	TxCount(ctx context.Context, in *TxCountReq, opts ...grpc.CallOption) (*TxCountRsp, error)
+	Dau(ctx context.Context, in *GameReq, opts ...grpc.CallOption) (*DauRsp, error)
+	TxCount(ctx context.Context, in *GameReq, opts ...grpc.CallOption) (*TxCountRsp, error)
+	ChainDau(ctx context.Context, in *ChainGameReq, opts ...grpc.CallOption) (*DauRsp, error)
+	ChainTxCount(ctx context.Context, in *ChainGameReq, opts ...grpc.CallOption) (*TxCountRsp, error)
 }
 
 type dBProxyClient struct {
@@ -30,7 +32,7 @@ func NewDBProxyClient(cc grpc.ClientConnInterface) DBProxyClient {
 	return &dBProxyClient{cc}
 }
 
-func (c *dBProxyClient) Dau(ctx context.Context, in *DauReq, opts ...grpc.CallOption) (*DauRsp, error) {
+func (c *dBProxyClient) Dau(ctx context.Context, in *GameReq, opts ...grpc.CallOption) (*DauRsp, error) {
 	out := new(DauRsp)
 	err := c.cc.Invoke(ctx, "/DBProxy/Dau", in, out, opts...)
 	if err != nil {
@@ -39,9 +41,27 @@ func (c *dBProxyClient) Dau(ctx context.Context, in *DauReq, opts ...grpc.CallOp
 	return out, nil
 }
 
-func (c *dBProxyClient) TxCount(ctx context.Context, in *TxCountReq, opts ...grpc.CallOption) (*TxCountRsp, error) {
+func (c *dBProxyClient) TxCount(ctx context.Context, in *GameReq, opts ...grpc.CallOption) (*TxCountRsp, error) {
 	out := new(TxCountRsp)
 	err := c.cc.Invoke(ctx, "/DBProxy/TxCount", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dBProxyClient) ChainDau(ctx context.Context, in *ChainGameReq, opts ...grpc.CallOption) (*DauRsp, error) {
+	out := new(DauRsp)
+	err := c.cc.Invoke(ctx, "/DBProxy/ChainDau", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dBProxyClient) ChainTxCount(ctx context.Context, in *ChainGameReq, opts ...grpc.CallOption) (*TxCountRsp, error) {
+	out := new(TxCountRsp)
+	err := c.cc.Invoke(ctx, "/DBProxy/ChainTxCount", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -52,8 +72,10 @@ func (c *dBProxyClient) TxCount(ctx context.Context, in *TxCountReq, opts ...grp
 // All implementations must embed UnimplementedDBProxyServer
 // for forward compatibility
 type DBProxyServer interface {
-	Dau(context.Context, *DauReq) (*DauRsp, error)
-	TxCount(context.Context, *TxCountReq) (*TxCountRsp, error)
+	Dau(context.Context, *GameReq) (*DauRsp, error)
+	TxCount(context.Context, *GameReq) (*TxCountRsp, error)
+	ChainDau(context.Context, *ChainGameReq) (*DauRsp, error)
+	ChainTxCount(context.Context, *ChainGameReq) (*TxCountRsp, error)
 	mustEmbedUnimplementedDBProxyServer()
 }
 
@@ -61,11 +83,17 @@ type DBProxyServer interface {
 type UnimplementedDBProxyServer struct {
 }
 
-func (UnimplementedDBProxyServer) Dau(context.Context, *DauReq) (*DauRsp, error) {
+func (UnimplementedDBProxyServer) Dau(context.Context, *GameReq) (*DauRsp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Dau not implemented")
 }
-func (UnimplementedDBProxyServer) TxCount(context.Context, *TxCountReq) (*TxCountRsp, error) {
+func (UnimplementedDBProxyServer) TxCount(context.Context, *GameReq) (*TxCountRsp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TxCount not implemented")
+}
+func (UnimplementedDBProxyServer) ChainDau(context.Context, *ChainGameReq) (*DauRsp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ChainDau not implemented")
+}
+func (UnimplementedDBProxyServer) ChainTxCount(context.Context, *ChainGameReq) (*TxCountRsp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ChainTxCount not implemented")
 }
 func (UnimplementedDBProxyServer) mustEmbedUnimplementedDBProxyServer() {}
 
@@ -81,7 +109,7 @@ func RegisterDBProxyServer(s grpc.ServiceRegistrar, srv DBProxyServer) {
 }
 
 func _DBProxy_Dau_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DauReq)
+	in := new(GameReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -93,13 +121,13 @@ func _DBProxy_Dau_Handler(srv interface{}, ctx context.Context, dec func(interfa
 		FullMethod: "/DBProxy/Dau",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DBProxyServer).Dau(ctx, req.(*DauReq))
+		return srv.(DBProxyServer).Dau(ctx, req.(*GameReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _DBProxy_TxCount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TxCountReq)
+	in := new(GameReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -111,7 +139,43 @@ func _DBProxy_TxCount_Handler(srv interface{}, ctx context.Context, dec func(int
 		FullMethod: "/DBProxy/TxCount",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DBProxyServer).TxCount(ctx, req.(*TxCountReq))
+		return srv.(DBProxyServer).TxCount(ctx, req.(*GameReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DBProxy_ChainDau_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ChainGameReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DBProxyServer).ChainDau(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/DBProxy/ChainDau",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DBProxyServer).ChainDau(ctx, req.(*ChainGameReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DBProxy_ChainTxCount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ChainGameReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DBProxyServer).ChainTxCount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/DBProxy/ChainTxCount",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DBProxyServer).ChainTxCount(ctx, req.(*ChainGameReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -130,6 +194,14 @@ var DBProxy_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "TxCount",
 			Handler:    _DBProxy_TxCount_Handler,
+		},
+		{
+			MethodName: "ChainDau",
+			Handler:    _DBProxy_ChainDau_Handler,
+		},
+		{
+			MethodName: "ChainTxCount",
+			Handler:    _DBProxy_ChainTxCount_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

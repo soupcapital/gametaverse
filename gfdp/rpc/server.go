@@ -83,22 +83,54 @@ func (svr *Server) chain(chain pb.Chain) string {
 	}
 }
 
-func (svr *Server) Dau(ctx context.Context, req *pb.DauReq) (rsp *pb.DauRsp, err error) {
-	chain := svr.chain(req.Chain)
-	tblName := fmt.Sprintf("t_tx_%s", chain)
+func (svr *Server) Dau(ctx context.Context, req *pb.GameReq) (rsp *pb.DauRsp, err error) {
+	sql := ""
 
-	sql := fmt.Sprintf("SELECT countDistinct(from) from %s WHERE (ts > %d) AND (ts < %d)", tblName, req.Start, req.End)
-	if len(req.Contracts) > 0 {
-		toSql := " AND ("
-		s := ""
-		for _, c := range req.Contracts {
-			toEqul := fmt.Sprintf(" %s (to = '%s')", s, c)
-			s = " OR "
-			toSql += toEqul
-		}
-		toSql += ")"
-		sql += toSql
+	//TODO: normal case
+	var contracts map[pb.Chain][]string = make(map[pb.Chain][]string, 10)
+	for _, c := range req.Contracts {
+		contracts[c.Chain] = append(contracts[c.Chain], c.Address)
 	}
+
+	if len(contracts) == 1 {
+		// only one chain
+		for k, v := range contracts {
+			chain := svr.chain(k)
+			tblName := fmt.Sprintf("t_tx_%s", chain)
+			sql = fmt.Sprintf("SELECT countDistinct(from) from %s WHERE (ts > %d) AND (ts < %d)", tblName, req.Start, req.End)
+			toSql := " AND ("
+			s := ""
+			for _, c := range v {
+				toEqul := fmt.Sprintf(" %s (to = '%s')", s, c)
+				s = " OR "
+				toSql += toEqul
+			}
+			toSql += ")"
+			sql += toSql
+		}
+	} else {
+		// multi chain
+		sql = "select COUNT(DISTINCT from) from ("
+		s1 := ""
+		for k, v := range contracts {
+			chain := svr.chain(k)
+			tblName := fmt.Sprintf("t_tx_%s", chain)
+			unionSql := fmt.Sprintf("SELECT  * from %s WHERE (ts > %d) AND (ts < %d)", tblName, req.Start, req.End)
+			toSql := " AND ("
+			s2 := ""
+			for _, c := range v {
+				toEqul := fmt.Sprintf(" %s (to = '%s')", s2, c)
+				s2 = " OR "
+				toSql += toEqul
+			}
+			toSql += ")"
+			unionSql += toSql
+			sql += s1 + unionSql
+			s1 = " UNION ALL "
+		}
+		sql += " )"
+	}
+
 	log.Info("sql:%s", sql)
 
 	var count uint64
@@ -112,22 +144,136 @@ func (svr *Server) Dau(ctx context.Context, req *pb.DauReq) (rsp *pb.DauRsp, err
 	return
 }
 
-func (svr *Server) TxCount(ctx context.Context, req *pb.TxCountReq) (rsp *pb.TxCountRsp, err error) {
-	chain := svr.chain(req.Chain)
-	tblName := fmt.Sprintf("t_tx_%s", chain)
+func (svr *Server) ChainDau(ctx context.Context, req *pb.ChainGameReq) (rsp *pb.DauRsp, err error) {
+	sql := ""
 
-	sql := fmt.Sprintf("SELECT COUNT(*) from %s WHERE (ts > %d) AND (ts < %d)", tblName, req.Start, req.End)
-	if len(req.Contracts) > 0 {
-		toSql := " AND ("
-		s := ""
-		for _, c := range req.Contracts {
-			toEqul := fmt.Sprintf("%s (to = '%s') ", s, c)
-			s = " OR "
-			toSql += toEqul
+	if len(req.Chains) == 0 {
+		rsp = &pb.DauRsp{
+			Dau: 0,
 		}
-		toSql += " ) "
-		sql += toSql
+		return
+	} else if len(req.Chains) == 1 {
+		// only one chain
+		for _, c := range req.Chains {
+			chain := svr.chain(c)
+			tblName := fmt.Sprintf("t_tx_%s", chain)
+			sql = fmt.Sprintf("SELECT countDistinct(from) from %s WHERE (ts > %d) AND (ts < %d)", tblName, req.Start, req.End)
+		}
+	} else {
+		// multi chain
+		sql = "select COUNT(DISTINCT from) from ("
+		s := ""
+		for _, c := range req.Chains {
+			chain := svr.chain(c)
+			tblName := fmt.Sprintf("t_tx_%s", chain)
+			unionSql := fmt.Sprintf("SELECT  * from %s WHERE (ts > %d) AND (ts < %d)", tblName, req.Start, req.End)
+			sql += s + unionSql
+			s = " UNION ALL "
+		}
+		sql += " )"
 	}
+
+	log.Info("sql:%s", sql)
+
+	var count uint64
+	if err := svr.dbConn.QueryRow(ctx, sql).Scan(&count); err != nil {
+		log.Error("QueryRow error:%s", err.Error())
+	}
+
+	rsp = &pb.DauRsp{
+		Dau: count,
+	}
+	return
+}
+
+func (svr *Server) TxCount(ctx context.Context, req *pb.GameReq) (rsp *pb.TxCountRsp, err error) {
+	sql := ""
+	//TODO: normal case
+	var contracts map[pb.Chain][]string = make(map[pb.Chain][]string, 10)
+	for _, c := range req.Contracts {
+		contracts[c.Chain] = append(contracts[c.Chain], c.Address)
+	}
+
+	if len(contracts) == 1 {
+		// only one chain
+		for k, v := range contracts {
+			chain := svr.chain(k)
+			tblName := fmt.Sprintf("t_tx_%s", chain)
+			sql = fmt.Sprintf("SELECT COUNT(*) from %s WHERE (ts > %d) AND (ts < %d)", tblName, req.Start, req.End)
+			toSql := " AND ("
+			s := ""
+			for _, c := range v {
+				toEqul := fmt.Sprintf(" %s (to = '%s')", s, c)
+				s = " OR "
+				toSql += toEqul
+			}
+			toSql += ")"
+			sql += toSql
+		}
+	} else {
+		// multi chain
+		sql = "select COUNT(*) from ("
+		s1 := ""
+		for k, v := range contracts {
+			chain := svr.chain(k)
+			tblName := fmt.Sprintf("t_tx_%s", chain)
+			unionSql := fmt.Sprintf("SELECT  * from %s WHERE (ts > %d) AND (ts < %d)", tblName, req.Start, req.End)
+			toSql := " AND ("
+			s2 := ""
+			for _, c := range v {
+				toEqul := fmt.Sprintf(" %s (to = '%s')", s2, c)
+				s2 = " OR "
+				toSql += toEqul
+			}
+			toSql += ")"
+			unionSql += toSql
+			sql += s1 + unionSql
+			s1 = " UNION ALL "
+		}
+		sql += " )"
+	}
+
+	log.Info("sql:%s", sql)
+
+	var count uint64
+	if err := svr.dbConn.QueryRow(ctx, sql).Scan(&count); err != nil {
+		log.Error("QueryRow error:%s", err.Error())
+	}
+
+	rsp = &pb.TxCountRsp{
+		Count: count,
+	}
+	return
+}
+
+func (svr *Server) ChainTxCount(ctx context.Context, req *pb.ChainGameReq) (rsp *pb.TxCountRsp, err error) {
+	sql := ""
+	if len(req.Chains) == 0 {
+		rsp = &pb.TxCountRsp{
+			Count: 0,
+		}
+		return
+	} else if len(req.Chains) == 1 {
+		// only one chain
+		for _, c := range req.Chains {
+			chain := svr.chain(c)
+			tblName := fmt.Sprintf("t_tx_%s", chain)
+			sql = fmt.Sprintf("SELECT COUNT(*) from %s WHERE (ts > %d) AND (ts < %d)", tblName, req.Start, req.End)
+		}
+	} else {
+		// multi chain
+		sql = "select COUNT(*) from ("
+		s := ""
+		for _, c := range req.Chains {
+			chain := svr.chain(c)
+			tblName := fmt.Sprintf("t_tx_%s", chain)
+			unionSql := fmt.Sprintf("SELECT  * from %s WHERE (ts > %d) AND (ts < %d)", tblName, req.Start, req.End)
+			sql += s + unionSql
+			s = " UNION ALL "
+		}
+		sql += " )"
+	}
+
 	log.Info("sql:%s", sql)
 
 	var count uint64
