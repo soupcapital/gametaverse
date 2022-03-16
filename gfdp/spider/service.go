@@ -42,7 +42,6 @@ func (s *Service) routine(ctx context.Context, sp *Spider) {
 }
 
 func (s *Service) Run() (err error) {
-
 	ctx, cancel := context.WithCancel(s.ctx)
 	s.cancel = cancel
 	s.routine(ctx, s.spider)

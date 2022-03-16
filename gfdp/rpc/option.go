@@ -1,8 +1,10 @@
-package api
+package rpc
 
 type options struct {
-	PrivKey    string
-	MongoURI   string
+	DbAddr     string
+	DbUser     string
+	DbPasswd   string
+	DbName     string
 	ListenAddr string
 }
 
@@ -28,9 +30,27 @@ func newFuncOption(f func(*options)) *funcOption {
 	}
 }
 
-func WithMongoURI(URI string) Option {
+func WithDbUrl(url string) Option {
 	return newFuncOption(func(o *options) {
-		o.MongoURI = URI
+		o.DbAddr = url
+	})
+}
+
+func WithDbUser(user string) Option {
+	return newFuncOption(func(o *options) {
+		o.DbUser = user
+	})
+}
+
+func WithDbName(name string) Option {
+	return newFuncOption(func(o *options) {
+		o.DbName = name
+	})
+}
+
+func WithDbPasswd(passwd string) Option {
+	return newFuncOption(func(o *options) {
+		o.DbPasswd = passwd
 	})
 }
 

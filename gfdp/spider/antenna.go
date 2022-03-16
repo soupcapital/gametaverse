@@ -9,6 +9,7 @@ import (
 type Transaction struct {
 	timestamp uint64
 	block     uint64
+	index     uint16
 	raw       interface{}
 }
 
