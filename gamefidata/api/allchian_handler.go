@@ -12,20 +12,20 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type InfoHandler struct {
+type AllChainHandler struct {
 	URLHdl
 }
 
 //Post is POST
-func (hdl *InfoHandler) Post(w http.ResponseWriter, r *http.Request) {
+func (hdl *AllChainHandler) Post(w http.ResponseWriter, r *http.Request) {
 }
 
 //Delete is DELETE
-func (hdl *InfoHandler) Delete(w http.ResponseWriter, r *http.Request) {
+func (hdl *AllChainHandler) Delete(w http.ResponseWriter, r *http.Request) {
 }
 
 //Get is GET
-func (hdl *InfoHandler) Get(w http.ResponseWriter, r *http.Request) {
+func (hdl *AllChainHandler) Get(w http.ResponseWriter, r *http.Request) {
 	log.Info("deal with dau")
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
@@ -119,7 +119,7 @@ func (hdl *InfoHandler) Get(w http.ResponseWriter, r *http.Request) {
 	encoder.Encode(rsp)
 }
 
-func (hdl *InfoHandler) dauByDate(ctx context.Context, gameTbl *mongo.Collection, start, end int64) (dau int, err error) {
+func (hdl *AllChainHandler) dauByDate(ctx context.Context, gameTbl *mongo.Collection, start, end int64) (dau int, err error) {
 	log.Info("start:%v end:%v", start, end)
 	groupStage := bson.M{
 		"$group": bson.M{"_id": "$user"},
@@ -153,13 +153,13 @@ func (hdl *InfoHandler) dauByDate(ctx context.Context, gameTbl *mongo.Collection
 			DAU int `bson:"dau"`
 		}{}
 		cur.Decode(&rec)
-		log.Info("DAU aggregate record:%v", rec)
+		//log.Info("DAU aggregate record:%v", rec)
 		dau = rec.DAU
 	}
 	return dau, nil
 }
 
-func (hdl *InfoHandler) trxByDate(ctx context.Context, countTbl *mongo.Collection, start int64) (count int, err error) {
+func (hdl *AllChainHandler) trxByDate(ctx context.Context, countTbl *mongo.Collection, start int64) (count int, err error) {
 
 	filter := bson.M{
 		"ts": start,
@@ -174,7 +174,7 @@ func (hdl *InfoHandler) trxByDate(ctx context.Context, countTbl *mongo.Collectio
 	for cur.Next(ctx) {
 		rec := db.Count{}
 		cur.Decode(&rec)
-		log.Info("Trx aggregate record:%v", rec)
+		//log.Info("Trx aggregate record:%v", rec)
 		count += int(rec.Count)
 	}
 	return count, nil

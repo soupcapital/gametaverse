@@ -60,6 +60,8 @@ func (svr *Server) initHandler() {
 	svr.router.RegistRaw("/gamefidata/api/v1/dau", &DAUHandler{URLHdl{server: svr}})
 	svr.router.RegistRaw("/gamefidata/api/v1/trx", &TrxHandler{URLHdl{server: svr}})
 	svr.router.RegistRaw("/gamefidata/api/v1/info", &InfoHandler{URLHdl{server: svr}})
+	svr.router.RegistRaw("/gamefidata/api/v1/all_chain", &AllChainHandler{URLHdl{server: svr}})
+	svr.router.RegistRaw("/gamefidata/api/v1/chain", &ChainHandler{URLHdl{server: svr}})
 	svr.router.RegistRaw("/gamefidata/api/v1/sort", &SortHandler{URLHdl{server: svr}})
 	svr.router.RegistRaw("/gamefidata/api/v1/all", &AllHandler{URLHdl{server: svr}})
 	svr.router.RegistRaw("/gamefidata/api/v1/total", &TotalHandler{URLHdl{server: svr}})
