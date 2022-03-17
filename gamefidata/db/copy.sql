@@ -1,0 +1,1 @@
+db.t_games.find().forEach(function(x){ db.t_games_info.insert({ "_id":x._id+"@"+x.chain, "chain":x.chain, "id":x._id, "contracts":x.contracts})})

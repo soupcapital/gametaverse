@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	addr = "localhost:8001"
+	addr = "172.31.6.11:8081"
 )
 
 func main() {

@@ -7,6 +7,7 @@ import (
 
 	"github.com/cz-theng/czkit-go/log"
 	"github.com/gametaverse/gamefidata/db"
+	"github.com/gametaverse/gfdp/rpc/pb"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	mngopts "go.mongodb.org/mongo-driver/mongo/options"
@@ -59,14 +60,21 @@ func (svr *Server) Init(opts ...Option) (err error) {
 func (svr *Server) initHandler() {
 	svr.router.RegistRaw("/gamefidata/api/v1/dau", &DAUHandler{URLHdl{server: svr}})
 	svr.router.RegistRaw("/gamefidata/api/v1/trx", &TrxHandler{URLHdl{server: svr}})
-	svr.router.RegistRaw("/gamefidata/api/v1/info", &InfoHandler{URLHdl{server: svr}})
 	svr.router.RegistRaw("/gamefidata/api/v1/all_chain", &AllChainHandler{URLHdl{server: svr}})
 	svr.router.RegistRaw("/gamefidata/api/v1/chain", &ChainHandler{URLHdl{server: svr}})
+
+	svr.router.RegistRaw("/gamefidata/api/v1/info", &InfoHandler{URLHdl{server: svr}})
 	svr.router.RegistRaw("/gamefidata/api/v1/sort", &SortHandler{URLHdl{server: svr}})
 	svr.router.RegistRaw("/gamefidata/api/v1/all", &AllHandler{URLHdl{server: svr}})
 	svr.router.RegistRaw("/gamefidata/api/v1/total", &TotalHandler{URLHdl{server: svr}})
+
 	svr.router.RegistRaw("/gamefidata/api/v1/game_proj", &GameProjHandler{URLHdl{server: svr}})
 	svr.router.RegistRaw("/gamefidata/api/v1/game_contract", &GameContractHandler{URLHdl{server: svr}})
+
+	svr.router.RegistRaw("/gamefidata/api/v2/dau", &DauHandlerV2{URLHdl{server: svr}})
+	svr.router.RegistRaw("/gamefidata/api/v2/trx", &TrxHandlerV2{URLHdl{server: svr}})
+	svr.router.RegistRaw("/gamefidata/api/v2/all_chain", &AllChainHandlerV2{URLHdl{server: svr}})
+	svr.router.RegistRaw("/gamefidata/api/v2/chain", &ChainHandlerV2{URLHdl{server: svr}})
 }
 
 func (svr *Server) initDB(URI string) (err error) {
@@ -122,6 +130,39 @@ func (svr *Server) UpdateMonitor(chain string) (err error) {
 		return
 	}
 	log.Info("Update  monitor latest:%d ", ts)
+	return
+}
+
+func (svr *Server) getContracts(game string) (contracts []*pb.Contract, err error) {
+	gameTbl := svr.db.Collection(db.GameInfoTableName)
+
+	ctx, cancel := context.WithTimeout(svr.ctx, 10*time.Second)
+	defer cancel()
+
+	cursor, err := gameTbl.Find(ctx, bson.M{
+		"id": game,
+	})
+	if err != nil {
+		log.Error("Find game error: ", err.Error())
+		return
+	}
+
+	var games []db.Game
+	if err = cursor.All(ctx, &games); err != nil {
+		log.Error("Find game error: ", err.Error())
+		return
+	}
+
+	for _, g := range games {
+		cn := ParsePBChain(g.Chain)
+		for _, c := range g.Contracts {
+			pc := &pb.Contract{
+				Chain:   cn,
+				Address: c,
+			}
+			contracts = append(contracts, pc)
+		}
+	}
 	return
 }
 
