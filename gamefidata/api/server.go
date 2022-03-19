@@ -166,6 +166,76 @@ func (svr *Server) getContracts(game string) (contracts []*pb.Contract, err erro
 	return
 }
 
+func (svr *Server) getAllContracts() (contracts []*pb.Contract, err error) {
+	gameTbl := svr.db.Collection(db.GameInfoTableName)
+
+	ctx, cancel := context.WithTimeout(svr.ctx, 10*time.Second)
+	defer cancel()
+
+	cursor, err := gameTbl.Find(ctx, bson.M{})
+	if err != nil {
+		log.Error("Find game error: ", err.Error())
+		return
+	}
+
+	var games []db.Game
+	if err = cursor.All(ctx, &games); err != nil {
+		log.Error("Find game error: ", err.Error())
+		return
+	}
+
+	for _, g := range games {
+		cn := ParsePBChain(g.Chain)
+		if cn == pb.Chain_UNKNOWN {
+			continue
+		}
+		for _, c := range g.Contracts {
+			pc := &pb.Contract{
+				Chain:   cn,
+				Address: c,
+			}
+			contracts = append(contracts, pc)
+		}
+	}
+	return
+}
+
+func (svr *Server) getAllContractsOfChain(chain string) (contracts []*pb.Contract, err error) {
+	if chain == "unknown" {
+		return
+	}
+	gameTbl := svr.db.Collection(db.GameInfoTableName)
+
+	ctx, cancel := context.WithTimeout(svr.ctx, 10*time.Second)
+	defer cancel()
+
+	cursor, err := gameTbl.Find(ctx, bson.M{
+		"chain": chain,
+	})
+	if err != nil {
+		log.Error("Find game error: ", err.Error())
+		return
+	}
+
+	var games []db.Game
+	if err = cursor.All(ctx, &games); err != nil {
+		log.Error("Find game error: ", err.Error())
+		return
+	}
+
+	for _, g := range games {
+		cn := ParsePBChain(g.Chain)
+		for _, c := range g.Contracts {
+			pc := &pb.Contract{
+				Chain:   cn,
+				Address: c,
+			}
+			contracts = append(contracts, pc)
+		}
+	}
+	return
+}
+
 func (svr *Server) Run() (err error) {
 	err = svr.httpd.ListenAndServe()
 	if err != nil {
