@@ -1,7 +1,7 @@
 LogFile = "api.log"
 LogPath = "./"
 LogLevel = "Info"
-ListenAddr = "0.0.0.0:8001"
+ListenAddr = "0.0.0.0:8081"
 DbUrl = "127.0.0.1:9000"
 DbUser = "default"
 DbPasswd = ""
