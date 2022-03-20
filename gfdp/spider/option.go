@@ -1,9 +1,7 @@
 package spider
 
 type options struct {
-	PrivKey          string
 	Games            []GameInfo
-	MongoURI         string
 	Chain            string
 	ChainID          int
 	RPCAddr          string
@@ -36,23 +34,11 @@ func newFuncOption(f func(*options)) *funcOption {
 	}
 }
 
-func WithPrivKey(key string) Option {
-	return newFuncOption(func(o *options) {
-		o.PrivKey = key
-	})
-}
-
 func WithGames(games []GameInfo) Option {
 	return newFuncOption(func(o *options) {
 		gs := make([]GameInfo, len(games))
 		copy(gs, games)
 		o.Games = gs
-	})
-}
-
-func WithMongoURI(URI string) Option {
-	return newFuncOption(func(o *options) {
-		o.MongoURI = URI
 	})
 }
 

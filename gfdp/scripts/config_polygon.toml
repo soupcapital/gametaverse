@@ -13,4 +13,4 @@ BottomBlock = 9000000
 ForwardInterval = 1.5
 BackwardInterval = 1.0
 ForwardWorks = 1
-BackwardWorks = 10
+BackwardWorks = 20

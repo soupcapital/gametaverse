@@ -25,8 +25,6 @@ type ConfigInfo struct {
 	LogFile          string  `toml:"LogFile"`
 	LogPath          string  `toml:"LogPath"`
 	LogLevel         string  `toml:"LogLevel"`
-	PrivKey          string  `toml:"PrivKey"`
-	DBURI            string  `toml:"DBURI"`
 	Chain            string  `toml:"Chain"`
 	ChainID          int     `toml:"ChainID"`
 	RPCAddr          string  `toml:"RPCAddr"`

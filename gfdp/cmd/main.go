@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gametaverse/gfdp/cmd/api"
-	"github.com/gametaverse/gfdp/cmd/eth"
+	"github.com/gametaverse/gfdp/cmd/spider"
 	"github.com/spf13/cobra"
 )
 
@@ -22,7 +22,7 @@ var rootCMD = &cobra.Command{
 func init() {
 	rootCMD.PersistentFlags().BoolVarP(&_version, "version", "v", false, "print version of gamefidata")
 
-	rootCMD.AddCommand(eth.CMD)
+	rootCMD.AddCommand(spider.CMD)
 	rootCMD.AddCommand(api.CMD)
 	// rootCMD.AddCommand(wax.CMD)
 	// rootCMD.AddCommand(solana.CMD)

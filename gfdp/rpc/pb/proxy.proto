@@ -14,6 +14,7 @@ enum Chain {
   BSC = 1;
   POLYGON = 2;
   ETH = 3;
+  AVAX = 4;
 }
 
 message Contract {

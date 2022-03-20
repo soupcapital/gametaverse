@@ -1,10 +1,9 @@
-package eth
+package spider
 
 import (
 	"fmt"
 
 	"github.com/cz-theng/czkit-go/log"
-	"github.com/gametaverse/gfdp/db"
 	"github.com/gametaverse/gfdp/spider"
 	"github.com/spf13/cobra"
 )
@@ -15,14 +14,14 @@ var (
 )
 
 var CMD = &cobra.Command{
-	Use:   "eth",
-	Short: "eth project",
-	Long:  `eth project`,
+	Use:   "spider",
+	Short: "spider project",
+	Long:  `spider project`,
 	Run:   _main,
 }
 
 func init() {
-	CMD.PersistentFlags().StringVarP(&_configFile, "config", "c", "", "config file path for matcha")
+	CMD.PersistentFlags().StringVarP(&_configFile, "config", "c", "", "config file path for spider")
 
 	CMD.PersistentFlags().BoolVarP(&_initDB, "initdb", "d", false, "init database")
 
@@ -52,8 +51,6 @@ func _main(cmd *cobra.Command, args []string) {
 	logPathOpt := log.WithLogPath(logPath)
 	log.Init(logNameOpt, logPathOpt)
 
-	privKeyOpt := spider.WithPrivKey(spider.Config.PrivKey)
-	mongoURIOpt := spider.WithMongoURI(spider.Config.DBURI)
 	chainOpt := spider.WithChain(spider.Config.Chain)
 	chainIDOpt := spider.WithChainID(spider.Config.ChainID)
 	rpcAddrOpt := spider.WithRPCAddr(spider.Config.RPCAddr)
@@ -63,21 +60,12 @@ func _main(cmd *cobra.Command, args []string) {
 	fworksOpt := spider.WithForwardWorks(spider.Config.ForwardWorks)
 	bworksOpt := spider.WithBackwardWorks(spider.Config.BackwardWorks)
 
-	if _initDB {
-		err := db.CreateAndInitDB(spider.Config.DBURI)
-		if err != nil {
-			log.Error("DB error:%s", err.Error())
-		}
-		return
-	}
-
 	spiderApp := spider.New()
-	err := spiderApp.Init(privKeyOpt,
+	err := spiderApp.Init(
 		chainOpt,
 		chainIDOpt,
 		rpcAddrOpt,
 		bottomBlockOpt,
-		mongoURIOpt,
 		fintervalOpt,
 		bintervalOpt,
 		fworksOpt,
