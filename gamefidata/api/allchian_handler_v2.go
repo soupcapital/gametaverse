@@ -75,20 +75,26 @@ func (hdl *AllChainHandlerV2) Get(w http.ResponseWriter, r *http.Request) {
 		Count int   `json:"count"`
 	}
 
+	contracts, err := hdl.server.getAllContracts()
+	if err != nil {
+		encoder.Encode(ErrDB)
+		log.Error("dauByDate: %s", err.Error())
+	}
+
 	total := 0
 	var days []DayInfo
 	for {
 		if theDay > endTS {
 			break
 		}
-		dau, err := hdl.dauByDate(theDay, theDay+cSecondofDay)
+		dau, err := hdl.dauByDate(contracts, theDay, theDay+cSecondofDay)
 		if err != nil {
 			encoder.Encode(ErrDB)
 			log.Error("dauByDate: %s", err.Error())
 			return
 		}
 
-		count, err := hdl.trxByDate(theDay, theDay+cSecondofDay)
+		count, err := hdl.countByDate(contracts, theDay, theDay+cSecondofDay)
 		if err != nil {
 			encoder.Encode(ErrDB)
 			log.Error("trxByDate: %s", err.Error())
@@ -115,7 +121,7 @@ func (hdl *AllChainHandlerV2) Get(w http.ResponseWriter, r *http.Request) {
 	encoder.Encode(rsp)
 }
 
-func (hdl *AllChainHandlerV2) dauByDate(start, end int64) (dau int, err error) {
+func (hdl *AllChainHandlerV2) dauByDate(contracts []*pb.Contract, start, end int64) (dau int, err error) {
 	conn, err := grpc.Dial(RPCAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Error("RPC did not connect: %v", err)
@@ -125,12 +131,12 @@ func (hdl *AllChainHandlerV2) dauByDate(start, end int64) (dau int, err error) {
 	c := pb.NewDBProxyClient(conn)
 
 	// Contact the server and print out its response.
-	ctx, cancel := context.WithTimeout(hdl.server.ctx, 3*time.Second)
+	ctx, cancel := context.WithTimeout(hdl.server.ctx, 30*time.Second)
 	defer cancel()
-	dauRsp, err := c.ChainDau(ctx, &pb.ChainGameReq{
-		Start:  start,
-		End:    end,
-		Chains: []pb.Chain{pb.Chain_BSC, pb.Chain_ETH, pb.Chain_POLYGON},
+	dauRsp, err := c.Dau(ctx, &pb.GameReq{
+		Start:     start,
+		End:       end,
+		Contracts: contracts,
 	})
 	if err != nil {
 		log.Error("Dau error:%s", err.Error())
@@ -140,7 +146,7 @@ func (hdl *AllChainHandlerV2) dauByDate(start, end int64) (dau int, err error) {
 	return dau, nil
 }
 
-func (hdl *AllChainHandlerV2) trxByDate(start, end int64) (count int, err error) {
+func (hdl *AllChainHandlerV2) countByDate(contracts []*pb.Contract, start, end int64) (count int, err error) {
 	conn, err := grpc.Dial(RPCAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Error("RPC did not connect: %v", err)
@@ -150,12 +156,12 @@ func (hdl *AllChainHandlerV2) trxByDate(start, end int64) (count int, err error)
 	c := pb.NewDBProxyClient(conn)
 
 	// Contact the server and print out its response.
-	ctx, cancel := context.WithTimeout(hdl.server.ctx, 3*time.Second)
+	ctx, cancel := context.WithTimeout(hdl.server.ctx, 30*time.Second)
 	defer cancel()
-	countRsp, err := c.ChainTxCount(ctx, &pb.ChainGameReq{
-		Start:  start,
-		End:    end,
-		Chains: []pb.Chain{pb.Chain_BSC, pb.Chain_ETH, pb.Chain_POLYGON},
+	countRsp, err := c.TxCount(ctx, &pb.GameReq{
+		Start:     start,
+		End:       end,
+		Contracts: contracts,
 	})
 	if err != nil {
 		log.Error("Dau error:%s", err.Error())
