@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/cz-theng/czkit-go/log"
@@ -158,7 +159,7 @@ func (svr *Server) getContracts(game string) (contracts []*pb.Contract, err erro
 		for _, c := range g.Contracts {
 			pc := &pb.Contract{
 				Chain:   cn,
-				Address: c,
+				Address: strings.ToLower(c),
 			}
 			contracts = append(contracts, pc)
 		}
@@ -192,7 +193,7 @@ func (svr *Server) getAllContracts() (contracts []*pb.Contract, err error) {
 		for _, c := range g.Contracts {
 			pc := &pb.Contract{
 				Chain:   cn,
-				Address: c,
+				Address: strings.ToLower(c),
 			}
 			contracts = append(contracts, pc)
 		}
@@ -228,7 +229,7 @@ func (svr *Server) getAllContractsOfChain(chain string) (contracts []*pb.Contrac
 		for _, c := range g.Contracts {
 			pc := &pb.Contract{
 				Chain:   cn,
-				Address: c,
+				Address: strings.ToLower(c),
 			}
 			contracts = append(contracts, pc)
 		}

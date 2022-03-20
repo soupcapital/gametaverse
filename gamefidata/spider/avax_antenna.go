@@ -13,7 +13,7 @@ import (
 )
 
 type AvaxAntenna struct {
-	ethcli  *ethclient.Client
+	ethcli  ethclient.Client
 	chainID int
 }
 
