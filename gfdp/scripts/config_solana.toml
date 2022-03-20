@@ -1,9 +1,6 @@
 LogFile = "solana_gamefidata.log"
 LogPath = "./"
 LogLevel = "Info"
-PrivKey = ""
-DBURI = "mongodb+srv://cz:Solong2020@cluster1.g9w77.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
-#DBURI = "mongodb+srv://gametaverse:gametaverse2021@cluster0.fnwxw.mongodb.net/d_gametaverse?retryWrites=true&w=majority"
 Chain = "solana"
 ChainID = 1
 #RPCAddr = "https://solana-api.projectserum.com"
@@ -11,18 +8,9 @@ ChainID = 1
 #RPCAddr = "https://api.waxsweden.org"
 #RPCAddr = "https://wax.pink.gg"
 #RPCAddr = "https://wax.dapplica.io"
-RPCAddr = "https://rpc.ankr.com/solana"
-BottomBlock = 10000000
+RPCAddr = "https://rpc.ankr.com/solana/89a1577615a713dddcd59aed5762cb3851fe3d050eb6c7e2a26fe39c38cb97d9"
+BottomBlock = 55000000
 ForwardInterval = 0.5
 BackwardInterval = 0.5
 ForwardWorks = 2
 BackwardWorks = 10
-
-
-[[Games]]
-    Name = "Test Solana"
-    ID  = "test_solana"
-    [[Games.Contracts]]
-        Address = "Vote111111111111111111111111111111111111111"
-        Type = ""
-

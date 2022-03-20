@@ -35,12 +35,12 @@ func NewSpider(opts options) *Spider {
 	switch opts.Chain {
 	case "polygon", "eth", "bsc":
 		s.antenna = NewETHAntenna()
-	// case "avax":
-	// 	s.antenna = NewAvaxAntenna()
-	// case "wax":
-	// 	s.antenna = NewEOSAntenna()
-	// case "solana":
-	// 	s.antenna = NewSolanaAntenna()
+	case "avax":
+		s.antenna = NewAvaxAntenna()
+	case "wax":
+		s.antenna = NewEOSAntenna()
+	case "solana":
+		s.antenna = NewSolanaAntenna()
 	default:
 		return nil
 	}

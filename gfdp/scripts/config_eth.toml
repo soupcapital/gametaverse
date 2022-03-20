@@ -12,4 +12,4 @@ BottomBlock = 11500000
 ForwardInterval = 12.0
 BackwardInterval = 1.0
 ForwardWorks = 1
-BackwardWorks = 3
+BackwardWorks = 5
