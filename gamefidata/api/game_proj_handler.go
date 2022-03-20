@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -51,7 +52,7 @@ func (hdl *GameProjHandler) Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if existed, err := hdl.isGameExisted(req.GameID); existed {
+	if existed, err := hdl.isGameExisted(req.GameID, req.Chain); existed {
 		if err != nil {
 			log.Error("game:%s isGameExisted error:%s", req.GameID, err.Error())
 			encoder.Encode(ErrDB)
@@ -168,7 +169,7 @@ func (hdl *GameProjHandler) Get(w http.ResponseWriter, r *http.Request) {
 	var gameInfos []*RspGameInfo
 	for _, game := range games {
 		gameInfo := &RspGameInfo{
-			GameID:   game.ID,
+			GameID:   game.GameID,
 			GameName: game.Name,
 			Chain:    game.Chain,
 		}
@@ -185,7 +186,7 @@ func (hdl *GameProjHandler) Get(w http.ResponseWriter, r *http.Request) {
 	encoder.Encode(rsp)
 }
 
-func (hdl *GameProjHandler) isGameExisted(gameID string) (existed bool, err error) {
+func (hdl *GameProjHandler) isGameExisted(gameID string, chain string) (existed bool, err error) {
 
 	gameTbl := hdl.server.db.Collection(db.GameTableName)
 
@@ -196,7 +197,7 @@ func (hdl *GameProjHandler) isGameExisted(gameID string) (existed bool, err erro
 	opt.SetUpsert(true)
 
 	filter := bson.M{
-		"_id": gameID,
+		"_id": fmt.Sprintf("%s@%s", gameID, chain),
 	}
 
 	rst := gameTbl.FindOne(ctx, filter)
@@ -213,7 +214,8 @@ func (hdl *GameProjHandler) isGameExisted(gameID string) (existed bool, err erro
 func (hdl *GameProjHandler) insertGame(gameID string, gameName string, chain string, contracts []string) (err error) {
 
 	game := &db.Game{
-		ID:        gameID,
+		ID:        fmt.Sprintf("%s@%s", gameID, chain),
+		GameID:    gameID,
 		Name:      gameName,
 		Chain:     chain,
 		Contracts: contracts,
@@ -243,7 +245,7 @@ func (hdl *GameProjHandler) deleteGame(gameID, chain string) (err error) {
 	defer cancel()
 
 	filter := bson.M{
-		"_id": gameID,
+		"_id": fmt.Sprintf("%s@%s", gameID, chain),
 	}
 
 	rst, err := gameTbl.DeleteMany(ctx, filter)

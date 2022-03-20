@@ -137,7 +137,7 @@ func (s *Service) updateGames() (err error) {
 		info := &GameInfo{
 			Name: game.Name,
 			//ID:        game.ID + "_" + s.opts.Chain,
-			ID:        game.ID,
+			ID:        game.GameID,
 			Contracts: game.Contracts,
 		}
 		games = append(games, info)

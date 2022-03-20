@@ -103,7 +103,7 @@ func (hdl *AllHandlerV2) dauByDate(start, end int64) (dau int, err error) {
 	c := pb.NewDBProxyClient(conn)
 
 	// Contact the server and print out its response.
-	ctx, cancel := context.WithTimeout(hdl.server.ctx, 3*time.Second)
+	ctx, cancel := context.WithTimeout(hdl.server.ctx, 3000*time.Second)
 	defer cancel()
 	dauRsp, err := c.ChainDau(ctx, &pb.ChainGameReq{
 		Start:  start,
@@ -128,7 +128,7 @@ func (hdl *AllHandlerV2) trxByDate(start, end int64) (count int, err error) {
 	c := pb.NewDBProxyClient(conn)
 
 	// Contact the server and print out its response.
-	ctx, cancel := context.WithTimeout(hdl.server.ctx, 3*time.Second)
+	ctx, cancel := context.WithTimeout(hdl.server.ctx, 3000*time.Second)
 	defer cancel()
 	countRsp, err := c.ChainTxCount(ctx, &pb.ChainGameReq{
 		Start:  start,

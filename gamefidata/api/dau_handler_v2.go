@@ -101,12 +101,12 @@ func (hdl *DauHandlerV2) Get(w http.ResponseWriter, r *http.Request) {
 
 		theDay += cSecondofDay
 	}
-	totalDau, err := hdl.dauByDate(contracts, startTS, endTS+cSecondofDay)
-	if err != nil {
-		encoder.Encode(ErrDB)
-		log.Error("dauByDate: %s", err.Error())
-		return
-	}
+	// totalDau, err := hdl.dauByDate(contracts, startTS, endTS+cSecondofDay)
+	// if err != nil {
+	// 	encoder.Encode(ErrDB)
+	// 	log.Error("dauByDate: %s", err.Error())
+	// 	return
+	// }
 
 	type Response struct {
 		Game  string    `json:"game"`
@@ -117,7 +117,7 @@ func (hdl *DauHandlerV2) Get(w http.ResponseWriter, r *http.Request) {
 	rsp := Response{
 		Game:  game,
 		Data:  days,
-		Total: totalDau,
+		Total: 0,
 	}
 	encoder.Encode(rsp)
 }
@@ -132,7 +132,7 @@ func (hdl *DauHandlerV2) dauByDate(contracts []*pb.Contract, start, end int64) (
 	c := pb.NewDBProxyClient(conn)
 
 	// Contact the server and print out its response.
-	ctx, cancel := context.WithTimeout(hdl.server.ctx, 3*time.Second)
+	ctx, cancel := context.WithTimeout(hdl.server.ctx, 300*time.Second)
 	defer cancel()
 	dauRsp, err := c.Dau(ctx, &pb.GameReq{
 		Start:     start,

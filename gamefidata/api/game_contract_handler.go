@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -75,8 +76,7 @@ func (hdl *GameContractHandler) Post(w http.ResponseWriter, r *http.Request) {
 	}
 	//_, err = gameTbl.UpdateByID(ctx, req.GameID, update, opt)
 	filter := bson.M{
-		"_id":   req.GameID,
-		"chain": req.Chain,
+		"_id": fmt.Sprintf("%s@%s", req.GameID, req.Chain),
 	}
 	_, err = gameTbl.UpdateMany(ctx, filter, update, opt)
 	if err != nil {
@@ -131,8 +131,7 @@ func (hdl *GameContractHandler) Get(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	filter := bson.M{
-		"_id":   gameID,
-		"chain": chain,
+		"_id": fmt.Sprintf("%s@%s", gameID, chain),
 	}
 
 	rst := gameTbl.FindOne(ctx, filter)
@@ -176,8 +175,7 @@ func (hdl *GameContractHandler) isGameExisted(gameID string, chain string) (exis
 	opt.SetUpsert(true)
 
 	filter := bson.M{
-		"_id":   gameID,
-		"chain": chain,
+		"_id": fmt.Sprintf("%s@%s", gameID, chain),
 	}
 
 	rst := gameTbl.FindOne(ctx, filter)
