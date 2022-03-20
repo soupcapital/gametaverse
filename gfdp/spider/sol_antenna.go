@@ -191,6 +191,9 @@ func (ata *SolAntenna) DealTrx(rawtrx *Transaction) (txes []*db.Transaction, err
 	}
 
 	for i, instr := range trx.Message.Instructions {
+		if i > 256 {
+			continue
+		}
 		progID := trx.Message.AccountKeys[instr.ProgramIDIndex]
 		from := trx.Message.AccountKeys[instr.Accounts[0]]
 		tx := &db.Transaction{

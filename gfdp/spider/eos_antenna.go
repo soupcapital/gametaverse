@@ -74,9 +74,15 @@ func (ata *EOSAntenna) DealTrx(rawtrx *Transaction) (txes []*db.Transaction, err
 		return
 	}
 	for i, act := range strx.Actions {
+		if i > 15 {
+			continue
+		}
 		cName := act.Account
 		from := ""
 		for j, auth := range act.Authorization {
+			if j > 15 {
+				continue
+			}
 			if auth.Permission.String() == "active" {
 				from = auth.Actor.String()
 				tx := &db.Transaction{
