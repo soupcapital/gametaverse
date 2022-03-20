@@ -1,7 +1,8 @@
 package db
 
 const (
-	GameTableName     = "t_games"
+	//GameTableName     = "t_games"
+	GameTableName     = "t_games_info"
 	GameInfoTableName = "t_games_info"
 )
 
