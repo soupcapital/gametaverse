@@ -157,7 +157,7 @@ func (ata *SolAntenna) BlockByNumber(ctx context.Context, num uint64) (block *Bl
 		return
 	}
 	block = &respJSON.Result
-	log.Info("%v ts: %v", num, block.BlockTime)
+	//log.Info("%v ts: %v", num, block.BlockTime)
 	err = nil
 	return
 }
@@ -192,6 +192,13 @@ func (ata *SolAntenna) DealTrx(rawtrx *Transaction) (txes []*db.Transaction, err
 
 	for i, instr := range trx.Message.Instructions {
 		if i > 256 {
+			continue
+		}
+
+		if len(instr.Accounts) == 0 {
+			continue
+		}
+		if instr.ProgramIDIndex >= len(trx.Message.AccountKeys) || instr.Accounts[0] >= len(trx.Message.AccountKeys) {
 			continue
 		}
 		progID := trx.Message.AccountKeys[instr.ProgramIDIndex]

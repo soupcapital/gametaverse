@@ -37,10 +37,10 @@ func NewSpider(opts options) *Spider {
 		s.antenna = NewETHAntenna()
 	case "avax":
 		s.antenna = NewAvaxAntenna()
-	// case "wax":
-	// 	s.antenna = NewEOSAntenna()
-	// case "solana":
-	// 	s.antenna = NewSolanaAntenna()
+	case "wax":
+		s.antenna = NewEOSAntenna()
+	case "solana":
+		s.antenna = NewSolanaAntenna()
 	default:
 		return nil
 	}
