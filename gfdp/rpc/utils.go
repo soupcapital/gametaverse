@@ -1,15 +1,34 @@
 package rpc
 
-import "github.com/gametaverse/gfdp/rpc/pb"
+import (
+	"fmt"
+
+	"github.com/gametaverse/gfdp/rpc/pb"
+)
 
 func getTableName(chain pb.Chain) (table string, err error) {
+	chainName, err := chainName(chain)
+	if err != nil {
+		return
+	}
+	table = fmt.Sprintf("t_tx_%s", chainName)
+	return
+}
+
+func chainName(chain pb.Chain) (table string, err error) {
 	switch chain {
 	case pb.Chain_BSC:
-		table = "t_tx_bsc"
+		table = "bsc"
 	case pb.Chain_ETH:
-		table = "t_tx_eth"
+		table = "eth"
 	case pb.Chain_POLYGON:
-		table = "t_tx_polygon"
+		table = "polygon"
+	case pb.Chain_AVAX:
+		table = "avax"
+	case pb.Chain_WAX:
+		table = "wax"
+	case pb.Chain_SOLANA:
+		table = "solana"
 	default:
 		err = ErrUnknownChain
 	}
