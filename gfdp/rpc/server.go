@@ -79,19 +79,6 @@ func (svr *Server) Run() (err error) {
 	return
 }
 
-func (svr *Server) chain(chain pb.Chain) string {
-	switch chain {
-	case pb.Chain_BSC:
-		return "bsc"
-	case pb.Chain_ETH:
-		return "eth"
-	case pb.Chain_POLYGON:
-		return "polygon"
-	default:
-		return "unknown"
-	}
-}
-
 func (svr *Server) loadMaxTimestamp(table string) (ts time.Time, err error) {
 	ctx, cancel := context.WithTimeout(svr.ctx, 5*time.Second)
 	defer cancel()
@@ -194,8 +181,7 @@ func (svr *Server) Dau(ctx context.Context, req *pb.GameReq) (rsp *pb.DauRsp, er
 	if len(contracts) == 1 {
 		// only one chain
 		for k, v := range contracts {
-			chain := svr.chain(k)
-			tblName := fmt.Sprintf("t_tx_%s", chain)
+			tblName, _ := getTableName(k)
 			sql = fmt.Sprintf("SELECT countDistinct(from) from %s WHERE (ts > %d) AND (ts < %d)", tblName, req.Start, req.End)
 			toSql := " AND ("
 			s := ""
@@ -212,8 +198,7 @@ func (svr *Server) Dau(ctx context.Context, req *pb.GameReq) (rsp *pb.DauRsp, er
 		sql = "select COUNT(DISTINCT from) from ("
 		s1 := ""
 		for k, v := range contracts {
-			chain := svr.chain(k)
-			tblName := fmt.Sprintf("t_tx_%s", chain)
+			tblName, _ := getTableName(k)
 			unionSql := fmt.Sprintf("SELECT  * from %s WHERE (ts > %d) AND (ts < %d)", tblName, req.Start, req.End)
 			toSql := " AND ("
 			s2 := ""
@@ -229,6 +214,7 @@ func (svr *Server) Dau(ctx context.Context, req *pb.GameReq) (rsp *pb.DauRsp, er
 		}
 		sql += " )"
 	}
+	//	log.Info("sql:%s", sql)
 	if err := svr.dbConn.QueryRow(ctx, sql).Scan(&count); err != nil {
 		log.Error("QueryRow error:%s", err.Error())
 	} else {
@@ -260,8 +246,7 @@ func (svr *Server) ChainDau(ctx context.Context, req *pb.ChainGameReq) (rsp *pb.
 	} else if len(req.Chains) == 1 {
 		// only one chain
 		for _, c := range req.Chains {
-			chain := svr.chain(c)
-			tblName := fmt.Sprintf("t_tx_%s", chain)
+			tblName, _ := getTableName(c)
 			sql = fmt.Sprintf("SELECT countDistinct(from) from %s WHERE (ts > %d) AND (ts < %d)", tblName, req.Start, req.End)
 		}
 	} else {
@@ -269,8 +254,7 @@ func (svr *Server) ChainDau(ctx context.Context, req *pb.ChainGameReq) (rsp *pb.
 		sql = "select COUNT(DISTINCT from) from ("
 		s := ""
 		for _, c := range req.Chains {
-			chain := svr.chain(c)
-			tblName := fmt.Sprintf("t_tx_%s", chain)
+			tblName, _ := getTableName(c)
 			unionSql := fmt.Sprintf("SELECT  * from %s WHERE (ts > %d) AND (ts < %d)", tblName, req.Start, req.End)
 			sql += s + unionSql
 			s = " UNION ALL "
@@ -320,8 +304,7 @@ func (svr *Server) TxCount(ctx context.Context, req *pb.GameReq) (rsp *pb.TxCoun
 	if len(contracts) == 1 {
 		// only one chain
 		for k, v := range contracts {
-			chain := svr.chain(k)
-			tblName := fmt.Sprintf("t_tx_%s", chain)
+			tblName, _ := getTableName(k)
 			sql = fmt.Sprintf("SELECT COUNT(*) from %s WHERE (ts > %d) AND (ts < %d)", tblName, req.Start, req.End)
 			toSql := " AND ("
 			s := ""
@@ -338,8 +321,7 @@ func (svr *Server) TxCount(ctx context.Context, req *pb.GameReq) (rsp *pb.TxCoun
 		sql = "select COUNT(*) from ("
 		s1 := ""
 		for k, v := range contracts {
-			chain := svr.chain(k)
-			tblName := fmt.Sprintf("t_tx_%s", chain)
+			tblName, _ := getTableName(k)
 			unionSql := fmt.Sprintf("SELECT  * from %s WHERE (ts > %d) AND (ts < %d)", tblName, req.Start, req.End)
 			toSql := " AND ("
 			s2 := ""
@@ -384,8 +366,7 @@ func (svr *Server) ChainTxCount(ctx context.Context, req *pb.ChainGameReq) (rsp 
 	} else if len(req.Chains) == 1 {
 		// only one chain
 		for _, c := range req.Chains {
-			chain := svr.chain(c)
-			tblName := fmt.Sprintf("t_tx_%s", chain)
+			tblName, _ := getTableName(c)
 			sql = fmt.Sprintf("SELECT COUNT(*) from %s WHERE (ts > %d) AND (ts < %d)", tblName, req.Start, req.End)
 		}
 	} else {
@@ -393,8 +374,7 @@ func (svr *Server) ChainTxCount(ctx context.Context, req *pb.ChainGameReq) (rsp 
 		sql = "select COUNT(*) from ("
 		s := ""
 		for _, c := range req.Chains {
-			chain := svr.chain(c)
-			tblName := fmt.Sprintf("t_tx_%s", chain)
+			tblName, _ := getTableName(c)
 			unionSql := fmt.Sprintf("SELECT  * from %s WHERE (ts > %d) AND (ts < %d)", tblName, req.Start, req.End)
 			sql += s + unionSql
 			s = " UNION ALL "
