@@ -21,6 +21,12 @@ func ParsePBChain(chain string) pb.Chain {
 		c = pb.Chain_POLYGON
 	case "eth":
 		c = pb.Chain_ETH
+	case "avax":
+		c = pb.Chain_AVAX
+	case "wax":
+		c = pb.Chain_WAX
+	case "solana":
+		c = pb.Chain_SOLANA
 	}
 	return c
 }

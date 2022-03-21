@@ -59,10 +59,10 @@ func (svr *Server) Init(opts ...Option) (err error) {
 }
 
 func (svr *Server) initHandler() {
-	svr.router.RegistRaw("/gamefidata/api/v1/dau", &DAUHandler{URLHdl{server: svr}})
-	svr.router.RegistRaw("/gamefidata/api/v1/trx", &TrxHandler{URLHdl{server: svr}})
-	svr.router.RegistRaw("/gamefidata/api/v1/all_chain", &AllChainHandler{URLHdl{server: svr}})
-	svr.router.RegistRaw("/gamefidata/api/v1/chain", &ChainHandler{URLHdl{server: svr}})
+	// svr.router.RegistRaw("/gamefidata/api/v1/dau", &DAUHandler{URLHdl{server: svr}})
+	// svr.router.RegistRaw("/gamefidata/api/v1/trx", &TrxHandler{URLHdl{server: svr}})
+	// svr.router.RegistRaw("/gamefidata/api/v1/all_chain", &AllChainHandler{URLHdl{server: svr}})
+	// svr.router.RegistRaw("/gamefidata/api/v1/chain", &ChainHandler{URLHdl{server: svr}})
 
 	svr.router.RegistRaw("/gamefidata/api/v1/info", &InfoHandler{URLHdl{server: svr}})
 	svr.router.RegistRaw("/gamefidata/api/v1/sort", &SortHandler{URLHdl{server: svr}})
@@ -72,10 +72,10 @@ func (svr *Server) initHandler() {
 	svr.router.RegistRaw("/gamefidata/api/v1/game_proj", &GameProjHandler{URLHdl{server: svr}})
 	svr.router.RegistRaw("/gamefidata/api/v1/game_contract", &GameContractHandler{URLHdl{server: svr}})
 
-	svr.router.RegistRaw("/gamefidata/api/v2/dau", &DauHandlerV2{URLHdl{server: svr}})
-	svr.router.RegistRaw("/gamefidata/api/v2/trx", &TrxHandlerV2{URLHdl{server: svr}})
-	svr.router.RegistRaw("/gamefidata/api/v2/all_chain", &AllChainHandlerV2{URLHdl{server: svr}})
-	svr.router.RegistRaw("/gamefidata/api/v2/chain", &ChainHandlerV2{URLHdl{server: svr}})
+	svr.router.RegistRaw("/gamefidata/api/v1/dau", &DauHandlerV2{URLHdl{server: svr}})
+	svr.router.RegistRaw("/gamefidata/api/v1/trx", &TrxHandlerV2{URLHdl{server: svr}})
+	svr.router.RegistRaw("/gamefidata/api/v1/all_chain", &AllChainHandlerV2{URLHdl{server: svr}})
+	svr.router.RegistRaw("/gamefidata/api/v1/chain", &ChainHandlerV2{URLHdl{server: svr}})
 }
 
 func (svr *Server) initDB(URI string) (err error) {
