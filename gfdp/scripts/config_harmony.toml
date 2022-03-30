@@ -1,0 +1,12 @@
+LogFile = "harmony_gfdp.log"
+LogPath = "./"
+LogLevel = "Info"
+PrivKey = ""
+Chain = "harmony"
+ChainID = 1666600000
+RPCAddr = "https://rpc.ankr.com/harmony/89a1577615a713dddcd59aed5762cb3851fe3d050eb6c7e2a26fe39c38cb97d9"
+BottomBlock = 9000000
+ForwardInterval = 1.5
+BackwardInterval = 1.0
+ForwardWorks = 1
+BackwardWorks = 20

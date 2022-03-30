@@ -1,0 +1,12 @@
+LogFile = "kardia_gfdp.log"
+LogPath = "./"
+LogLevel = "Info"
+PrivKey = ""
+Chain = "kardia"
+ChainID = 1
+RPCAddr = "https://rpc.kardiachain.io"
+BottomBlock = 500000
+ForwardInterval = 4.0
+BackwardInterval = 1.0
+ForwardWorks = 1
+BackwardWorks = 10

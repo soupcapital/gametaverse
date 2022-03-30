@@ -41,6 +41,10 @@ func NewSpider(opts options) *Spider {
 		s.antenna = NewEOSAntenna()
 	case "solana":
 		s.antenna = NewSolanaAntenna()
+	case "harmony":
+		s.antenna = NewHarmonyAntenna()
+	case "kardia":
+		s.antenna = NewKardiaAntennaAntenna()
 	default:
 		return nil
 	}
