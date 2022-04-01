@@ -12,6 +12,18 @@ const (
 	RPCAddr = "172.31.6.11:8081"
 )
 
+var (
+	AllChain = []pb.Chain{
+		pb.Chain_BSC,
+		pb.Chain_ETH,
+		pb.Chain_POLYGON,
+		pb.Chain_AVAX,
+		pb.Chain_WAX,
+		pb.Chain_SOLANA,
+		pb.Chain_KARDIA,
+	}
+)
+
 func ParsePBChain(chain string) pb.Chain {
 	c := pb.Chain_UNKNOWN
 	switch chain {
@@ -27,6 +39,8 @@ func ParsePBChain(chain string) pb.Chain {
 		c = pb.Chain_WAX
 	case "solana":
 		c = pb.Chain_SOLANA
+	case "kardia":
+		c = pb.Chain_KARDIA
 	}
 	return c
 }

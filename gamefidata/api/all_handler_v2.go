@@ -106,16 +106,9 @@ func (hdl *AllHandlerV2) dauByDate(start, end int64) (dau int, err error) {
 	ctx, cancel := context.WithTimeout(hdl.server.ctx, 3000*time.Second)
 	defer cancel()
 	dauRsp, err := c.ChainDau(ctx, &pb.ChainGameReq{
-		Start: start,
-		End:   end,
-		Chains: []pb.Chain{
-			pb.Chain_BSC,
-			pb.Chain_ETH,
-			pb.Chain_POLYGON,
-			pb.Chain_AVAX,
-			pb.Chain_WAX,
-			pb.Chain_POLYGON,
-		},
+		Start:  start,
+		End:    end,
+		Chains: AllChain,
 	})
 	if err != nil {
 		log.Error("Dau error:%s", err.Error())
@@ -138,16 +131,9 @@ func (hdl *AllHandlerV2) trxByDate(start, end int64) (count int, err error) {
 	ctx, cancel := context.WithTimeout(hdl.server.ctx, 3000*time.Second)
 	defer cancel()
 	countRsp, err := c.ChainTxCount(ctx, &pb.ChainGameReq{
-		Start: start,
-		End:   end,
-		Chains: []pb.Chain{
-			pb.Chain_BSC,
-			pb.Chain_ETH,
-			pb.Chain_POLYGON,
-			pb.Chain_AVAX,
-			pb.Chain_WAX,
-			pb.Chain_POLYGON,
-		},
+		Start:  start,
+		End:    end,
+		Chains: AllChain,
 	})
 	if err != nil {
 		log.Error("Dau error:%s", err.Error())
