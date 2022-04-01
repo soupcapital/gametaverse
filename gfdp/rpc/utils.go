@@ -29,6 +29,8 @@ func chainName(chain pb.Chain) (table string, err error) {
 		table = "wax"
 	case pb.Chain_SOLANA:
 		table = "solana"
+	case pb.Chain_KARDIA:
+		table = "kardia"
 	default:
 		err = ErrUnknownChain
 	}

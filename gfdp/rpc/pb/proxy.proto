@@ -17,6 +17,7 @@ enum Chain {
   AVAX = 4;
   WAX = 5;
   SOLANA = 6;
+  KARDIA = 7;
 }
 
 message Contract {

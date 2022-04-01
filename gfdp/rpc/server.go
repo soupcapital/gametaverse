@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net"
+	"strings"
 	"time"
 
 	"github.com/ClickHouse/clickhouse-go/v2"
@@ -33,13 +34,7 @@ func NewServer() (svr *Server) {
 	return svr
 }
 
-func (svr *Server) Init(opts ...Option) (err error) {
-	for _, opt := range opts {
-		opt.apply(&svr.opts)
-	}
-
-	svr.ctx, svr.cancelFun = context.WithCancel(context.Background())
-	log.Info("opts:%v", svr.opts)
+func (svr *Server) initDB() (err error) {
 	if svr.dbConn, err = clickhouse.Open(&clickhouse.Options{
 		Addr: []string{svr.opts.DbAddr},
 		Auth: clickhouse.Auth{
@@ -61,7 +56,20 @@ func (svr *Server) Init(opts ...Option) (err error) {
 		log.Error("open db error:%s", err.Error())
 		return
 	}
+	return nil
+}
 
+func (svr *Server) Init(opts ...Option) (err error) {
+	for _, opt := range opts {
+		opt.apply(&svr.opts)
+	}
+
+	svr.ctx, svr.cancelFun = context.WithCancel(context.Background())
+	log.Info("opts:%v", svr.opts)
+	if err = svr.initDB(); err != nil {
+		log.Error("Init DB error")
+		return
+	}
 	svr.rpcSvr = grpc.NewServer()
 	pb.RegisterDBProxyServer(svr.rpcSvr, svr)
 	return
@@ -217,6 +225,9 @@ func (svr *Server) Dau(ctx context.Context, req *pb.GameReq) (rsp *pb.DauRsp, er
 	//	log.Info("sql:%s", sql)
 	if err := svr.dbConn.QueryRow(ctx, sql).Scan(&count); err != nil {
 		log.Error("QueryRow error:%s", err.Error())
+		if strings.Contains(err.Error(), "acquire conn timeout") {
+			svr.initDB()
+		}
 	} else {
 		log.Info("try update dau cache")
 		if min, max, err := svr.getBlockScope(chains); err == nil {
@@ -340,6 +351,9 @@ func (svr *Server) TxCount(ctx context.Context, req *pb.GameReq) (rsp *pb.TxCoun
 
 	if err := svr.dbConn.QueryRow(ctx, sql).Scan(&count); err != nil {
 		log.Error("QueryRow error:%s", err.Error())
+		if strings.Contains(err.Error(), "acquire conn timeout") {
+			svr.initDB()
+		}
 	} else {
 		if min, max, err := svr.getBlockScope(chains); err == nil {
 			if (req.Start > min.Unix()) && (max.Unix() > req.End) {

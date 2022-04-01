@@ -9,6 +9,7 @@ const (
 	ChainNameBsc     = "bsc"
 	ChainNameAvax    = "avax"
 	ChainNameSolana  = "solana"
+	ChainNameKardia  = "kardia"
 )
 
 func ValiedChainName(name string) bool {
@@ -18,7 +19,8 @@ func ValiedChainName(name string) bool {
 		ChainNameEth,
 		ChainNameBsc,
 		ChainNameAvax,
-		ChainNameSolana:
+		ChainNameSolana,
+		ChainNameKardia:
 		return true
 	default:
 		return false
