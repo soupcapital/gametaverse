@@ -245,46 +245,6 @@ func (svr *Server) Dau(ctx context.Context, req *pb.GameReq) (rsp *pb.DauRsp, er
 	return
 }
 
-func (svr *Server) ChainDau(ctx context.Context, req *pb.ChainGameReq) (rsp *pb.DauRsp, err error) {
-	var count uint64
-	sql := ""
-
-	if len(req.Chains) == 0 {
-		rsp = &pb.DauRsp{
-			Dau: 0,
-		}
-		return
-	} else if len(req.Chains) == 1 {
-		// only one chain
-		for _, c := range req.Chains {
-			tblName, _ := getTableName(c)
-			sql = fmt.Sprintf("SELECT countDistinct(from) from %s WHERE (ts > %d) AND (ts < %d)", tblName, req.Start, req.End)
-		}
-	} else {
-		// multi chain
-		sql = "select COUNT(DISTINCT from) from ("
-		s := ""
-		for _, c := range req.Chains {
-			tblName, _ := getTableName(c)
-			unionSql := fmt.Sprintf("SELECT  * from %s WHERE (ts > %d) AND (ts < %d)", tblName, req.Start, req.End)
-			sql += s + unionSql
-			s = " UNION ALL "
-		}
-		sql += " )"
-	}
-
-	//log.Info("sql:%s", sql)
-
-	if err := svr.dbConn.QueryRow(ctx, sql).Scan(&count); err != nil {
-		log.Error("QueryRow error:%s", err.Error())
-	}
-
-	rsp = &pb.DauRsp{
-		Dau: count,
-	}
-	return
-}
-
 func (svr *Server) TxCount(ctx context.Context, req *pb.GameReq) (rsp *pb.TxCountRsp, err error) {
 	var count uint64
 	key := fmt.Sprintf("%v-%v", req.Start, req.End)
@@ -370,41 +330,122 @@ func (svr *Server) TxCount(ctx context.Context, req *pb.GameReq) (rsp *pb.TxCoun
 	return
 }
 
-func (svr *Server) ChainTxCount(ctx context.Context, req *pb.ChainGameReq) (rsp *pb.TxCountRsp, err error) {
-	sql := ""
-	if len(req.Chains) == 0 {
-		rsp = &pb.TxCountRsp{
-			Count: 0,
-		}
+func (svr *Server) AllUserPrograms(ctx context.Context, req *pb.AllUserProgramsReq) (rsp *pb.AllUserProgramsRsp, err error) {
+	rsp = &pb.AllUserProgramsRsp{}
+	if len(req.Users) == 0 {
 		return
-	} else if len(req.Chains) == 1 {
+	}
+
+	sql := ""
+	var contracts map[pb.Chain][]string = make(map[pb.Chain][]string, 10)
+	for _, u := range req.Users {
+		contracts[u.Chain] = append(contracts[u.Chain], u.Address)
+	}
+	user := req.Users[0].Address
+	if len(contracts) == 1 {
 		// only one chain
-		for _, c := range req.Chains {
-			tblName, _ := getTableName(c)
-			sql = fmt.Sprintf("SELECT COUNT(*) from %s WHERE (ts > %d) AND (ts < %d)", tblName, req.Start, req.End)
+		for k := range contracts {
+			tblName, _ := getTableName(k)
+			sql = fmt.Sprintf("SELECT DISTINCT to  FROM %s WHERE from='%s' AND (ts > %d) AND (ts < %d)", tblName, user, req.Start, req.End)
 		}
 	} else {
 		// multi chain
-		sql = "select COUNT(*) from ("
-		s := ""
-		for _, c := range req.Chains {
-			tblName, _ := getTableName(c)
-			unionSql := fmt.Sprintf("SELECT  * from %s WHERE (ts > %d) AND (ts < %d)", tblName, req.Start, req.End)
-			sql += s + unionSql
-			s = " UNION ALL "
+		sql = "select DISTINCT to  from ("
+		s1 := ""
+		for k := range contracts {
+			tblName, _ := getTableName(k)
+			unionSql := fmt.Sprintf("SELECT  DISTINCT to  from %s WHERE from='%s' AND (ts > %d) AND (ts < %d)", tblName, user, req.Start, req.End)
+			sql += s1 + unionSql
+			s1 = " UNION ALL "
 		}
 		sql += " )"
 	}
-
-	//log.Info("sql:%s", sql)
-
-	var count uint64
-	if err := svr.dbConn.QueryRow(ctx, sql).Scan(&count); err != nil {
+	var tos []struct {
+		To string `ch:"to"`
+	}
+	if err := svr.dbConn.Select(ctx, &tos, sql); err != nil {
 		log.Error("QueryRow error:%s", err.Error())
+		if strings.Contains(err.Error(), "acquire conn timeout") {
+			svr.initDB()
+		}
 	}
 
-	rsp = &pb.TxCountRsp{
-		Count: count,
+	for _, to := range tos {
+		rsp.Programs = append(rsp.Programs, to.To)
 	}
+	err = nil
+	return
+}
+
+func (svr *Server) TwoGamesPlayers(ctx context.Context, req *pb.TwoGamesPlayersReq) (rsp *pb.TwoGamesPlayersRsp, err error) {
+	rsp = &pb.TwoGamesPlayersRsp{}
+	if len(req.GameOne) == 0 ||
+		len(req.GameTwo) == 0 {
+		return
+	}
+
+	sql := ""
+	var contractsGameOne map[pb.Chain][]string = make(map[pb.Chain][]string, 10)
+	for _, u := range req.GameOne {
+		contractsGameOne[u.Chain] = append(contractsGameOne[u.Chain], u.Address)
+	}
+
+	var contractsGameTwo map[pb.Chain][]string = make(map[pb.Chain][]string, 10)
+	for _, u := range req.GameTwo {
+		contractsGameTwo[u.Chain] = append(contractsGameTwo[u.Chain], u.Address)
+	}
+
+	sqlOne := ""
+	s1 := ""
+	for k, v := range contractsGameOne {
+		tblName, _ := getTableName(k)
+		unionSql := fmt.Sprintf("SELECT  DISTINCT  from  from %s WHERE (ts > %d) AND (ts < %d)", tblName, req.Start, req.End)
+		toSql := " AND ("
+		s2 := ""
+		for _, c := range v {
+			toEqul := fmt.Sprintf(" %s (to = '%s')", s2, c)
+			s2 = " OR "
+			toSql += toEqul
+		}
+		toSql += ")"
+		unionSql += toSql
+		sqlOne += s1 + unionSql
+		s1 = " UNION ALL "
+	}
+
+	sqlTwo := ""
+	s1 = ""
+	for k, v := range contractsGameTwo {
+		tblName, _ := getTableName(k)
+		unionSql := fmt.Sprintf("SELECT  DISTINCT  from  from %s WHERE (ts > %d) AND (ts < %d)", tblName, req.Start, req.End)
+		toSql := " AND ("
+		s2 := ""
+		for _, c := range v {
+			toEqul := fmt.Sprintf(" %s (to = '%s')", s2, c)
+			s2 = " OR "
+			toSql += toEqul
+		}
+		toSql += ")"
+		unionSql += toSql
+		sqlTwo += s1 + unionSql
+		s1 = " UNION ALL "
+	}
+
+	sql = fmt.Sprintf(" (%s) INTERSECT (%s) ", sqlOne, sqlTwo)
+
+	var tos []struct {
+		From string `ch:"from"`
+	}
+	if err := svr.dbConn.Select(ctx, &tos, sql); err != nil {
+		log.Error("QueryRow error:%s", err.Error())
+		if strings.Contains(err.Error(), "acquire conn timeout") {
+			svr.initDB()
+		}
+	}
+
+	for _, to := range tos {
+		rsp.Users = append(rsp.Users, to.From)
+	}
+	err = nil
 	return
 }

@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	addr = "172.31.6.11:8081"
+	addr = "172.31.6.11:8082"
 )
 
 func main() {
@@ -23,27 +23,61 @@ func main() {
 	c := pb.NewDBProxyClient(conn)
 
 	// Contact the server and print out its response.
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	gameOne := []*pb.Contract{}
+	gameOne = append(gameOne, &pb.Contract{Chain: pb.Chain_BSC, Address: "0xe9e7cea3dedca5984780bafc599bd69add087d56"})
+	gameOne = append(gameOne, &pb.Contract{Chain: pb.Chain_BSC, Address: "0xe9e7cea3dedca5984780bafc599bd69add087d57"})
+	gameOne = append(gameOne, &pb.Contract{Chain: pb.Chain_POLYGON, Address: "0xe9e7cea3dedca5984780bafc599bd69add087d57"})
+
+	gameTwo := []*pb.Contract{}
+	gameTwo = append(gameTwo, &pb.Contract{Chain: pb.Chain_BSC, Address: "0x8c851d1a123ff703bd1f9dabe631b69902df5f97"})
+	gameTwo = append(gameTwo, &pb.Contract{Chain: pb.Chain_BSC, Address: "0x8c851d1a123ff703bd1f9dabe631b69902df5f98"})
+	gameTwo = append(gameTwo, &pb.Contract{Chain: pb.Chain_POLYGON, Address: "0x8c851d1a123ff703bd1f9dabe631b69902df5f98"})
+
+	r, err := c.TwoGamesPlayers(ctx, &pb.TwoGamesPlayersReq{
+		Start:   1648624801,
+		End:     1648711201,
+		GameOne: gameOne,
+		GameTwo: gameTwo,
+	})
+	if err != nil {
+		log.Fatalf("could not greet: %v", err)
+	}
+	log.Printf("Dau: %v", r.Users)
+
+}
+
+func main_2() {
+	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer conn.Close()
+	c := pb.NewDBProxyClient(conn)
+
+	// Contact the server and print out its response.
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-	r, err := c.ChainDau(ctx, &pb.ChainGameReq{
-		Start:  1646784000,
-		End:    1646870400,
-		Chains: []pb.Chain{pb.Chain_BSC, pb.Chain_POLYGON},
+	var users []*pb.Contract
+	users = append(users, &pb.Contract{
+		Chain:   pb.Chain_BSC,
+		Address: "0x8894e0a0c962cb723c1976a4421c95949be2d4e3",
+	})
+	users = append(users, &pb.Contract{
+		Chain:   pb.Chain_POLYGON,
+		Address: "0x8894e0a0c962cb723c1976a4421c95949be2d4e3",
+	})
+	r, err := c.AllUserPrograms(ctx, &pb.AllUserProgramsReq{
+		Start: 1646784000,
+		End:   1646870400,
+		Users: users,
 	})
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}
-	log.Printf("Dau: %v", r.Dau)
+	log.Printf("Dau: %v", r.Programs)
 
-	r2, err := c.ChainTxCount(ctx, &pb.ChainGameReq{
-		Start:  1646784000,
-		End:    1646870400,
-		Chains: []pb.Chain{pb.Chain_BSC, pb.Chain_POLYGON},
-	})
-	if err != nil {
-		log.Fatalf("could not greet: %v", err)
-	}
-	log.Printf("TxCount: %v", r2.Count)
 }
 
 func main_1() {

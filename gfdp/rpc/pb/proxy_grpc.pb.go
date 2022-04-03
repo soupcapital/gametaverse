@@ -20,8 +20,8 @@ const _ = grpc.SupportPackageIsVersion7
 type DBProxyClient interface {
 	Dau(ctx context.Context, in *GameReq, opts ...grpc.CallOption) (*DauRsp, error)
 	TxCount(ctx context.Context, in *GameReq, opts ...grpc.CallOption) (*TxCountRsp, error)
-	ChainDau(ctx context.Context, in *ChainGameReq, opts ...grpc.CallOption) (*DauRsp, error)
-	ChainTxCount(ctx context.Context, in *ChainGameReq, opts ...grpc.CallOption) (*TxCountRsp, error)
+	AllUserPrograms(ctx context.Context, in *AllUserProgramsReq, opts ...grpc.CallOption) (*AllUserProgramsRsp, error)
+	TwoGamesPlayers(ctx context.Context, in *TwoGamesPlayersReq, opts ...grpc.CallOption) (*TwoGamesPlayersRsp, error)
 }
 
 type dBProxyClient struct {
@@ -50,18 +50,18 @@ func (c *dBProxyClient) TxCount(ctx context.Context, in *GameReq, opts ...grpc.C
 	return out, nil
 }
 
-func (c *dBProxyClient) ChainDau(ctx context.Context, in *ChainGameReq, opts ...grpc.CallOption) (*DauRsp, error) {
-	out := new(DauRsp)
-	err := c.cc.Invoke(ctx, "/DBProxy/ChainDau", in, out, opts...)
+func (c *dBProxyClient) AllUserPrograms(ctx context.Context, in *AllUserProgramsReq, opts ...grpc.CallOption) (*AllUserProgramsRsp, error) {
+	out := new(AllUserProgramsRsp)
+	err := c.cc.Invoke(ctx, "/DBProxy/AllUserPrograms", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *dBProxyClient) ChainTxCount(ctx context.Context, in *ChainGameReq, opts ...grpc.CallOption) (*TxCountRsp, error) {
-	out := new(TxCountRsp)
-	err := c.cc.Invoke(ctx, "/DBProxy/ChainTxCount", in, out, opts...)
+func (c *dBProxyClient) TwoGamesPlayers(ctx context.Context, in *TwoGamesPlayersReq, opts ...grpc.CallOption) (*TwoGamesPlayersRsp, error) {
+	out := new(TwoGamesPlayersRsp)
+	err := c.cc.Invoke(ctx, "/DBProxy/TwoGamesPlayers", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -74,8 +74,8 @@ func (c *dBProxyClient) ChainTxCount(ctx context.Context, in *ChainGameReq, opts
 type DBProxyServer interface {
 	Dau(context.Context, *GameReq) (*DauRsp, error)
 	TxCount(context.Context, *GameReq) (*TxCountRsp, error)
-	ChainDau(context.Context, *ChainGameReq) (*DauRsp, error)
-	ChainTxCount(context.Context, *ChainGameReq) (*TxCountRsp, error)
+	AllUserPrograms(context.Context, *AllUserProgramsReq) (*AllUserProgramsRsp, error)
+	TwoGamesPlayers(context.Context, *TwoGamesPlayersReq) (*TwoGamesPlayersRsp, error)
 	mustEmbedUnimplementedDBProxyServer()
 }
 
@@ -89,11 +89,11 @@ func (UnimplementedDBProxyServer) Dau(context.Context, *GameReq) (*DauRsp, error
 func (UnimplementedDBProxyServer) TxCount(context.Context, *GameReq) (*TxCountRsp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TxCount not implemented")
 }
-func (UnimplementedDBProxyServer) ChainDau(context.Context, *ChainGameReq) (*DauRsp, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ChainDau not implemented")
+func (UnimplementedDBProxyServer) AllUserPrograms(context.Context, *AllUserProgramsReq) (*AllUserProgramsRsp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AllUserPrograms not implemented")
 }
-func (UnimplementedDBProxyServer) ChainTxCount(context.Context, *ChainGameReq) (*TxCountRsp, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ChainTxCount not implemented")
+func (UnimplementedDBProxyServer) TwoGamesPlayers(context.Context, *TwoGamesPlayersReq) (*TwoGamesPlayersRsp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TwoGamesPlayers not implemented")
 }
 func (UnimplementedDBProxyServer) mustEmbedUnimplementedDBProxyServer() {}
 
@@ -144,38 +144,38 @@ func _DBProxy_TxCount_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
-func _DBProxy_ChainDau_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ChainGameReq)
+func _DBProxy_AllUserPrograms_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AllUserProgramsReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DBProxyServer).ChainDau(ctx, in)
+		return srv.(DBProxyServer).AllUserPrograms(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/DBProxy/ChainDau",
+		FullMethod: "/DBProxy/AllUserPrograms",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DBProxyServer).ChainDau(ctx, req.(*ChainGameReq))
+		return srv.(DBProxyServer).AllUserPrograms(ctx, req.(*AllUserProgramsReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _DBProxy_ChainTxCount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ChainGameReq)
+func _DBProxy_TwoGamesPlayers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TwoGamesPlayersReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DBProxyServer).ChainTxCount(ctx, in)
+		return srv.(DBProxyServer).TwoGamesPlayers(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/DBProxy/ChainTxCount",
+		FullMethod: "/DBProxy/TwoGamesPlayers",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DBProxyServer).ChainTxCount(ctx, req.(*ChainGameReq))
+		return srv.(DBProxyServer).TwoGamesPlayers(ctx, req.(*TwoGamesPlayersReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -196,12 +196,12 @@ var DBProxy_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _DBProxy_TxCount_Handler,
 		},
 		{
-			MethodName: "ChainDau",
-			Handler:    _DBProxy_ChainDau_Handler,
+			MethodName: "AllUserPrograms",
+			Handler:    _DBProxy_AllUserPrograms_Handler,
 		},
 		{
-			MethodName: "ChainTxCount",
-			Handler:    _DBProxy_ChainTxCount_Handler,
+			MethodName: "TwoGamesPlayers",
+			Handler:    _DBProxy_TwoGamesPlayers_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

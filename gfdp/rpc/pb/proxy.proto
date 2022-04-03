@@ -5,8 +5,8 @@ option go_package = "github.com/gametaverse/gfdp/rpc/pb";
 service DBProxy {
   rpc Dau (GameReq) returns (DauRsp) {}
   rpc TxCount (GameReq) returns (TxCountRsp) {}
-  rpc ChainDau (ChainGameReq) returns (DauRsp) {}
-  rpc ChainTxCount (ChainGameReq) returns (TxCountRsp) {}
+  rpc AllUserPrograms (AllUserProgramsReq) returns (AllUserProgramsRsp) {}
+  rpc TwoGamesPlayers (TwoGamesPlayersReq) returns (TwoGamesPlayersRsp) {}
 }
 
 enum Chain {
@@ -41,8 +41,23 @@ message TxCountRsp {
 }
 
 
-message ChainGameReq {
+message AllUserProgramsReq {
   int64 start = 2;
   int64 end = 3;
-  repeated Chain chains = 4;
+  repeated Contract Users = 4;
+}
+
+message AllUserProgramsRsp {
+  repeated string programs =1 ;
+}
+
+message TwoGamesPlayersReq {
+  int64 start = 2;
+  int64 end = 3;
+  repeated Contract game_one=4 ;
+  repeated Contract game_two=5 ;
+}
+
+message TwoGamesPlayersRsp {
+  repeated string users = 1;
 }
