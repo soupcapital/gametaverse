@@ -19,7 +19,6 @@ var (
 		pb.Chain_POLYGON,
 		pb.Chain_AVAX,
 		pb.Chain_WAX,
-		pb.Chain_SOLANA,
 		pb.Chain_KARDIA,
 	}
 )

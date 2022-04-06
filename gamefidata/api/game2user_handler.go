@@ -12,21 +12,21 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-type AllHandlerV2 struct {
+type Game2UserHandler struct {
 	URLHdl
 }
 
-//Delete is DELETE
-func (hdl *AllHandlerV2) Delete(w http.ResponseWriter, r *http.Request) {
+//Post is POST
+func (hdl *Game2UserHandler) Post(w http.ResponseWriter, r *http.Request) {
 }
 
-//Post is POST
-func (hdl *AllHandlerV2) Post(w http.ResponseWriter, r *http.Request) {
+//Delete is DELETE
+func (hdl *Game2UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
 }
 
 //Get is GET
-func (hdl *AllHandlerV2) Get(w http.ResponseWriter, r *http.Request) {
-	log.Info("deal with sort")
+func (hdl *Game2UserHandler) Get(w http.ResponseWriter, r *http.Request) {
+	log.Info("deal with dau")
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	encoder := json.NewEncoder(w)
@@ -34,9 +34,13 @@ func (hdl *AllHandlerV2) Get(w http.ResponseWriter, r *http.Request) {
 
 	start := r.FormValue("start")
 	end := r.FormValue("end")
+	gameOneID := r.FormValue("game1")
+	gameTwoID := r.FormValue("game2")
 
 	if len(end) == 0 ||
-		len(start) == 0 {
+		len(start) == 0 ||
+		len(gameOneID) == 0 ||
+		len(gameTwoID) == 0 {
 		encoder.Encode(ErrParam)
 		return
 	}
@@ -68,13 +72,21 @@ func (hdl *AllHandlerV2) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dau, err := hdl.dauByDate(startTS, endTS+cSecondofDay)
+	gameOne, err := hdl.server.getGameContracts(gameOneID)
 	if err != nil {
 		encoder.Encode(ErrDB)
-		log.Error("daus: %s", err.Error())
+		log.Error("get gameOne: %s", err.Error())
 		return
 	}
-	trxes, err := hdl.trxByDate(startTS, endTS+cSecondofDay)
+
+	gameTwo, err := hdl.server.getGameContracts(gameTwoID)
+	if err != nil {
+		encoder.Encode(ErrDB)
+		log.Error("get gameOne: %s", err.Error())
+		return
+	}
+
+	users, err := hdl.getGameUsers(gameOne, gameTwo, startTS, endTS)
 	if err != nil {
 		encoder.Encode(ErrDB)
 		log.Error("trxes: %s", err.Error())
@@ -82,18 +94,15 @@ func (hdl *AllHandlerV2) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type Response struct {
-		DAU int `json:"dau"`
-		Trx int `json:"trx"`
+		Users []string `json:"users"`
 	}
-
 	rsp := Response{
-		DAU: dau,
-		Trx: trxes,
+		Users: users,
 	}
 	encoder.Encode(rsp)
 }
 
-func (hdl *AllHandlerV2) dauByDate(start, end int64) (dau int, err error) {
+func (hdl *Game2UserHandler) getGameUsers(gameOne []*pb.Contract, gameTwo []*pb.Contract, start, end int64) (users []string, err error) {
 	conn, err := grpc.Dial(RPCAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Error("RPC did not connect: %v", err)
@@ -103,42 +112,20 @@ func (hdl *AllHandlerV2) dauByDate(start, end int64) (dau int, err error) {
 	c := pb.NewDBProxyClient(conn)
 
 	// Contact the server and print out its response.
-	ctx, cancel := context.WithTimeout(hdl.server.ctx, 3000*time.Second)
+	ctx, cancel := context.WithTimeout(hdl.server.ctx, 300*time.Second)
 	defer cancel()
-	dauRsp, err := c.ChainDau(ctx, &pb.ChainGameReq{
-		Start:  start,
-		End:    end,
-		Chains: AllChain,
-	})
+	req := &pb.TwoGamesPlayersReq{
+		Start:   start,
+		End:     end,
+		GameOne: gameOne,
+		GameTwo: gameTwo,
+	}
+	rsp, err := c.TwoGamesPlayers(ctx, req)
 	if err != nil {
 		log.Error("Dau error:%s", err.Error())
 		return
 	}
-	dau = int(dauRsp.Dau)
-	return dau, nil
-}
-
-func (hdl *AllHandlerV2) trxByDate(start, end int64) (count int, err error) {
-	conn, err := grpc.Dial(RPCAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		log.Error("RPC did not connect: %v", err)
-		return
-	}
-	defer conn.Close()
-	c := pb.NewDBProxyClient(conn)
-
-	// Contact the server and print out its response.
-	ctx, cancel := context.WithTimeout(hdl.server.ctx, 3000*time.Second)
-	defer cancel()
-	countRsp, err := c.ChainTxCount(ctx, &pb.ChainGameReq{
-		Start:  start,
-		End:    end,
-		Chains: AllChain,
-	})
-	if err != nil {
-		log.Error("Dau error:%s", err.Error())
-		return
-	}
-	count = int(countRsp.Count)
-	return count, nil
+	users = make([]string, len(rsp.Users))
+	copy(users, rsp.Users[:])
+	return
 }

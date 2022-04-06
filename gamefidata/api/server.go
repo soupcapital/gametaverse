@@ -68,6 +68,8 @@ func (svr *Server) initHandler() {
 	svr.router.RegistRaw("/gamefidata/api/v1/sort", &SortHandler{URLHdl{server: svr}})
 	svr.router.RegistRaw("/gamefidata/api/v1/all", &AllHandler{URLHdl{server: svr}})
 	svr.router.RegistRaw("/gamefidata/api/v1/total", &TotalHandler{URLHdl{server: svr}})
+	svr.router.RegistRaw("/gamefidata/api/v1/user2game", &User2GameHandler{URLHdl{server: svr}})
+	svr.router.RegistRaw("/gamefidata/api/v1/game2user", &Game2UserHandler{URLHdl{server: svr}})
 
 	svr.router.RegistRaw("/gamefidata/api/v1/game_proj", &GameProjHandler{URLHdl{server: svr}})
 	svr.router.RegistRaw("/gamefidata/api/v1/game_contract", &GameContractHandler{URLHdl{server: svr}})
@@ -167,6 +169,26 @@ func (svr *Server) getContracts(game string) (contracts []*pb.Contract, err erro
 	return
 }
 
+func (svr *Server) getAllGames() (games []db.Game, err error) {
+	gameTbl := svr.db.Collection(db.GameInfoTableName)
+
+	ctx, cancel := context.WithTimeout(svr.ctx, 10*time.Second)
+	defer cancel()
+
+	cursor, err := gameTbl.Find(ctx, bson.M{})
+	if err != nil {
+		log.Error("Find game error: ", err.Error())
+		return
+	}
+
+	if err = cursor.All(ctx, &games); err != nil {
+		log.Error("Find game error: ", err.Error())
+		return
+	}
+
+	return
+}
+
 func (svr *Server) getAllContracts() (contracts []*pb.Contract, err error) {
 	gameTbl := svr.db.Collection(db.GameInfoTableName)
 
@@ -190,6 +212,39 @@ func (svr *Server) getAllContracts() (contracts []*pb.Contract, err error) {
 		if cn == pb.Chain_UNKNOWN {
 			continue
 		}
+		for _, c := range g.Contracts {
+			pc := &pb.Contract{
+				Chain:   cn,
+				Address: strings.ToLower(c),
+			}
+			contracts = append(contracts, pc)
+		}
+	}
+	return
+}
+
+func (svr *Server) getGameContracts(id string) (contracts []*pb.Contract, err error) {
+	gameTbl := svr.db.Collection(db.GameInfoTableName)
+
+	ctx, cancel := context.WithTimeout(svr.ctx, 10*time.Second)
+	defer cancel()
+
+	cursor, err := gameTbl.Find(ctx, bson.M{
+		"id": id,
+	})
+	if err != nil {
+		log.Error("Find game error: ", err.Error())
+		return
+	}
+
+	var games []db.Game
+	if err = cursor.All(ctx, &games); err != nil {
+		log.Error("Find game error: ", err.Error())
+		return
+	}
+
+	for _, g := range games {
+		cn := ParsePBChain(g.Chain)
 		for _, c := range g.Contracts {
 			pc := &pb.Contract{
 				Chain:   cn,
