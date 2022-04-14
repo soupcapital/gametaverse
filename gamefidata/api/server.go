@@ -46,8 +46,8 @@ func (svr *Server) Init(opts ...Option) (err error) {
 
 	svr.httpd = http.Server{
 		Addr:           svr.opts.ListenAddr,
-		ReadTimeout:    100 * time.Second,
-		WriteTimeout:   100 * time.Second,
+		ReadTimeout:    1000 * time.Second,
+		WriteTimeout:   1000 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 		Handler:        svr,
 	}
@@ -67,7 +67,7 @@ func (svr *Server) initHandler() {
 	svr.router.RegistRaw("/gamefidata/api/v1/info", &InfoHandler{URLHdl{server: svr}})
 	svr.router.RegistRaw("/gamefidata/api/v1/sort", &SortHandler{URLHdl{server: svr}})
 	svr.router.RegistRaw("/gamefidata/api/v1/all", &AllHandler{URLHdl{server: svr}})
-	svr.router.RegistRaw("/gamefidata/api/v1/total", &TotalHandler{URLHdl{server: svr}})
+	svr.router.RegistRaw("/gamefidata/api/v1/total", &TotalHandlerV2{URLHdl{server: svr}})
 	svr.router.RegistRaw("/gamefidata/api/v1/user2game", &User2GameHandler{URLHdl{server: svr}})
 	svr.router.RegistRaw("/gamefidata/api/v1/game2user", &Game2UserHandler{URLHdl{server: svr}})
 
@@ -78,6 +78,7 @@ func (svr *Server) initHandler() {
 	svr.router.RegistRaw("/gamefidata/api/v1/trx", &TrxHandlerV2{URLHdl{server: svr}})
 	svr.router.RegistRaw("/gamefidata/api/v1/all_chain", &AllChainHandlerV2{URLHdl{server: svr}})
 	svr.router.RegistRaw("/gamefidata/api/v1/chain", &ChainHandlerV2{URLHdl{server: svr}})
+	svr.router.RegistRaw("/gamefidata/api/v1/chain_hau", &ChainHauHandler{URLHdl{server: svr}})
 }
 
 func (svr *Server) initDB(URI string) (err error) {

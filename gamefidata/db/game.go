@@ -12,4 +12,6 @@ type Game struct {
 	Name      string   `json:"name" bson:"name"`
 	Chain     string   `json:"chain" bson:"chain"`
 	Contracts []string `json:"contracts" bson:"contracts"`
+	Banks     []string `json:"banks" bson:"banks"`
+	SPLTokens []string `json:"spls" bson:"spls"`
 }

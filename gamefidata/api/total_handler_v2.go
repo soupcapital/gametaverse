@@ -8,25 +8,24 @@ import (
 
 	"github.com/cz-theng/czkit-go/log"
 	"github.com/gametaverse/gfdp/rpc/pb"
-
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-type TrxHandlerV2 struct {
+type TotalHandlerV2 struct {
 	URLHdl
 }
 
 //Post is POST
-func (hdl *TrxHandlerV2) Post(w http.ResponseWriter, r *http.Request) {
+func (hdl *TotalHandlerV2) Post(w http.ResponseWriter, r *http.Request) {
 }
 
 //Delete is DELETE
-func (hdl *TrxHandlerV2) Delete(w http.ResponseWriter, r *http.Request) {
+func (hdl *TotalHandlerV2) Delete(w http.ResponseWriter, r *http.Request) {
 }
 
 //Get is GET
-func (hdl *TrxHandlerV2) Get(w http.ResponseWriter, r *http.Request) {
+func (hdl *TotalHandlerV2) Get(w http.ResponseWriter, r *http.Request) {
 	log.Info("deal with dau")
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
@@ -71,37 +70,13 @@ func (hdl *TrxHandlerV2) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	theDay := startTS
-	type DayInfo struct {
-		Date  int64 `json:"date"`
-		Count int   `json:"count"`
-	}
-
 	contracts, err := hdl.server.getContracts(game)
 	if err != nil {
 		encoder.Encode(ErrDB)
-		log.Error("countByDate: %s", err.Error())
+		log.Error("dauByDate: %s", err.Error())
 	}
-	var days []DayInfo
-	for {
-		if theDay > endTS {
-			break
-		}
-		count, err := hdl.countByDate(contracts, theDay, theDay+cSecondofDay)
-		if err != nil {
-			encoder.Encode(ErrDB)
-			log.Error("countByDate: %s", err.Error())
-			return
-		}
-		log.Info("count:%v for date:%v", count, theDay)
-		days = append(days, DayInfo{
-			Count: count,
-			Date:  theDay,
-		})
 
-		theDay += cSecondofDay
-	}
-	totalCount, err := hdl.countByDate(contracts, startTS, endTS+cSecondofDay)
+	dau, err := hdl.dauByDate(contracts, startTS, endTS+cSecondofDay)
 	if err != nil {
 		encoder.Encode(ErrDB)
 		log.Error("dauByDate: %s", err.Error())
@@ -109,20 +84,18 @@ func (hdl *TrxHandlerV2) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type Response struct {
-		Game  string    `json:"game"`
-		Total int       `json:"total"`
-		Data  []DayInfo `json:"data"`
+		Game  string `json:"game"`
+		Total int    `json:"total"`
 	}
 
 	rsp := Response{
 		Game:  game,
-		Data:  days,
-		Total: totalCount,
+		Total: dau,
 	}
 	encoder.Encode(rsp)
 }
 
-func (hdl *TrxHandlerV2) countByDate(contracts []*pb.Contract, start, end int64) (count int, err error) {
+func (hdl *TotalHandlerV2) dauByDate(contracts []*pb.Contract, start, end int64) (dau int, err error) {
 	conn, err := grpc.Dial(RPCAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Error("RPC did not connect: %v", err)
@@ -134,7 +107,7 @@ func (hdl *TrxHandlerV2) countByDate(contracts []*pb.Contract, start, end int64)
 	// Contact the server and print out its response.
 	ctx, cancel := context.WithTimeout(hdl.server.ctx, 300*time.Second)
 	defer cancel()
-	countRsp, err := c.TxCount(ctx, &pb.GameReq{
+	dauRsp, err := c.Dau(ctx, &pb.GameReq{
 		Start:     start,
 		End:       end,
 		Contracts: contracts,
@@ -143,6 +116,6 @@ func (hdl *TrxHandlerV2) countByDate(contracts []*pb.Contract, start, end int64)
 		log.Error("Dau error:%s", err.Error())
 		return
 	}
-	count = int(countRsp.Count)
-	return count, nil
+	dau = int(dauRsp.Dau)
+	return dau, nil
 }

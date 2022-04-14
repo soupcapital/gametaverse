@@ -5,6 +5,7 @@ import (
 
 	"github.com/gametaverse/gamefidata/cmd/api"
 	"github.com/gametaverse/gamefidata/cmd/creator"
+	"github.com/gametaverse/gamefidata/cmd/daily"
 	"github.com/gametaverse/gamefidata/cmd/eth"
 	"github.com/gametaverse/gamefidata/cmd/solana"
 	"github.com/gametaverse/gamefidata/cmd/wax"
@@ -30,6 +31,8 @@ func init() {
 	rootCMD.AddCommand(wax.CMD)
 	rootCMD.AddCommand(solana.CMD)
 	rootCMD.AddCommand(creator.CMD)
+	rootCMD.AddCommand(daily.CMD)
+
 }
 
 func main() {

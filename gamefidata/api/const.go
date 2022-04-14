@@ -23,6 +23,27 @@ var (
 	}
 )
 
+func UnparsePBChain(chain pb.Chain) string {
+	c := "unknown"
+	switch chain {
+	case pb.Chain_AVAX:
+		c = "avax"
+	case pb.Chain_BSC:
+		c = "bsc"
+	case pb.Chain_ETH:
+		c = "eth"
+	case pb.Chain_KARDIA:
+		c = "kardia"
+	case pb.Chain_POLYGON:
+		c = "polygon"
+	case pb.Chain_SOLANA:
+		c = "solana"
+	case pb.Chain_WAX:
+		c = "wax"
+	}
+	return c
+}
+
 func ParsePBChain(chain string) pb.Chain {
 	c := pb.Chain_UNKNOWN
 	switch chain {
